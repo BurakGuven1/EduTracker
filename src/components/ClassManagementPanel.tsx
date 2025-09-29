@@ -162,39 +162,159 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
         </div>
 
         {/* Content */}
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold">
-              {activeTab === 'assignments' && 'Ödev Yönetimi'}
-              {activeTab === 'announcements' && 'Duyuru Yönetimi'}
-              {activeTab === 'exams' && 'Sınav Yönetimi'}
-            </h3>
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700"
-            >
-              <Plus className="h-4 w-4" />
-              <span>
-                {activeTab === 'assignments' && 'Yeni Ödev'}
-                {activeTab === 'announcements' && 'Yeni Duyuru'}
-                {activeTab === 'exams' && 'Yeni Sınav'}
-              </span>
-            </button>
-          </div>
-
-          <div className="text-center py-12 text-gray-500">
-            <div className="mb-4">
-              {activeTab === 'assignments' && <BookOpen className="h-16 w-16 mx-auto text-gray-300" />}
-              {activeTab === 'announcements' && <Bell className="h-16 w-16 mx-auto text-gray-300" />}
-              {activeTab === 'exams' && <Trophy className="h-16 w-16 mx-auto text-gray-300" />}
+        {contentLoading ? (
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">İçerikler yükleniyor...</p>
             </div>
-            <p>
-              {activeTab === 'assignments' && 'Sınıfınız için ödev ekleyin ve yönetin'}
-              {activeTab === 'announcements' && 'Öğrencilerinize duyuru gönderin'}
-              {activeTab === 'exams' && 'Sınav oluşturun ve sonuçları paylaşın'}
-            </p>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">
+                {activeTab === 'assignments' && 'Ödev Yönetimi'}
+                {activeTab === 'announcements' && 'Duyuru Yönetimi'}
+                {activeTab === 'exams' && 'Sınav Yönetimi'}
+              </h3>
+              <button
+                onClick={() => setShowForm(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4" />
+                <span>
+                  {activeTab === 'assignments' && 'Yeni Ödev'}
+                  {activeTab === 'announcements' && 'Yeni Duyuru'}
+                  {activeTab === 'exams' && 'Yeni Sınav'}
+                </span>
+              </button>
+            </div>
+
+            {/* Content List */}
+            <div className="space-y-4">
+              {activeTab === 'assignments' && (
+                assignments.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <BookOpen className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                    <p>Henüz ödev eklenmemiş</p>
+                  </div>
+                ) : (
+                  assignments.map((assignment) => (
+                    <div key={assignment.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-lg">{assignment.title}</h4>
+                          <p className="text-blue-600 font-medium">{assignment.subject}</p>
+                          {assignment.description && (
+                            <p className="text-gray-600 mt-2">{assignment.description}</p>
+                          )}
+                          <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
+                            <span>Son Teslim: {new Date(assignment.due_date).toLocaleDateString('tr-TR')}</span>
+                            <span>Oluşturulma: {new Date(assignment.created_at).toLocaleDateString('tr-TR')}</span>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-600 hover:bg-blue-50">
+                            Düzenle
+                          </button>
+                          <button className="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600 hover:bg-red-50">
+                            Sil
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )
+              )}
+
+              {activeTab === 'announcements' && (
+                announcements.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <Bell className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                    <p>Henüz duyuru eklenmemiş</p>
+                  </div>
+                ) : (
+                  announcements.map((announcement) => (
+                    <div key={announcement.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <h4 className="font-semibold text-lg">{announcement.title}</h4>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              announcement.type === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                              announcement.type === 'success' ? 'bg-green-100 text-green-800' :
+                              announcement.type === 'error' ? 'bg-red-100 text-red-800' :
+                              'bg-blue-100 text-blue-800'
+                            }`}>
+                              {announcement.type === 'warning' ? 'Uyarı' :
+                               announcement.type === 'success' ? 'Başarı' :
+                               announcement.type === 'error' ? 'Hata' : 'Bilgi'}
+                            </span>
+                          </div>
+                          <p className="text-gray-700">{announcement.content}</p>
+                          <div className="mt-3 text-sm text-gray-500">
+                            <span>Oluşturulma: {new Date(announcement.created_at).toLocaleDateString('tr-TR')}</span>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-600 hover:bg-blue-50">
+                            Düzenle
+                          </button>
+                          <button className="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600 hover:bg-red-50">
+                            Sil
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )
+              )}
+
+              {activeTab === 'exams' && (
+                exams.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <Trophy className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                    <p>Henüz sınav eklenmemiş</p>
+                  </div>
+                ) : (
+                  exams.map((exam) => (
+                    <div key={exam.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-lg">{exam.exam_name}</h4>
+                          <p className="text-purple-600 font-medium">{exam.exam_type}</p>
+                          <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
+                            <span>Sınav Tarihi: {new Date(exam.exam_date).toLocaleDateString('tr-TR')}</span>
+                            {exam.total_questions > 0 && (
+                              <span>Soru Sayısı: {exam.total_questions}</span>
+                            )}
+                            <span>Oluşturulma: {new Date(exam.created_at).toLocaleDateString('tr-TR')}</span>
+                          </div>
+                          {exam.class_exam_results && exam.class_exam_results.length > 0 && (
+                            <div className="mt-2 text-sm text-green-600">
+                              {exam.class_exam_results.length} öğrenci sonucu girildi
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex space-x-2">
+                          <button className="text-green-600 hover:text-green-800 px-3 py-1 rounded border border-green-600 hover:bg-green-50">
+                            Sonuçlar
+                          </button>
+                          <button className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-600 hover:bg-blue-50">
+                            Düzenle
+                          </button>
+                          <button className="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600 hover:bg-red-50">
+                            Sil
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Forms */}

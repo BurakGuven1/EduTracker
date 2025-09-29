@@ -398,24 +398,25 @@ export default function TeacherDashboard() {
                       </div>
                     )}
                     <div className="border-t pt-4 mt-4">
-                      <button
-                        onClick={() => {
-                          setSelectedClass(cls);
-                          // Navigate to class dashboard view
-                          window.location.hash = `#class-${cls.id}`;
-                        }}
-                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center justify-center space-x-2"
-                      >
-                        <Eye className="h-4 w-4" />
-                        <span>Sınıfı Görüntüle</span>
-                      </button>
-                      <button
-                        onClick={() => handleManageClass(cls)}
-                        className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2"
-                      >
-                        <Edit className="h-4 w-4" />
-                        <span>Sınıfı Yönet</span>
-                      </button>
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => {
+                            setSelectedClass(cls);
+                            setShowManagement(true);
+                          }}
+                          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center justify-center space-x-2"
+                        >
+                          <Eye className="h-4 w-4" />
+                          <span>Sınıfı Görüntüle</span>
+                        </button>
+                        <button
+                          onClick={() => handleManageClass(cls)}
+                          className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2"
+                        >
+                          <Edit className="h-4 w-4" />
+                          <span>Sınıfı Yönet</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
