@@ -105,7 +105,12 @@ export default function TeacherDashboard() {
   };
   
   const handleManageClass = (classData: any) => {
-    setSelectedClass(classData);
+    // Pass the detailed class data with assignments, announcements, and exams
+    const detailedClassData = {
+      ...classData,
+      ...classDetails[classData.id]
+    };
+    setSelectedClass(detailedClassData);
     setShowManagement(true);
   };
 

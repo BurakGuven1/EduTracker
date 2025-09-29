@@ -13,28 +13,10 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Assignment form
-  const [assignmentForm, setAssignmentForm] = useState({
-    title: '',
-    description: '',
-    subject: '',
-    due_date: ''
-  });
-
-  // Announcement form
-  const [announcementForm, setAnnouncementForm] = useState({
-    title: '',
-    content: '',
-    type: 'info' as 'info' | 'warning' | 'success' | 'error'
-  });
-
-  // Exam form
-  const [examForm, setExamForm] = useState({
-    exam_name: '',
-    exam_type: '',
-    exam_date: '',
-    total_questions: ''
-  });
+  // Get data from props
+  const assignments = classData?.class_assignments || [];
+  const announcements = classData?.class_announcements || [];
+  const exams = classData?.class_exams || [];
 
   const handleSubmitAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,10 +32,7 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
       alert('Ödev başarıyla eklendi!');
       setShowForm(false);
       setAssignmentForm({ title: '', description: '', subject: '', due_date: '' });
-      // Refresh the parent component
       onRefresh();
-      // Also refresh current view by reloading the page
-      window.location.reload();
     } catch (error: any) {
       alert('Ödev ekleme hatası: ' + error.message);
     } finally {
@@ -75,10 +54,7 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
       alert('Duyuru başarıyla eklendi!');
       setShowForm(false);
       setAnnouncementForm({ title: '', content: '', type: 'info' });
-      // Refresh the parent component
       onRefresh();
-      // Also refresh current view by reloading the page
-      window.location.reload();
     } catch (error: any) {
       alert('Duyuru ekleme hatası: ' + error.message);
     } finally {
@@ -103,10 +79,7 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
       alert('Sınav başarıyla eklendi!');
       setShowForm(false);
       setExamForm({ exam_name: '', exam_type: '', exam_date: '', total_questions: '' });
-      // Refresh the parent component
       onRefresh();
-      // Also refresh current view by reloading the page
-      window.location.reload();
     } catch (error: any) {
       alert('Sınav ekleme hatası: ' + error.message);
     } finally {
@@ -162,15 +135,7 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
         </div>
 
         {/* Content */}
-        {loading ? (
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">İçerikler yükleniyor...</p>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg p-6 shadow-sm">
+        <div className="bg-white rounded-lg p-6 shadow-sm">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold">
                 {activeTab === 'assignments' && 'Ödev Yönetimi'}
@@ -314,7 +279,6 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
               )}
             </div>
           </div>
-        )}
       </div>
 
       {/* Forms */}
