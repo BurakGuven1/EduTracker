@@ -148,11 +148,10 @@ export const getTeacherClasses = async (teacherId: string) => {
     .select(`
       *,
       class_students (
-        *,
-        students (
-          *,
-          profiles (*)
-        )
+        id,
+        student_id,
+        joined_at,
+        status
       )
     `)
     .eq('teacher_id', teacherId)
