@@ -386,7 +386,7 @@ const examData = {
 const years = ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
 const freeYears = ['2018', '2019', '2020']; // Ücretsiz kullanıcılar için
 
-export default function ExamTopicsSection({ user, onUpgrade }: ExamTopicsSectionProps) {
+function ExamTopicsSection({ user, hasClassViewerSession = false, onUpgrade }: ExamTopicsSectionProps) {
   const [selectedSubject, setSelectedSubject] = useState('AYT_Matematik');
   const [selectedYears, setSelectedYears] = useState(freeYears);
   const [searchTerm, setSearchTerm] = useState('');
@@ -773,3 +773,5 @@ export default function ExamTopicsSection({ user, onUpgrade }: ExamTopicsSection
     </div>
   );
 }
+
+export default ExamTopicsSection;
