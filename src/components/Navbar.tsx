@@ -37,15 +37,15 @@ export default function Navbar({ user, onStudentParentLogin, onTeacherLogin, onM
               <div className="flex space-x-2">
                 <button
                   onClick={onStudentParentLogin}
-                  className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                 >
                   Öğrenci / Veli Girişi
                 </button>
                 <button
                   onClick={onTeacherLogin}
-                  className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
                 >
-                  Öğretmen Girişi
+                  Öğretmen / Sınıf Girişi
                 </button>
               </div>
             )}

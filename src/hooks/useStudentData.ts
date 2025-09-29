@@ -41,6 +41,11 @@ export const useStudentData = (userId: string | undefined) => {
         const { data: recommendations } = await getAIRecommendations(student.id);
         console.log('AI recommendations:', recommendations);
         setAIRecommendations(recommendations || []);
+
+        // Get student classes
+        const { data: classes } = await getStudentClasses(student.id);
+        console.log('Student classes:', classes);
+        setStudentClasses(classes || []);
       } else {
         console.log('No student data found');
       }

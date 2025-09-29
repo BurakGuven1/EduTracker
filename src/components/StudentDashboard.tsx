@@ -41,6 +41,8 @@ export default function StudentDashboard() {
     weekly_hours_target: '25'
   });
   const [goalLoading, setGoalLoading] = useState(false);
+  const [showJoinClassModal, setShowJoinClassModal] = useState(false);
+  const [classInviteCodeInput, setClassInviteCodeInput] = useState('');
 
   const handleCreateWeeklyGoal = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +107,22 @@ export default function StudentDashboard() {
   const { user } = useAuth();
   const { studentData, examResults, homeworks, aiRecommendations, studentClasses, loading, refetch } = useStudentData(user?.id);
 
+  const handleJoinClass = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!studentData || !classInviteCodeInput.trim()) return;
+
+    try {
+      const { joinClassWithCode } = await import('../lib/teacherApi');
+      await joinClassWithCode(studentData.id, classInviteCodeInput.trim());
+      
+      alert('Sınıfa başarıyla katıldınız!');
+      setShowJoinClassModal(false);
+      setClassInviteCodeInput('');
+      refetch();
+    } catch (error: any) {
+      alert('Sınıfa katılma hatası: ' + error.message);
+    }
+  };
   // Load weekly study goal and calculate hours
   React.useEffect(() => {
     const loadWeeklyData = async () => {

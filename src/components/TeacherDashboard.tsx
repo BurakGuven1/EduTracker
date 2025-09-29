@@ -245,7 +245,7 @@ export default function TeacherDashboard() {
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span>Aylık Gelir:</span>
+                      <span>Aylık Tutar:</span>
                       <span className="font-medium text-green-600">
                         {calculateClassPrice(cls.current_students || 0, cls.package_type).monthlyPrice.toLocaleString()}₺
                       </span>
