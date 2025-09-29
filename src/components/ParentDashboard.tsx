@@ -298,7 +298,7 @@ export default function ParentDashboard() {
               İlk Çocuğu Ekle
             </button>
           </div>
-        ) : (
+        ) : selectedChildData ? (
           <>
         {/* Stats Overview */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
@@ -336,8 +336,8 @@ export default function ParentDashboard() {
                 <p className="text-gray-600 text-sm">Bu Hafta Çalışma</p>
                 <p className="text-2xl font-bold text-purple-600">{stats.studyHours.toFixed(1)} saat</p>
                 <p className="text-purple-600 text-sm">
-                  {selectedChildData.weekly_study_goal 
-                    ? `Hedef: ${selectedChildData.weekly_study_goal?.weekly_hours_target} saat (%${stats.studyPercentage})`
+                  {selectedChildData?.weekly_study_goal?.weekly_hours_target 
+                    ? `Hedef: ${selectedChildData.weekly_study_goal.weekly_hours_target} saat (%${stats.studyPercentage})`
                     : 'Hedef belirlenmemiş'
                   }
                 </p>
@@ -489,7 +489,7 @@ export default function ParentDashboard() {
                     <h4 className="font-semibold text-green-800 mb-1">Çalışma Disiplini</h4>
                     <p className="text-green-700 text-sm">
                       Bu hafta {stats.studyHours.toFixed(1)} saat çalışmış.
-                      {selectedChildData.weekly_study_goal 
+                      {selectedChildData?.weekly_study_goal?.weekly_hours_target 
                         ? ` Hedef: ${selectedChildData.weekly_study_goal.weekly_hours_target} saat (%${stats.studyPercentage}). ${stats.studyPercentage >= 80 ? 'Mükemmel bir disiplin!' : 'Çalışma saatlerini artırması için teşvik edin.'}`
                         : ' Haftalık çalışma hedefi belirlenmemiş.'
                       }
@@ -498,10 +498,10 @@ export default function ParentDashboard() {
                 </div>
               )}
               
-              {!selectedChildData.weekly_study_goal && (
+              {!selectedChildData?.weekly_study_goal && (
                 <div className="flex items-start p-4 bg-blue-50 rounded-lg">
                   <div className="bg-blue-100 p-2 rounded-full mr-4">
-                    <Target className="h-5 w-5 text-blue-600" />
+                    <Award className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-blue-800 mb-1">Hedef Belirleme</h4>
@@ -577,6 +577,14 @@ export default function ParentDashboard() {
           </div>
         </div>
           </>
+        ) : (
+          <div className="bg-white rounded-lg p-12 shadow-sm text-center">
+            <User className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Çocuk seçin</h3>
+            <p className="text-gray-600">
+              Yukarıdan bir çocuk seçerek detaylarını görüntüleyebilirsiniz.
+            </p>
+          </div>
         )}
 
         {/* Add Child Modal */}
