@@ -112,7 +112,10 @@ function App() {
       <Hero onGetStarted={handleGetStarted} />
       <Features />
       <PricingSection onSelectPackage={handleSelectPackage} />
-      <ExamTopicsSection />
+      <ExamTopicsSection 
+        user={user} 
+        onUpgrade={() => setShowStudentParentLoginModal(true)}
+      />
       <TeacherSection />
       
       {/* Footer */}
