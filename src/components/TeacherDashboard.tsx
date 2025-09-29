@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, BookOpen, Settings, LogOut, Copy, RefreshCw, Eye, EyeOff, CreditCard as Edit } from 'lucide-react';
+import { Users, Plus, BookOpen, Settings, LogOut, Copy, RefreshCw, EyeOff, CreditCard as Edit } from 'lucide-react';
 import { getTeacherClasses, createClass, getClassData } from '../lib/teacherApi';
 import { PACKAGE_OPTIONS, calculateClassPrice } from '../types/teacher';
 import ClassManagementPanel from './ClassManagementPanel';
@@ -403,25 +403,13 @@ export default function TeacherDashboard() {
                       </div>
                     )}
                     <div className="border-t pt-4 mt-4">
-                      <div className="space-y-2">
-                        <button
-                          onClick={() => {
-                            setSelectedClass(cls);
-                            setShowManagement(true);
-                          }}
-                          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center justify-center space-x-2"
-                        >
-                          <Eye className="h-4 w-4" />
-                          <span>Sınıfı Görüntüle</span>
-                        </button>
-                        <button
-                          onClick={() => handleManageClass(cls)}
-                          className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2"
-                        >
-                          <Edit className="h-4 w-4" />
-                          <span>Sınıfı Yönet</span>
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => handleManageClass(cls)}
+                        className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2"
+                      >
+                        <Edit className="h-4 w-4" />
+                        <span>Sınıfı Yönet</span>
+                      </button>
                     </div>
                   </div>
                 </div>

@@ -167,15 +167,7 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
         </div>
 
         {/* Content */}
-        {loading ? (
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">İçerikler yükleniyor...</p>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg p-6 shadow-sm">
+        <div className="bg-white rounded-lg p-6 shadow-sm">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold">
                 {activeTab === 'assignments' && 'Ödev Yönetimi'}
@@ -318,8 +310,6 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
                 )
               )}
             </div>
-          </div>
-        )}
       </div>
 
       {/* Forms */}
