@@ -741,7 +741,7 @@ export default function StudentDashboard() {
               ) : (
                 studentClasses.map((classData) => (
                   <div key={classData.id} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-3">
+                    <div className="flex justify-between items-start mb-4">
                       <div>
                         <h4 className="font-semibold">{classData.classes?.class_name}</h4>
                         <p className="text-sm text-gray-600">
@@ -757,20 +757,45 @@ export default function StudentDashboard() {
                         Aktif
                       </span>
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-gray-600 mb-4">
                       <p>Katılım Tarihi: {new Date(classData.joined_at).toLocaleDateString('tr-TR')}</p>
                     </div>
                     
                     {/* Show class assignments for this class */}
                     {classAssignments.filter(a => a.class_id === classData.class_id).length > 0 && (
                       <div className="mt-3 p-2 bg-blue-50 rounded">
-                        <p className="text-blue-800 text-xs font-medium mb-1">Sınıf Ödevleri:</p>
+                        <p className="text-blue-800 text-sm font-medium mb-2">📝 Sınıf Ödevleri:</p>
                         {classAssignments
                           .filter(a => a.class_id === classData.class_id)
-                          .slice(0, 2)
+                          .slice(0, 3)
                           .map((assignment) => (
-                            <div key={assignment.id} className="text-xs text-blue-700">
-                              • {assignment.title} - {new Date(assignment.due_date).toLocaleDateString('tr-TR')}
+                            <div key={assignment.id} className="text-sm text-blue-700 mb-1 p-2 bg-white rounded border-l-2 border-blue-400">
+                              <div className="font-medium">{assignment.title}</div>
+                              <div className="text-xs text-blue-600">
+                                {assignment.subject} • Son teslim: {new Date(assignment.due_date).toLocaleDateString('tr-TR')}
+                              </div>
+                              {assignment.description && (
+                                <div className="text-xs text-blue-500 mt-1">{assignment.description}</div>
+                              )}
+                            </div>
+                          ))}
+                      </div>
+                    )}
+
+                    {/* Show class announcements */}
+                    {classAnnouncements.filter(a => a.class_id === classData.class_id).length > 0 && (
+                      <div className="mt-3 p-2 bg-purple-50 rounded">
+                        <p className="text-purple-800 text-sm font-medium mb-2">📢 Sınıf Duyuruları:</p>
+                        {classAnnouncements
+                          .filter(a => a.class_id === classData.class_id)
+                          .slice(0, 3)
+                          .map((announcement) => (
+                            <div key={announcement.id} className="text-sm text-purple-700 mb-1 p-2 bg-white rounded border-l-2 border-purple-400">
+                              <div className="font-medium">{announcement.title}</div>
+                              <div className="text-xs text-purple-600 mt-1">{announcement.content}</div>
+                              <div className="text-xs text-purple-500 mt-1">
+                                {new Date(announcement.created_at).toLocaleDateString('tr-TR')}
+                              </div>
                             </div>
                           ))}
                       </div>
@@ -778,14 +803,23 @@ export default function StudentDashboard() {
 
                     {/* Show class exam results */}
                     {classExamResults.filter(r => r.class_exams?.class_id === classData.class_id).length > 0 && (
-                      <div className="mt-2 p-2 bg-green-50 rounded">
-                        <p className="text-green-800 text-xs font-medium mb-1">Son Sınav Sonuçlarım:</p>
+                      <div className="mt-3 p-2 bg-orange-50 rounded">
+                        <p className="text-orange-800 text-sm font-medium mb-2">🏆 Son Sınav Sonuçlarım:</p>
                         {classExamResults
                           .filter(r => r.class_exams?.class_id === classData.class_id)
-                          .slice(0, 2)
+                          .slice(0, 3)
                           .map((result) => (
-                            <div key={result.id} className="text-xs text-green-700">
-                              • {result.class_exams?.exam_name}: {result.score?.toFixed(1) || 'N/A'} puan
+                            <div key={result.id} className="text-sm text-orange-700 mb-1 p-2 bg-white rounded border-l-2 border-orange-400">
+                              <div className="font-medium">{result.class_exams?.exam_name}</div>
+                              <div className="text-xs text-orange-600">
+                                Puan: {result.score?.toFixed(1) || 'N/A'} • 
+                                Doğru: {result.correct_answers || 0} • 
+                                Yanlış: {result.wrong_answers || 0} • 
+                                Boş: {result.empty_answers || 0}
+                              </div>
+                              <div className="text-xs text-orange-500 mt-1">
+                                {new Date(result.class_exams?.exam_date).toLocaleDateString('tr-TR')}
+                              </div>
                             </div>
                           ))}
                       </div>

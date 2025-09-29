@@ -50,7 +50,10 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
       alert('Ödev başarıyla eklendi!');
       setShowForm(false);
       setAssignmentForm({ title: '', description: '', subject: '', due_date: '' });
+      // Refresh the parent component
       onRefresh();
+      // Also refresh current view by reloading the page
+      window.location.reload();
     } catch (error: any) {
       alert('Ödev ekleme hatası: ' + error.message);
     } finally {
@@ -72,7 +75,10 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
       alert('Duyuru başarıyla eklendi!');
       setShowForm(false);
       setAnnouncementForm({ title: '', content: '', type: 'info' });
+      // Refresh the parent component
       onRefresh();
+      // Also refresh current view by reloading the page
+      window.location.reload();
     } catch (error: any) {
       alert('Duyuru ekleme hatası: ' + error.message);
     } finally {
@@ -97,7 +103,10 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
       alert('Sınav başarıyla eklendi!');
       setShowForm(false);
       setExamForm({ exam_name: '', exam_type: '', exam_date: '', total_questions: '' });
+      // Refresh the parent component
       onRefresh();
+      // Also refresh current view by reloading the page
+      window.location.reload();
     } catch (error: any) {
       alert('Sınav ekleme hatası: ' + error.message);
     } finally {
