@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { packages } from './data/packages';
