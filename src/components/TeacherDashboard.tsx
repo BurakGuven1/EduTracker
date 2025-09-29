@@ -381,51 +381,6 @@ export default function TeacherDashboard() {
                   </div>
                   );
                 })()
-
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between text-sm">
-                      <span>Öğrenci:</span>
-                      <span className="font-medium">{cls.current_students || 0}/{cls.student_capacity}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Paket:</span>
-                      <span className="font-medium">
-                        {PACKAGE_OPTIONS.find(p => p.type === cls.package_type)?.name}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Aylık Tutar:</span>
-                      <span className="font-medium text-green-600">
-                        {calculateClassPrice(cls.current_students || 0, cls.package_type).monthlyPrice.toLocaleString()}₺
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="border-t pt-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Davet Kodu:</span>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => setShowInviteCode(showInviteCode === cls.id ? null : cls.id)}
-                          className="text-blue-600 hover:text-blue-700"
-                        >
-                          {showInviteCode === cls.id ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                        <button
-                          onClick={() => copyInviteCode(cls.invite_code)}
-                          className="text-green-600 hover:text-green-700"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                    {showInviteCode === cls.id && (
-                      <div className="mt-2 p-2 bg-gray-100 rounded font-mono text-sm text-center">
-                        {cls.invite_code}
-                      </div>
-                    )}
-                  </div>
-                </div>
               ))}
             </div>
           )}
