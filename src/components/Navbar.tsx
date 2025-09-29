@@ -49,12 +49,6 @@ export default function Navbar({ user, onStudentParentLogin, onTeacherLogin, onM
                 </button>
               </div>
             )}
-            <button
-              onClick={onMenuToggle}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-            >
-              Öğretmen Girişi
-            </button>
           </div>
         </div>
       </div>
