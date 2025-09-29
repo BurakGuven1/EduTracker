@@ -406,11 +406,11 @@ export default function ExamTopicsSection({ user, onUpgrade }: ExamTopicsSection
     const classViewerSession = localStorage.getItem('classViewerSession');
     if (classViewerSession) return true;
     
-    if (user.profile?.package_type === 'professional') return true;
-    if (user.profile?.role === 'teacher') return true;
-    if (user.isParentLogin) {
-      // Check if any connected student has professional package or is in a class
-      return user.connectedStudents?.some((student: any) => 
+    // Check if user is viewing via class code
+    const classViewerSession = localStorage.getItem('classViewerSession');
+    if (classViewerSession) return true;
+    if (user.isParentLogin && user.connectedStudents) {
+      return user.connectedStudents?.some((student: any) =>
         student.profiles?.package_type === 'professional'
       );
     }

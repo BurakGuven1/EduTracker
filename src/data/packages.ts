@@ -12,8 +12,8 @@ export const packages: Package[] = [
   {
     id: 'basic',
     name: 'Temel Paket',
-    monthlyPrice: 200,
-    yearlyPrice: 2000,
+    monthlyPrice: 219.99,
+    yearlyPrice: 2299,
     maxParents: 1,
     aiSupport: false,
     features: [
@@ -28,8 +28,8 @@ export const packages: Package[] = [
   {
     id: 'advanced',
     name: 'Gelişmiş Paket',
-    monthlyPrice: 300,
-    yearlyPrice: 3000,
+    monthlyPrice: 319.99,
+    yearlyPrice: 2999,
     maxParents: 2,
     aiSupport: true,
     features: [
@@ -45,8 +45,8 @@ export const packages: Package[] = [
   {
     id: 'professional',
     name: 'Profesyonel Paket',
-    monthlyPrice: 500,
-    yearlyPrice: 5000,
+    monthlyPrice: 499.99,
+    yearlyPrice: 3999,
     maxParents: 3,
     aiSupport: true,
     features: [
@@ -57,7 +57,9 @@ export const packages: Package[] = [
       '3 veli hesabı bağlama',
       'Sınırsız deneme/ödev kaydı',
       'PDF rapor indirme',
-      'Öncelikli destek'
+      'Öncelikli destek',
+      'TYT-AYT Çıkmış Konular (2018-2025)',
+      'Gelişmiş AI analiz ve öneriler'
     ]
   }
 ];
