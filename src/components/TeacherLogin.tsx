@@ -291,9 +291,32 @@ export default function TeacherLogin({ isOpen, onClose, onSuccess }: TeacherLogi
               </button>
             </p>
           </div>
-        )}
 
-        {loginType === 'teacher' && (
+          {loginType === 'teacher' && (
+            <div className="mt-4 p-4 bg-green-50 rounded-lg">
+              <p className="text-green-800 text-sm font-medium mb-2">Demo Hesabı:</p>
+              <div className="text-xs text-green-700 space-y-1">
+                <p>Email: demo@ogretmen.com</p>
+                <p>Şifre: Demo123456</p>
+              </div>
+            </div>
+          )}
+
+          {loginType === 'class' && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+              <p className="text-blue-800 text-sm font-medium mb-2">Sınıf Kodu Nasıl Alınır?</p>
+              <div className="text-xs text-blue-700 space-y-1">
+                <p>• Öğretmeninizden sınıf davet kodunu isteyin</p>
+                <p>• Kod formatı: ABC1-DEF2-GHI3 şeklindedir</p>
+                <p>• Kodu girdikten sonra sınıf içeriğini görüntüleyebilirsiniz</p>
+              </div>
+            </div>
+          )}
+        )}
+      </div>
+    </div>
+  );
+}
           <div className="mt-4 p-4 bg-green-50 rounded-lg">
             <p className="text-green-800 text-sm font-medium mb-2">Demo Hesabı:</p>
             <div className="text-xs text-green-700 space-y-1">
