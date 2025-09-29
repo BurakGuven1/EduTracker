@@ -40,12 +40,13 @@ export default function StudentDashboard() {
   const [goalFormData, setGoalFormData] = useState({
     weekly_hours_target: '25'
   });
+  const [goalLoading, setGoalLoading] = useState(false);
 
   const handleCreateWeeklyGoal = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!studentData) return;
 
-    setLoading(true);
+    setGoalLoading(true);
     try {
       const goalData = {
         student_id: studentData.id,
@@ -82,7 +83,7 @@ export default function StudentDashboard() {
       console.error('Error saving weekly goal:', error);
       alert('Hedef kaydedilirken hata oluştu');
     } finally {
-      setLoading(false);
+      setGoalLoading(false);
     }
   };
 
@@ -851,10 +852,10 @@ export default function StudentDashboard() {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={goalLoading}
                   className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
                 >
-                  {loading ? 'Kaydediliyor...' : (weeklyGoal ? 'Güncelle' : 'Belirle')}
+                  {goalLoading ? 'Kaydediliyor...' : (weeklyGoal ? 'Güncelle' : 'Belirle')}
                 </button>
               </div>
             </form>

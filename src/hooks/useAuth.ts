@@ -11,9 +11,10 @@ interface AuthUser extends User {
 export const useAuth = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
+    if (initialized) return; // Prevent re-initialization
 
     // Check current session once
     const initializeAuth = async () => {
@@ -22,58 +23,59 @@ export const useAuth = () => {
         const tempParent = localStorage.getItem('tempParentUser');
         if (tempParent) {
           const parentUser = JSON.parse(tempParent);
-          if (mounted) {
-            setUser(parentUser);
-            setLoading(false);
-          }
+          setUser(parentUser);
+          setLoading(false);
+          setInitialized(true);
           return;
         }
 
         const { data: { session } } = await supabase.auth.getSession();
-        console.log('Initial session:', session?.user?.id);
         
-        if (mounted) {
-          if (session?.user) {
-            // Get profile data for the user
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-            
-            setUser({
-              ...session.user,
-              profile
-            });
-          } else {
-            setUser(null);
-          }
-          setLoading(false);
+        if (session?.user) {
+          // Get profile data for the user
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          setUser({
+            ...session.user,
+            profile
+          });
+        } else {
+          setUser(null);
         }
+        setLoading(false);
+        setInitialized(true);
       } catch (error) {
         console.error('Auth initialization error:', error);
-        if (mounted) {
-          setUser(null);
-          setLoading(false);
-        }
+        setUser(null);
+        setLoading(false);
+        setInitialized(true);
       }
     };
 
     initializeAuth();
+  }, [initialized]);
+
+  useEffect(() => {
+    if (!initialized) return; // Don't set up listener until initialized
 
     // Listen for auth changes - but don't cause loops
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
+        // Ignore initial SIGNED_IN event if we already have a user
+        if (event === 'SIGNED_IN' && user) {
+          return;
+        }
         
         // Check for temporary parent login first - don't override it
         const tempParent = localStorage.getItem('tempParentUser');
         if (tempParent) {
           const parentUser = JSON.parse(tempParent);
-          if (mounted) {
-            setUser(parentUser);
-            setLoading(false);
-          }
+          setUser(parentUser);
+          setLoading(false);
           return;
         }
         
@@ -82,32 +84,27 @@ export const useAuth = () => {
           localStorage.removeItem('tempParentUser');
         }
         
-        if (mounted) {
-          if (session?.user) {
-            // Get profile data for the user
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-            
-            setUser({
-              ...session.user,
-              profile
-            });
-          } else {
-            setUser(null);
-          }
-          setLoading(false);
+        if (session?.user) {
+          // Get profile data for the user
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          setUser({
+            ...session.user,
+            profile
+          });
+        } else {
+          setUser(null);
         }
+        setLoading(false);
       }
     );
 
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, []); // Empty dependency array - only run once
+    return () => subscription.unsubscribe();
+  }, [initialized, user]);
 
   // Function to set temporary parent user
   const setParentUser = (parentUser: any) => {
@@ -121,6 +118,7 @@ export const useAuth = () => {
   // Function to clear user (for logout)
   const clearUser = () => {
     localStorage.removeItem('tempParentUser');
+    setInitialized(false);
     setUser(null);
   };
   return { user, loading, setParentUser, clearUser };
