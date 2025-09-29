@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, BookOpen, Settings, LogOut, Copy, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { Users, Plus, BookOpen, Settings, LogOut, Copy, RefreshCw, Eye, EyeOff, Edit } from 'lucide-react';
 import { getTeacherClasses, createClass } from '../lib/teacherApi';
 import { PACKAGE_OPTIONS, calculateClassPrice } from '../types/teacher';
+import ClassManagementPanel from './ClassManagementPanel';
 
 export default function TeacherDashboard() {
   const [teacher, setTeacher] = useState<any>(null);
@@ -9,6 +10,8 @@ export default function TeacherDashboard() {
   const [loading, setLoading] = useState(true);
   const [showCreateClass, setShowCreateClass] = useState(false);
   const [showInviteCode, setShowInviteCode] = useState<string | null>(null);
+  const [selectedClass, setSelectedClass] = useState<any>(null);
+  const [showManagement, setShowManagement] = useState(false);
   const [classFormData, setClassFormData] = useState({
     class_name: '',
     description: '',
@@ -52,6 +55,12 @@ export default function TeacherDashboard() {
   const handleCreateClass = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!teacher) return;
+    
+    // Check if teacher already has 2 classes
+    if (classes.filter(cls => cls.status !== 'completed').length >= 2) {
+      alert('Maksimum 2 aktif sınıf oluşturabilirsiniz');
+      return;
+    }
 
     setCreateLoading(true);
     try {
@@ -82,6 +91,11 @@ export default function TeacherDashboard() {
     navigator.clipboard.writeText(code);
     alert('Davet kodu kopyalandı!');
   };
+  
+  const handleManageClass = (classData: any) => {
+    setSelectedClass(classData);
+    setShowManagement(true);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -111,6 +125,21 @@ export default function TeacherDashboard() {
           <p className="text-gray-600">Yükleniyor...</p>
         </div>
       </div>
+    );
+  }
+  
+  if (showManagement && selectedClass) {
+    return (
+      <ClassManagementPanel
+        classData={selectedClass}
+        onBack={() => {
+          setShowManagement(false);
+          setSelectedClass(null);
+        }}
+        onRefresh={() => {
+          loadClasses(teacher.id);
+        }}
+      />
     );
   }
 
@@ -227,6 +256,16 @@ export default function TeacherDashboard() {
                       {cls.description && (
                         <p className="text-gray-600 text-sm mt-1">{cls.description}</p>
                       )}
+                    </div>
+                    
+                    <div className="border-t pt-4 mt-4">
+                      <button
+                        onClick={() => handleManageClass(cls)}
+                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center justify-center space-x-2"
+                      >
+                        <Edit className="h-4 w-4" />
+                        <span>Sınıfı Yönet</span>
+                      </button>
                     </div>
                     <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(cls.status)}`}>
                       {getStatusText(cls.status)}
@@ -354,6 +393,12 @@ export default function TeacherDashboard() {
 
               <div className="bg-blue-50 p-3 rounded-lg">
                 <div className="text-sm">
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium text-blue-800">Sınıf Limiti:</span>
+                    <span className="text-blue-700">
+                      {classes.filter(cls => cls.status !== 'completed').length}/2 aktif sınıf
+                    </span>
+                  </div>
                   <div className="flex justify-between">
                     <span>Aylık Toplam:</span>
                     <span className="font-semibold">
@@ -379,10 +424,11 @@ export default function TeacherDashboard() {
                 </button>
                 <button
                   type="submit"
-                  disabled={createLoading}
+                  disabled={createLoading || classes.filter(cls => cls.status !== 'completed').length >= 2}
                   className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
                 >
-                  {createLoading ? 'Oluşturuluyor...' : 'Oluştur'}
+                  {createLoading ? 'Oluşturuluyor...' : 
+                   classes.filter(cls => cls.status !== 'completed').length >= 2 ? 'Limit Doldu' : 'Oluştur'}
                 </button>
               </div>
             </form>

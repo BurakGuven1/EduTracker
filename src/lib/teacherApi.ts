@@ -270,3 +270,131 @@ export const leaveClass = async (studentId: string, classId: string) => {
 
   return { data, error };
 };
+
+// Class Management Functions
+export const getClassData = async (classId: string) => {
+  const { data, error } = await supabase
+    .from('classes')
+    .select(`
+      *,
+      teachers(*),
+      class_students(
+        *,
+        students(
+          *,
+          profiles(*)
+        )
+      )
+    `)
+    .eq('id', classId)
+    .single();
+
+  return { data, error };
+};
+
+export const getClassAssignments = async (classId: string) => {
+  const { data, error } = await supabase
+    .from('class_assignments')
+    .select('*')
+    .eq('class_id', classId)
+    .order('due_date', { ascending: true });
+
+  return { data, error };
+};
+
+export const getClassAnnouncements = async (classId: string) => {
+  const { data, error } = await supabase
+    .from('class_announcements')
+    .select('*')
+    .eq('class_id', classId)
+    .order('created_at', { ascending: false });
+
+  return { data, error };
+};
+
+export const getClassExams = async (classId: string) => {
+  const { data, error } = await supabase
+    .from('class_exams')
+    .select(`
+      *,
+      class_exam_results(
+        *,
+        students(
+          *,
+          profiles(*)
+        )
+      )
+    `)
+    .eq('class_id', classId)
+    .order('exam_date', { ascending: false });
+
+  return { data, error };
+};
+
+// Teacher Class Management
+export const addClassAssignment = async (assignmentData: {
+  class_id: string;
+  teacher_id: string;
+  title: string;
+  description?: string;
+  subject: string;
+  due_date: string;
+}) => {
+  const { data, error } = await supabase
+    .from('class_assignments')
+    .insert([assignmentData])
+    .select()
+    .single();
+
+  return { data, error };
+};
+
+export const addClassAnnouncement = async (announcementData: {
+  class_id: string;
+  teacher_id: string;
+  title: string;
+  content: string;
+  type?: 'info' | 'warning' | 'success' | 'error';
+}) => {
+  const { data, error } = await supabase
+    .from('class_announcements')
+    .insert([announcementData])
+    .select()
+    .single();
+
+  return { data, error };
+};
+
+export const addClassExam = async (examData: {
+  class_id: string;
+  teacher_id: string;
+  exam_name: string;
+  exam_type: string;
+  exam_date: string;
+  total_questions?: number;
+}) => {
+  const { data, error } = await supabase
+    .from('class_exams')
+    .insert([examData])
+    .select()
+    .single();
+
+  return { data, error };
+};
+
+export const addClassExamResult = async (resultData: {
+  class_exam_id: string;
+  student_id: string;
+  score: number;
+  correct_answers?: number;
+  wrong_answers?: number;
+  empty_answers?: number;
+}) => {
+  const { data, error } = await supabase
+    .from('class_exam_results')
+    .insert([resultData])
+    .select()
+    .single();
+
+  return { data, error };
+};

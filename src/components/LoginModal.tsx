@@ -10,7 +10,7 @@ interface LoginModalProps {
 }
 
 export default function LoginModal({ isOpen, onClose, onLogin, preselectedPackageId }: LoginModalProps) {
-  const [activeTab, setActiveTab] = useState<'student' | 'parent'>('student');
+  const [activeTab, setActiveTab] = useState<'student' | 'parent' | 'class'>('student');
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [userType, setUserType] = useState<'student' | 'parent'>('student');
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,8 @@ export default function LoginModal({ isOpen, onClose, onLogin, preselectedPackag
     confirmPassword: '',
     grade: '',
     schoolName: '',
-    parentCode: ''
+    parentCode: '',
+    classCode: ''
   });
 
   // Reset loading when modal opens/closes
@@ -45,6 +46,77 @@ export default function LoginModal({ isOpen, onClose, onLogin, preselectedPackag
   };
 
   const handleLogin = async () => {
+    if (activeTab === 'class') {
+      // Class login with invite code
+      if (!formData.classCode.trim()) {
+        alert('Lütfen sınıf kodunu girin');
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        console.log('=== CLASS LOGIN STARTED ===');
+        console.log('Class code:', formData.classCode.trim());
+        
+        // Find class by invite code
+        const { data: classData, error: classError } = await supabase
+          .from('classes')
+          .select(`
+            *,
+            teachers!inner(*)
+          `)
+          .eq('invite_code', formData.classCode.trim().toUpperCase())
+          .single();
+
+        console.log('Class query result:', { classData, classError });
+
+        if (classError || !classData) {
+          throw new Error('Geçersiz sınıf kodu');
+        }
+
+        console.log('Found class:', classData);
+
+        // Create class user object
+        const classUser = {
+          id: `class_${classData.id}`,
+          email: `class_${classData.id}@temp.com`,
+          profile: {
+            id: `class_${classData.id}`,
+            full_name: classData.class_name,
+            role: 'class',
+            email: `class_${classData.id}@temp.com`
+          },
+          isClassLogin: true,
+          classData: classData
+        };
+
+        console.log('=== CLASS USER CREATED ===');
+        console.log('Class user:', classUser);
+
+        // Store in localStorage
+        localStorage.setItem('tempClassUser', JSON.stringify(classUser));
+
+        onLogin(classUser);
+        onClose();
+        setFormData({
+          email: '',
+          password: '',
+          name: '',
+          confirmPassword: '',
+          grade: '',
+          schoolName: '',
+          parentCode: '',
+          classCode: ''
+        });
+        return;
+      } catch (error: any) {
+        console.error('Class login error:', error);
+        alert('Sınıf girişi hatası: ' + (error.message || 'Bilinmeyen hata'));
+        setLoading(false);
+        return;
+      }
+    }
+
     if (activeTab === 'parent') {
       // Parent login with invite code
       if (!formData.parentCode.trim()) {
@@ -192,7 +264,8 @@ export default function LoginModal({ isOpen, onClose, onLogin, preselectedPackag
           confirmPassword: '',
           grade: '',
           schoolName: '',
-          parentCode: ''
+          parentCode: '',
+          classCode: ''
         });
         return;
       } catch (error: any) {
@@ -219,7 +292,8 @@ export default function LoginModal({ isOpen, onClose, onLogin, preselectedPackag
           confirmPassword: '',
           grade: '',
           schoolName: '',
-          parentCode: ''
+          parentCode: '',
+          classCode: ''
         });
       }
     } catch (error: any) {
@@ -314,7 +388,8 @@ export default function LoginModal({ isOpen, onClose, onLogin, preselectedPackag
           confirmPassword: '',
           grade: '',
           schoolName: '',
-          parentCode: ''
+          parentCode: '',
+          classCode: ''
         });
         
         onClose();
@@ -375,20 +450,70 @@ export default function LoginModal({ isOpen, onClose, onLogin, preselectedPackag
               >
                 Veli
               </button>
+              <button
+                onClick={() => setActiveTab('class')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'class'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Sınıf
+              </button>
             </div>
           </div>
           <h2 className="text-2xl font-bold text-gray-900">
-            {activeTab === 'parent' ? 'Veli Girişi' : (isLoginMode ? 'Öğrenci Girişi' : 'Öğrenci Kaydı')}
+            {activeTab === 'parent' ? 'Veli Girişi' : 
+             activeTab === 'class' ? 'Sınıf Girişi' :
+             (isLoginMode ? 'Öğrenci Girişi' : 'Öğrenci Kaydı')}
           </h2>
           <p className="text-gray-600 mt-2">
             {activeTab === 'parent' 
               ? 'Öğrencinizden aldığınız davet kodu ile giriş yapın'
+              : activeTab === 'class'
+              ? 'Öğretmeninizden aldığınız sınıf kodu ile giriş yapın'
               : (isLoginMode ? 'Hesabınıza giriş yapın' : 'Yeni hesap oluşturun')
             }
           </p>
         </div>
 
-        {activeTab === 'parent' ? (
+        {activeTab === 'class' ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Sınıf Kodu
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <input
+                  type="text"
+                  name="classCode"
+                  value={formData.classCode}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center"
+                  placeholder="645A-A006-208D"
+                  maxLength={14}
+                  required
+                />
+              </div>
+            </div>
+            
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Sınıfa giriş yapılıyor...
+                </div>
+              ) : (
+                'Sınıfa Giriş Yap'
+              )}
+            </button>
+          </form>
+        ) : activeTab === 'parent' ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -423,7 +548,7 @@ export default function LoginModal({ isOpen, onClose, onLogin, preselectedPackag
               )}
             </button>
           </form>
-        ) : !isLoginMode && activeTab === 'student' && (
+        ) : !isLoginMode && activeTab === 'student' ? (
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Hesap Türü
@@ -455,9 +580,9 @@ export default function LoginModal({ isOpen, onClose, onLogin, preselectedPackag
               </button>
             </div>
           </div>
-        )}
+        ) : null}
 
-        {activeTab === 'student' && (
+        {activeTab === 'student' ? (
           <form onSubmit={handleSubmit} className="space-y-4">
           {!isLoginMode && (
             <div>
@@ -591,7 +716,7 @@ export default function LoginModal({ isOpen, onClose, onLogin, preselectedPackag
             )}
           </button>
           </form>
-        )}
+        ) : null}
 
         {activeTab === 'student' && (
           <div className="mt-4 text-center">

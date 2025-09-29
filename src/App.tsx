@@ -12,6 +12,7 @@ import StudentDashboard from './components/StudentDashboard';
 import ParentDashboard from './components/ParentDashboard';
 import TeacherLogin from './components/TeacherLogin';
 import TeacherDashboard from './components/TeacherDashboard';
+import ClassDashboard from './components/ClassDashboard';
 
 function App() {
   const { user, loading, setParentUser, clearUser } = useAuth();
@@ -20,6 +21,7 @@ function App() {
   const [currentView, setCurrentView] = useState<'home' | 'dashboard'>('home');
   const [selectedPackageIdForRegistration, setSelectedPackageIdForRegistration] = useState<string | null>(null);
   const [teacherUser, setTeacherUser] = useState<any>(null);
+  const [classUser, setClassUser] = useState<any>(null);
 
   // Check for teacher session on load
   React.useEffect(() => {
@@ -29,6 +31,14 @@ function App() {
       console.log('Teacher session found:', teacherData);
       setTeacherUser(teacherData);
       setCurrentView('dashboard'); // This should trigger dashboard view
+    }
+    
+    const classSession = localStorage.getItem('tempClassUser');
+    if (classSession) {
+      const classData = JSON.parse(classSession);
+      console.log('Class session found:', classData);
+      setClassUser(classData);
+      setCurrentView('dashboard');
     }
   }, []);
 
@@ -85,6 +95,21 @@ function App() {
   }
 
   const renderDashboard = () => {
+    // If class is logged in, show class dashboard
+    if (classUser) {
+      console.log('Rendering class dashboard for:', classUser);
+      return (
+        <ClassDashboard 
+          classData={classUser.classData} 
+          onBack={() => {
+            localStorage.removeItem('tempClassUser');
+            setClassUser(null);
+            setCurrentView('home');
+          }}
+        />
+      );
+    }
+    
     // If teacher is logged in, show teacher dashboard
     if (teacherUser) {
       console.log('Rendering teacher dashboard for:', teacherUser);
@@ -162,7 +187,7 @@ function App() {
 
   return (
     <>
-      {(currentView === 'home' && !teacherUser) && (
+      {(currentView === 'home' && !teacherUser && !classUser) && (
         <Navbar 
           user={user} 
           onStudentParentLogin={() => setShowStudentParentLoginModal(true)}
@@ -171,12 +196,19 @@ function App() {
         />
       )}
       
-      {(currentView === 'home' && !teacherUser) ? renderHomePage() : renderDashboard()}
+      {(currentView === 'home' && !teacherUser && !classUser) ? renderHomePage() : renderDashboard()}
       
       <LoginModal
         isOpen={showStudentParentLoginModal}
         onClose={() => setShowStudentParentLoginModal(false)}
-        onLogin={handleLogin}
+        onLogin={(loginUser) => {
+          if (loginUser?.isClassLogin) {
+            setClassUser(loginUser);
+            setCurrentView('dashboard');
+          } else {
+            handleLogin(loginUser);
+          }
+        }}
         preselectedPackageId={selectedPackageIdForRegistration}
       />
       
