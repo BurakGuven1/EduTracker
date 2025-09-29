@@ -337,7 +337,7 @@ export default function ParentDashboard() {
                 <p className="text-2xl font-bold text-purple-600">{stats.studyHours.toFixed(1)} saat</p>
                 <p className="text-purple-600 text-sm">
                   {selectedChildData.weekly_study_goal 
-                    ? `Hedef: ${selectedChildData.weekly_study_goal.weekly_hours_target} saat (%${stats.studyPercentage})`
+                    ? `Hedef: ${selectedChildData.weekly_study_goal?.weekly_hours_target} saat (%${stats.studyPercentage})`
                     : 'Hedef belirlenmemiş'
                   }
                 </p>
