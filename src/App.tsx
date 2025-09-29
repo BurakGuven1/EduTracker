@@ -10,6 +10,7 @@ import TeacherSection from './components/TeacherSection';
 import LoginModal from './components/LoginModal';
 import StudentDashboard from './components/StudentDashboard';
 import ParentDashboard from './components/ParentDashboard';
+import ExamTopicsSection from './components/ExamTopicsSection';
 import TeacherLogin from './components/TeacherLogin';
 import TeacherDashboard from './components/TeacherDashboard';
 import ClassDashboard from './components/ClassDashboard';
@@ -111,6 +112,7 @@ function App() {
       <Hero onGetStarted={handleGetStarted} />
       <Features />
       <PricingSection onSelectPackage={handleSelectPackage} />
+      <ExamTopicsSection />
       <TeacherSection />
       
       {/* Footer */}
