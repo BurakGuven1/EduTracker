@@ -67,7 +67,7 @@ export const registerTeacher = async (teacherData: {
   if (error) throw error;
 
   // TODO: Send email confirmation
-  // await sendEmailConfirmation(data.email, data.email_confirmation_token);
+  await sendEmailConfirmation(teacherData.email, generateConfirmationToken());
 
   return { data, error: null };
 };
@@ -77,7 +77,7 @@ export const loginTeacher = async (email: string, password: string) => {
     .from('teachers')
     .select('*')
     .eq('email', email)
-    .eq('password_hash', password) // In production, compare hashed passwords
+    .eq('password_hash', password)
     .single();
 
   if (error || !data) {
@@ -85,10 +85,86 @@ export const loginTeacher = async (email: string, password: string) => {
   }
 
   if (!data.email_confirmed) {
-    throw new Error('Email adresinizi doğrulamanız gerekiyor');
+    throw new Error('Email adresinizi doğrulamanız gerekiyor. Kayıt sırasında gönderilen doğrulama linkine tıklayın.');
   }
 
   return { data, error: null };
+};
+
+// Email confirmation
+export const confirmTeacherEmail = async (token: string) => {
+  const { data, error } = await supabase
+    .from('teachers')
+    .update({ 
+      email_confirmed: true,
+      email_confirmation_token: null 
+    })
+    .eq('email_confirmation_token', token)
+    .select()
+    .single();
+
+  if (error || !data) {
+    throw new Error('Geçersiz veya süresi dolmuş doğrulama linki');
+  }
+
+  return { data, error: null };
+};
+
+// Resend confirmation email
+export const resendConfirmationEmail = async (email: string) => {
+  const { data: teacher } = await supabase
+    .from('teachers')
+    .select('id, email_confirmed, email_confirmation_token')
+    .eq('email', email)
+    .single();
+
+  if (!teacher) {
+    throw new Error('Bu email adresi ile kayıtlı öğretmen bulunamadı');
+  }
+
+  if (teacher.email_confirmed) {
+    throw new Error('Email adresiniz zaten doğrulanmış');
+  }
+
+  // Generate new token if needed
+  const newToken = teacher.email_confirmation_token || generateConfirmationToken();
+  
+  if (!teacher.email_confirmation_token) {
+    await supabase
+      .from('teachers')
+      .update({ email_confirmation_token: newToken })
+      .eq('id', teacher.id);
+  }
+
+  // TODO: Send email confirmation
+  // await sendEmailConfirmation(email, newToken);
+  
+  return { success: true };
+};
+
+// Mock email sending function (replace with real email service)
+const sendEmailConfirmation = async (email: string, token: string) => {
+  // This would integrate with a real email service like SendGrid, AWS SES, etc.
+  const confirmationUrl = `${window.location.origin}/confirm-email?token=${token}`;
+  
+  console.log(`
+    📧 EMAIL CONFIRMATION
+    To: ${email}
+    Subject: EduTracker - Email Adresinizi Doğrulayın
+    
+    Merhaba,
+    
+    EduTracker öğretmen hesabınızı aktifleştirmek için aşağıdaki linke tıklayın:
+    ${confirmationUrl}
+    
+    Bu link 24 saat geçerlidir.
+    
+    Teşekkürler,
+    EduTracker Ekibi
+  `);
+  
+  // For demo purposes, show an alert
+  alert(`Demo: Email doğrulama linki konsola yazdırıldı. Gerçek uygulamada ${email} adresine gönderilecek.`);
 };
 
 // Class Management

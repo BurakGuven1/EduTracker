@@ -21,7 +21,15 @@ export default function Navbar({ user, onLogin, onMenuToggle }: NavbarProps) {
             <a href="#features" className="text-gray-700 hover:text-blue-600 transition-colors">Özellikler</a>
             <a href="#pricing" className="text-gray-700 hover:text-blue-600 transition-colors">Paketler</a>
             <a href="#teacher" className="text-gray-700 hover:text-blue-600 transition-colors">Öğretmenler</a>
-            <a href="#contact" className="text-gray-700 hover:text-blue-600 transition-colors">İletişim</a>
+            <button 
+              onClick={() => {
+                const event = new CustomEvent('openTeacherLogin');
+                window.dispatchEvent(event);
+              }}
+              className="text-gray-700 hover:text-green-600 transition-colors font-medium"
+            >
+              Öğretmen Girişi
+            </button>
           </div>
 
           <div className="flex items-center space-x-4">

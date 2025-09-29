@@ -3,13 +3,25 @@ import { Users, BookOpen, TrendingUp, Shield, Star, Calculator } from 'lucide-re
 import { calculateClassPrice } from '../lib/teacherApi';
 import { PACKAGE_OPTIONS } from '../types/teacher';
 import TeacherRegistration from './TeacherRegistration';
+import TeacherLogin from './TeacherLogin';
 
 export default function TeacherSection() {
   const [showRegistration, setShowRegistration] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(PACKAGE_OPTIONS[2]); // Default to 9-month
   const [studentCount, setStudentCount] = useState(30);
 
   const pricing = calculateClassPrice(studentCount, selectedPackage.type);
+
+  // Listen for teacher registration modal trigger
+  React.useEffect(() => {
+    const handleOpenRegistration = () => {
+      setShowRegistration(true);
+    };
+    
+    window.addEventListener('openTeacherRegistration', handleOpenRegistration);
+    return () => window.removeEventListener('openTeacherRegistration', handleOpenRegistration);
+  }, []);
 
   return (
     <div id="teacher" className="py-16 bg-gradient-to-br from-green-50 to-blue-50">
@@ -175,12 +187,20 @@ export default function TeacherSection() {
             Sınıfınızı dijitalleştirin ve öğrencilerinizin başarısını artırın. 
             Kayıt olduktan sonra email doğrulaması yaparak sınıfınızı oluşturabilirsiniz.
           </p>
-          <button
-            onClick={() => setShowRegistration(true)}
-            className="bg-white text-blue-600 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg"
-          >
-            Ücretsiz Öğretmen Kaydı
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => setShowRegistration(true)}
+              className="bg-white text-blue-600 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg"
+            >
+              Ücretsiz Kayıt Ol
+            </button>
+            <button
+              onClick={() => setShowLogin(true)}
+              className="bg-green-700 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-green-800 transition-colors shadow-lg border-2 border-green-500"
+            >
+              Öğretmen Girişi
+            </button>
+          </div>
         </div>
 
         {/* Security & Features */}
@@ -213,7 +233,17 @@ export default function TeacherSection() {
         isOpen={showRegistration}
         onClose={() => setShowRegistration(false)}
         onSuccess={() => {
-          alert('Kayıt başarılı! Email adresinizi doğrulayın.');
+          setShowRegistration(false);
+          alert('Kayıt başarılı! Email adresinize doğrulama linki gönderildi. Linke tıklayarak hesabınızı aktifleştirin.');
+        }}
+      />
+
+      <TeacherLogin
+        isOpen={showLogin}
+        onClose={() => setShowLogin(false)}
+        onSuccess={(teacher) => {
+          alert(`Hoş geldiniz ${teacher.full_name}! Öğretmen panelinize yönlendiriliyorsunuz...`);
+          // TODO: Navigate to teacher dashboard
         }}
       />
     </div>

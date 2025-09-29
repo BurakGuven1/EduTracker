@@ -9,12 +9,24 @@ import TeacherSection from './components/TeacherSection';
 import LoginModal from './components/LoginModal';
 import StudentDashboard from './components/StudentDashboard';
 import ParentDashboard from './components/ParentDashboard';
+import TeacherLogin from './components/TeacherLogin';
 
 function App() {
   const { user, loading, setParentUser, clearUser } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showTeacherLogin, setShowTeacherLogin] = useState(false);
   const [currentView, setCurrentView] = useState<'home' | 'dashboard'>('home');
   const [selectedPackageIdForRegistration, setSelectedPackageIdForRegistration] = useState<string | null>(null);
+
+  // Listen for teacher login modal trigger
+  React.useEffect(() => {
+    const handleOpenTeacherLogin = () => {
+      setShowTeacherLogin(true);
+    };
+    
+    window.addEventListener('openTeacherLogin', handleOpenTeacherLogin);
+    return () => window.removeEventListener('openTeacherLogin', handleOpenTeacherLogin);
+  }, []);
 
   const handleLogin = (loginUser?: any) => {
     console.log('handleLogin called');
@@ -145,6 +157,16 @@ function App() {
         onClose={() => setShowLoginModal(false)}
         onLogin={handleLogin}
         preselectedPackageId={selectedPackageIdForRegistration}
+      />
+      
+      <TeacherLogin
+        isOpen={showTeacherLogin}
+        onClose={() => setShowTeacherLogin(false)}
+        onSuccess={(teacher) => {
+          setShowTeacherLogin(false);
+          alert(`Hoş geldiniz ${teacher.full_name}! Öğretmen panelinize yönlendiriliyorsunuz...`);
+          // TODO: Navigate to teacher dashboard when ready
+        }}
       />
     </>
   );
