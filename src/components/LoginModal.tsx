@@ -21,6 +21,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
     grade: '',
     schoolName: '',
     parentCode: '',
+    classCode: '',
     packageType: 'basic',
     billingCycle: 'monthly'
   });
@@ -194,7 +195,6 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
           grade: '',
           schoolName: '',
           parentCode: '',
-          classCode: '',
           packageType: 'basic',
           billingCycle: 'monthly'
         });
