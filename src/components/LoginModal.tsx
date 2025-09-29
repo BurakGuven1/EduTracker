@@ -26,6 +26,30 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
     billingCycle: 'monthly'
   });
 
+  const packages = [
+    {
+      id: 'basic',
+      name: 'Temel Paket',
+      monthlyPrice: 219.99,
+      yearlyPrice: 2199.99,
+      features: ['Temel özellikler', 'Sınırlı içerik', 'E-posta desteği', 'Mobil uygulama']
+    },
+    {
+      id: 'advanced',
+      name: 'Gelişmiş Paket',
+      monthlyPrice: 319.99,
+      yearlyPrice: 3199.99,
+      features: ['Gelişmiş özellikler', 'Tam içerik', 'Öncelikli destek', 'Mobil uygulama', 'Analitik raporlar']
+    },
+    {
+      id: 'professional',
+      name: 'Profesyonel Paket',
+      monthlyPrice: 499.99,
+      yearlyPrice: 4999.99,
+      features: ['Tüm özellikler', 'Sınırsız içerik', '7/24 destek', 'Mobil uygulama', 'Detaylı analitik', 'Kişisel mentor']
+    }
+  ];
+
   // Reset loading when modal opens/closes
   React.useEffect(() => {
     if (isOpen) {
@@ -195,6 +219,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
           grade: '',
           schoolName: '',
           parentCode: '',
+          classCode: '',
           packageType: 'basic',
           billingCycle: 'monthly'
         });
@@ -224,7 +249,9 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
           grade: '',
           schoolName: '',
           parentCode: '',
-          classCode: ''
+          classCode: '',
+          packageType: 'basic',
+          billingCycle: 'monthly'
         });
       }
     } catch (error: any) {
@@ -591,10 +618,49 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                   value={formData.name}
                   onChange={handleInputChange}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Adınızı giriniz"
+                  placeholder="Adınızı ve soyadınızı giriniz"
                   required
                 />
               </div>
+            </div>
+          )}
+
+          {!isLoginMode && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Paket Seçimi *
+              </label>
+              <select
+                name="packageType"
+                value={formData.packageType}
+                onChange={handleSelectChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              >
+                <option value="">Paket seçin</option>
+                <option value="basic">Temel Paket - 219.99₺/ay</option>
+                <option value="advanced">Gelişmiş Paket - 319.99₺/ay</option>
+                <option value="professional">Profesyonel Paket - 499.99₺/ay</option>
+              </select>
+            </div>
+          )}
+
+          {!isLoginMode && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Ödeme Döngüsü *
+              </label>
+              <select
+                name="billingCycle"
+                value={formData.billingCycle}
+                onChange={handleSelectChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              >
+                <option value="">Ödeme döngüsü seçin</option>
+                <option value="monthly">Aylık Ödeme</option>
+                <option value="yearly">Yıllık Ödeme (Tasarruf edin!)</option>
+              </select>
             </div>
           )}
 
@@ -637,6 +703,27 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                   required
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Sınıf Kodu (Opsiyonel)
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <input
+                    type="text"
+                    name="classCode"
+                    value={formData.classCode}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center"
+                    placeholder="645A-A006-208D (Opsiyonel)"
+                    maxLength={14}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Öğretmeninizden aldığınız sınıf kodunu girebilirsiniz
+                </p>
+              </div>
             </>
           )}
           <div>
@@ -669,7 +756,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                 value={formData.password}
                 onChange={handleInputChange}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="••••••••"
+                placeholder="Şifrenizi giriniz"
                 required
               />
             </div>
@@ -688,13 +775,75 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="••••••••"
+                  placeholder="Şifrenizi tekrar giriniz"
                   required
                 />
               </div>
             </div>
           )}
 
+          {!isLoginMode && formData.packageType && formData.billingCycle && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-semibold text-blue-800 mb-3">Seçilen Paket Detayları</h4>
+              {(() => {
+                const selectedPkg = packages.find(pkg => pkg.id === formData.packageType);
+                if (!selectedPkg) return null;
+                
+                const currentPrice = formData.billingCycle === 'monthly' ? selectedPkg.monthlyPrice : selectedPkg.yearlyPrice;
+                const monthlyEquivalent = formData.billingCycle === 'yearly' ? selectedPkg.yearlyPrice / 12 : selectedPkg.monthlyPrice;
+                const savings = formData.billingCycle === 'yearly' ? (selectedPkg.monthlyPrice * 12) - selectedPkg.yearlyPrice : 0;
+                
+                return (
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium text-blue-900">{selectedPkg.name}</span>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-blue-600">
+                          {currentPrice.toLocaleString()}₺
+                        </div>
+                        <div className="text-sm text-blue-700">
+                          {formData.billingCycle === 'yearly' ? '/yıl' : '/ay'}
+                        </div>
+                        {formData.billingCycle === 'yearly' && (
+                          <div className="text-xs text-green-600">
+                            Aylık {monthlyEquivalent.toFixed(0)}₺'ye denk geliyor
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {savings > 0 && (
+                      <div className="bg-green-100 p-2 rounded text-center">
+                        <div className="text-green-800 font-semibold">
+                          🎉 {savings.toLocaleString()}₺ Tasarruf!
+                        </div>
+                        <div className="text-green-700 text-xs">
+                          Aylık ödemeye göre yıllık %{Math.round((savings / (selectedPkg.monthlyPrice * 12)) * 100)} indirim
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="border-t border-blue-200 pt-3">
+                      <div className="text-sm text-blue-800 font-medium mb-2">Paket Avantajları:</div>
+                      <ul className="text-xs text-blue-700 space-y-1">
+                        {selectedPkg.features.slice(0, 4).map((feature, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="text-green-600 mr-1">✓</span>
+                            {feature}
+                          </li>
+                        ))}
+                        {selectedPkg.features.length > 4 && (
+                          <li className="text-blue-600 font-medium">
+                            +{selectedPkg.features.length - 4} özellik daha...
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
           <button
             type="submit"
             disabled={loading}
