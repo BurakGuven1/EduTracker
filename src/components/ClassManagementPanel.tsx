@@ -162,7 +162,7 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
         </div>
 
         {/* Content */}
-        {contentLoading ? (
+        {loading ? (
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
