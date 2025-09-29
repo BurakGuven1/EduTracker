@@ -310,6 +310,7 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
                 )
               )}
             </div>
+        </div>
       </div>
 
       {/* Forms */}
