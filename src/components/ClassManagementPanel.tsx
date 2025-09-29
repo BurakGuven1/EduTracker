@@ -311,208 +311,208 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
               )}
             </div>
         </div>
+
+        {/* Forms */}
+        {showForm && activeTab === 'assignments' && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-md w-full p-6">
+              <h3 className="text-lg font-semibold mb-4">Yeni Ödev Ekle</h3>
+              <form onSubmit={handleSubmitAssignment} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ödev Başlığı *</label>
+                  <input
+                    type="text"
+                    value={assignmentForm.title}
+                    onChange={(e) => setAssignmentForm(prev => ({ ...prev, title: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ders *</label>
+                  <select
+                    value={assignmentForm.subject}
+                    onChange={(e) => setAssignmentForm(prev => ({ ...prev, subject: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    required
+                  >
+                    <option value="">Ders seçin</option>
+                    {subjects.map(subject => (
+                      <option key={subject} value={subject}>{subject}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Son Teslim Tarihi *</label>
+                  <input
+                    type="date"
+                    value={assignmentForm.due_date}
+                    onChange={(e) => setAssignmentForm(prev => ({ ...prev, due_date: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
+                  <textarea
+                    value={assignmentForm.description}
+                    onChange={(e) => setAssignmentForm(prev => ({ ...prev, description: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    rows={3}
+                  />
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowForm(false)}
+                    className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg"
+                  >
+                    İptal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 bg-blue-600 text-white py-2 rounded-lg disabled:opacity-50"
+                  >
+                    {loading ? 'Ekleniyor...' : 'Ekle'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {showForm && activeTab === 'announcements' && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-md w-full p-6">
+              <h3 className="text-lg font-semibold mb-4">Yeni Duyuru Ekle</h3>
+              <form onSubmit={handleSubmitAnnouncement} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Duyuru Başlığı *</label>
+                  <input
+                    type="text"
+                    value={announcementForm.title}
+                    onChange={(e) => setAnnouncementForm(prev => ({ ...prev, title: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tür</label>
+                  <select
+                    value={announcementForm.type}
+                    onChange={(e) => setAnnouncementForm(prev => ({ ...prev, type: e.target.value as any }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="info">Bilgi</option>
+                    <option value="warning">Uyarı</option>
+                    <option value="success">Başarı</option>
+                    <option value="error">Hata</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">İçerik *</label>
+                  <textarea
+                    value={announcementForm.content}
+                    onChange={(e) => setAnnouncementForm(prev => ({ ...prev, content: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    rows={4}
+                    required
+                  />
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowForm(false)}
+                    className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg"
+                  >
+                    İptal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 bg-blue-600 text-white py-2 rounded-lg disabled:opacity-50"
+                  >
+                    {loading ? 'Ekleniyor...' : 'Ekle'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {showForm && activeTab === 'exams' && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-md w-full p-6">
+              <h3 className="text-lg font-semibold mb-4">Yeni Sınav Ekle</h3>
+              <form onSubmit={handleSubmitExam} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Sınav Adı *</label>
+                  <input
+                    type="text"
+                    value={examForm.exam_name}
+                    onChange={(e) => setExamForm(prev => ({ ...prev, exam_name: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Sınav Türü *</label>
+                  <select
+                    value={examForm.exam_type}
+                    onChange={(e) => setExamForm(prev => ({ ...prev, exam_type: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    required
+                  >
+                    <option value="">Tür seçin</option>
+                    <option value="TYT">TYT</option>
+                    <option value="AYT">AYT</option>
+                    <option value="LGS">LGS</option>
+                    <option value="Quiz">Quiz</option>
+                    <option value="Yazılı">Yazılı</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Sınav Tarihi *</label>
+                  <input
+                    type="date"
+                    value={examForm.exam_date}
+                    onChange={(e) => setExamForm(prev => ({ ...prev, exam_date: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Toplam Soru Sayısı</label>
+                  <input
+                    type="number"
+                    value={examForm.total_questions}
+                    onChange={(e) => setExamForm(prev => ({ ...prev, total_questions: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    min="1"
+                  />
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowForm(false)}
+                    className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg"
+                  >
+                    İptal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 bg-blue-600 text-white py-2 rounded-lg disabled:opacity-50"
+                  >
+                    {loading ? 'Ekleniyor...' : 'Ekle'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Forms */}
-      {showForm && activeTab === 'assignments' && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Yeni Ödev Ekle</h3>
-            <form onSubmit={handleSubmitAssignment} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ödev Başlığı *</label>
-                <input
-                  type="text"
-                  value={assignmentForm.title}
-                  onChange={(e) => setAssignmentForm(prev => ({ ...prev, title: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ders *</label>
-                <select
-                  value={assignmentForm.subject}
-                  onChange={(e) => setAssignmentForm(prev => ({ ...prev, subject: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  required
-                >
-                  <option value="">Ders seçin</option>
-                  {subjects.map(subject => (
-                    <option key={subject} value={subject}>{subject}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Son Teslim Tarihi *</label>
-                <input
-                  type="date"
-                  value={assignmentForm.due_date}
-                  onChange={(e) => setAssignmentForm(prev => ({ ...prev, due_date: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
-                <textarea
-                  value={assignmentForm.description}
-                  onChange={(e) => setAssignmentForm(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  rows={3}
-                />
-              </div>
-              <div className="flex space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg"
-                >
-                  İptal
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg disabled:opacity-50"
-                >
-                  {loading ? 'Ekleniyor...' : 'Ekle'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {showForm && activeTab === 'announcements' && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Yeni Duyuru Ekle</h3>
-            <form onSubmit={handleSubmitAnnouncement} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Duyuru Başlığı *</label>
-                <input
-                  type="text"
-                  value={announcementForm.title}
-                  onChange={(e) => setAnnouncementForm(prev => ({ ...prev, title: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tür</label>
-                <select
-                  value={announcementForm.type}
-                  onChange={(e) => setAnnouncementForm(prev => ({ ...prev, type: e.target.value as any }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                >
-                  <option value="info">Bilgi</option>
-                  <option value="warning">Uyarı</option>
-                  <option value="success">Başarı</option>
-                  <option value="error">Hata</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">İçerik *</label>
-                <textarea
-                  value={announcementForm.content}
-                  onChange={(e) => setAnnouncementForm(prev => ({ ...prev, content: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  rows={4}
-                  required
-                />
-              </div>
-              <div className="flex space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg"
-                >
-                  İptal
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg disabled:opacity-50"
-                >
-                  {loading ? 'Ekleniyor...' : 'Ekle'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {showForm && activeTab === 'exams' && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Yeni Sınav Ekle</h3>
-            <form onSubmit={handleSubmitExam} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sınav Adı *</label>
-                <input
-                  type="text"
-                  value={examForm.exam_name}
-                  onChange={(e) => setExamForm(prev => ({ ...prev, exam_name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sınav Türü *</label>
-                <select
-                  value={examForm.exam_type}
-                  onChange={(e) => setExamForm(prev => ({ ...prev, exam_type: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  required
-                >
-                  <option value="">Tür seçin</option>
-                  <option value="TYT">TYT</option>
-                  <option value="AYT">AYT</option>
-                  <option value="LGS">LGS</option>
-                  <option value="Quiz">Quiz</option>
-                  <option value="Yazılı">Yazılı</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sınav Tarihi *</label>
-                <input
-                  type="date"
-                  value={examForm.exam_date}
-                  onChange={(e) => setExamForm(prev => ({ ...prev, exam_date: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Toplam Soru Sayısı</label>
-                <input
-                  type="number"
-                  value={examForm.total_questions}
-                  onChange={(e) => setExamForm(prev => ({ ...prev, total_questions: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  min="1"
-                />
-              </div>
-              <div className="flex space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg"
-                >
-                  İptal
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg disabled:opacity-50"
-                >
-                  {loading ? 'Ekleniyor...' : 'Ekle'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
