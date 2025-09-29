@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Features from './components/Features';
 import PricingSection from './components/PricingSection';
+import TeacherSection from './components/TeacherSection';
 import LoginModal from './components/LoginModal';
 import StudentDashboard from './components/StudentDashboard';
 import ParentDashboard from './components/ParentDashboard';
@@ -79,6 +80,7 @@ function App() {
       <Hero onGetStarted={handleGetStarted} />
       <Features />
       <PricingSection onSelectPackage={handleSelectPackage} />
+      <TeacherSection />
       
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">

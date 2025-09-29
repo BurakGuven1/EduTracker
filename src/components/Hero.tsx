@@ -26,6 +26,17 @@ export default function Hero({ onGetStarted }: HeroProps) {
             >
               Hemen Başla
             </button>
+            <button 
+              onClick={() => {
+                const teacherSection = document.getElementById('teacher');
+                if (teacherSection) {
+                  teacherSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              className="bg-green-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors shadow-lg"
+            >
+              Öğretmen Kaydı
+            </button>
             <button className="bg-white text-blue-600 px-8 py-3 rounded-lg text-lg font-semibold border-2 border-blue-600 hover:bg-blue-50 transition-colors">
               Demo İzle
             </button>

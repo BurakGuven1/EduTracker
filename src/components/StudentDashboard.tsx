@@ -67,16 +67,29 @@ export default function StudentDashboard() {
       }
 
       setShowGoalForm(false);
-      // Reload weekly data
-      const { data: goal } = await getWeeklyStudyGoal(studentData.id);
-      setWeeklyGoal(goal);
       
-      // Update goal form data to reflect the new goal
-      if (goal) {
-        setGoalFormData({
-          weekly_hours_target: goal.weekly_hours_target.toString()
-        });
-      }
+      // Immediately update local state
+      const updatedGoal = weeklyGoal ? 
+        { ...weeklyGoal, weekly_hours_target: parseInt(goalFormData.weekly_hours_target) } :
+        {
+          id: 'temp-id',
+          student_id: studentData.id,
+          weekly_hours_target: parseInt(goalFormData.weekly_hours_target),
+          start_date: new Date().toISOString().split('T')[0],
+          end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          is_active: true,
+          created_at: new Date().toISOString()
+        };
+      
+      setWeeklyGoal(updatedGoal);
+      
+      // Also reload from database to get the real ID
+      setTimeout(async () => {
+        const { data: goal } = await getWeeklyStudyGoal(studentData.id);
+        if (goal) {
+          setWeeklyGoal(goal);
+        }
+      }, 100);
       
       alert('Haftalık hedef başarıyla kaydedildi!');
     } catch (error) {
