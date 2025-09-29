@@ -233,7 +233,7 @@ export default function TeacherSection() {
         onClose={() => setShowRegistration(false)}
         onSuccess={() => {
           setShowRegistration(false);
-          alert('Kayıt başarılı! Email adresinize doğrulama linki gönderildi. Linke tıklayarak hesabınızı aktifleştirin.');
+          alert('Kayıt başarılı! Artık giriş yapabilirsiniz.');
         }}
       />
 

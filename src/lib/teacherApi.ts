@@ -58,16 +58,13 @@ export const registerTeacher = async (teacherData: {
       full_name: teacherData.full_name,
       phone: teacherData.phone,
       school_name: teacherData.school_name,
-      email_confirmed: false, // Will be true after email verification
-      email_confirmation_token: generateConfirmationToken()
+      email_confirmed: true // Simplified - no email verification needed
     }])
     .select()
     .single();
 
   if (error) throw error;
 
-  // TODO: Send email confirmation
-  await sendEmailConfirmation(teacherData.email, generateConfirmationToken());
 
   return { data, error: null };
 };
@@ -84,88 +81,10 @@ export const loginTeacher = async (email: string, password: string) => {
     throw new Error('Email veya şifre hatalı');
   }
 
-  if (!data.email_confirmed) {
-    throw new Error('Email adresinizi doğrulamanız gerekiyor. Kayıt sırasında gönderilen doğrulama linkine tıklayın.');
-  }
 
   return { data, error: null };
 };
 
-// Email confirmation
-export const confirmTeacherEmail = async (token: string) => {
-  const { data, error } = await supabase
-    .from('teachers')
-    .update({ 
-      email_confirmed: true,
-      email_confirmation_token: null 
-    })
-    .eq('email_confirmation_token', token)
-    .select()
-    .single();
-
-  if (error || !data) {
-    throw new Error('Geçersiz veya süresi dolmuş doğrulama linki');
-  }
-
-  return { data, error: null };
-};
-
-// Resend confirmation email
-export const resendConfirmationEmail = async (email: string) => {
-  const { data: teacher } = await supabase
-    .from('teachers')
-    .select('id, email_confirmed, email_confirmation_token')
-    .eq('email', email)
-    .single();
-
-  if (!teacher) {
-    throw new Error('Bu email adresi ile kayıtlı öğretmen bulunamadı');
-  }
-
-  if (teacher.email_confirmed) {
-    throw new Error('Email adresiniz zaten doğrulanmış');
-  }
-
-  // Generate new token if needed
-  const newToken = teacher.email_confirmation_token || generateConfirmationToken();
-  
-  if (!teacher.email_confirmation_token) {
-    await supabase
-      .from('teachers')
-      .update({ email_confirmation_token: newToken })
-      .eq('id', teacher.id);
-  }
-
-  // TODO: Send email confirmation
-  // await sendEmailConfirmation(email, newToken);
-  
-  return { success: true };
-};
-
-// Mock email sending function (replace with real email service)
-const sendEmailConfirmation = async (email: string, token: string) => {
-  // This would integrate with a real email service like SendGrid, AWS SES, etc.
-  const confirmationUrl = `${window.location.origin}/confirm-email?token=${token}`;
-  
-  console.log(`
-    📧 EMAIL CONFIRMATION
-    To: ${email}
-    Subject: EduTracker - Email Adresinizi Doğrulayın
-    
-    Merhaba,
-    
-    EduTracker öğretmen hesabınızı aktifleştirmek için aşağıdaki linke tıklayın:
-    ${confirmationUrl}
-    
-    Bu link 24 saat geçerlidir.
-    
-    Teşekkürler,
-    EduTracker Ekibi
-  `);
-  
-  // For demo purposes, show an alert
-  alert(`Demo: Email doğrulama linki konsola yazdırıldı. Gerçek uygulamada ${email} adresine gönderilecek.`);
-};
 
 // Class Management
 export const createClass = async (classData: {
@@ -175,17 +94,6 @@ export const createClass = async (classData: {
   student_capacity: number;
   package_type: 'monthly' | '3_months' | '9_months';
 }) => {
-  // Validate teacher email confirmation
-  const { data: teacher } = await supabase
-    .from('teachers')
-    .select('email_confirmed')
-    .eq('id', classData.teacher_id)
-    .single();
-
-  if (!teacher?.email_confirmed) {
-    throw new Error('Email adresinizi doğrulamanız gerekiyor');
-  }
-
   // Validate class name
   if (classData.class_name.length < 3 || classData.class_name.length > 50) {
     throw new Error('Sınıf adı 3-50 karakter arasında olmalıdır');
@@ -224,7 +132,7 @@ export const createClass = async (classData: {
       ...classData,
       price_per_student: pricePerStudent,
       total_price: totalPrice,
-      status: 'pending_payment'
+      status: 'active' // Simplified - no payment verification needed for now
     }])
     .select()
     .single();
@@ -361,9 +269,4 @@ export const leaveClass = async (studentId: string, classId: string) => {
     .single();
 
   return { data, error };
-};
-
-// Utility functions
-const generateConfirmationToken = (): string => {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 };

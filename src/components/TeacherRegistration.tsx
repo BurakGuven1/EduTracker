@@ -72,7 +72,7 @@ export default function TeacherRegistration({ isOpen, onClose, onSuccess }: Teac
         school_name: formData.school_name || undefined
       });
 
-      alert('Kayıt başarılı! Email adresinize doğrulama linki gönderildi.');
+      alert('Kayıt başarılı! Artık giriş yapabilirsiniz.');
       onSuccess();
       onClose();
       
