@@ -275,7 +275,19 @@ export const generateMotivationalMessage = (studentData: any): string => {
 
 // Helper functions
 const calculateDetailedSubjectAverages = (examResults: any[]): Record<string, any> => {
-  const subjects = ['Türkçe', 'Matematik', 'Fen', 'Sosyal'];
+  // Dinamik konu listesi - sınav türüne göre
+  let subjects: string[] = [];
+  
+  // İlk sınavın türüne göre konuları belirle
+  if (examResults.length > 0) {
+    const firstExamType = examResults[0].exam_type;
+    if (firstExamType === 'LGS') {
+      subjects = ['Türkçe', 'Matematik', 'Fen', 'İnkılap', 'İngilizce', 'Din'];
+    } else {
+      subjects = ['Türkçe', 'Matematik', 'Fen', 'Sosyal'];
+    }
+  }
+  
   const averages: Record<string, any> = {};
   
   subjects.forEach(subject => {

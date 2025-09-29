@@ -253,13 +253,18 @@ export default function ExamForm({ isOpen, onClose, studentId, onSuccess, editDa
     const matematikNet = calculateNetScore(formData.lgs_matematik_dogru, formData.lgs_matematik_yanlis);
     const fenNet = calculateNetScore(formData.lgs_fen_dogru, formData.lgs_fen_yanlis);
     const inkilapNet = calculateNetScore(formData.lgs_inkılap_dogru, formData.lgs_inkılap_yanlis);
-    const dinNet = calculateNetScore(formData.lgs_din_dogru, formData.lgs_din_yanlis);
     const ingilizceNet = calculateNetScore(formData.lgs_ingilizce_dogru, formData.lgs_ingilizce_yanlis);
+    const dinNet = calculateNetScore(formData.lgs_din_dogru, formData.lgs_din_yanlis);
     
-    const totalNet = turkceNet + matematikNet + fenNet + inkilapNet + dinNet + ingilizceNet;
-    // LGS için puan hesaplama: Her net ~4.44 puan + 100 taban puan
-    const hamPuan = totalNet * 4.44; // 90 soru x 4.44 = ~400 puan
-    return Math.min(500, Math.max(100, hamPuan + 100)); // 100-500 arası
+    // LGS puan hesaplama: Katsayılı hesaplama
+    // Türkçe, Matematik, Fen: Katsayı 4
+    // İnkılap, İngilizce, Din: Katsayı 1
+    const katsayiliToplam = (turkceNet * 4) + (matematikNet * 4) + (fenNet * 4) + 
+                           (inkilapNet * 1) + (ingilizceNet * 1) + (dinNet * 1);
+    
+    // Ham puan hesaplama (500 üzerinden)
+    const hamPuan = (katsayiliToplam * 500) / 360; // 360 maksimum katsayılı puan
+    return Math.min(500, Math.max(0, hamPuan));
   };
 
   const calculateTotalScore = () => {

@@ -58,6 +58,9 @@ export default function ClassDashboard({ classData, onBack }: ClassDashboardProp
     );
   }
 
+  // Check if this is accessed via hash (from teacher dashboard)
+  const isTeacherView = window.location.hash.includes('class-');
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -74,13 +77,26 @@ export default function ClassDashboard({ classData, onBack }: ClassDashboardProp
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{classData.class_name}</h1>
               <p className="text-gray-600">
-                Öğretmen: {classData.teachers?.full_name}
+                {isTeacherView ? 'Sınıf Görünümü' : `Öğretmen: ${classData.teachers?.full_name}`}
               </p>
               {classData.description && (
                 <p className="text-sm text-gray-500">{classData.description}</p>
               )}
             </div>
           </div>
+          {isTeacherView && (
+            <button
+              onClick={() => {
+                // Navigate to management panel
+                window.location.hash = `#manage-${classData.id}`;
+                window.location.reload();
+              }}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2"
+            >
+              <Settings className="h-4 w-4" />
+              <span>Yönet</span>
+            </button>
+          )}
         </div>
 
         {/* Stats */}
