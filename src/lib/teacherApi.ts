@@ -32,7 +32,7 @@ export const registerTeacher = async (teacherData: {
     .from('teachers')
     .select('id')
     .eq('email', teacherData.email)
-    .single();
+    .maybeSingle();
 
   if (existingTeacher) {
     throw new Error('Bu email adresi zaten kullanılıyor');
@@ -43,7 +43,7 @@ export const registerTeacher = async (teacherData: {
     .from('teachers')
     .select('id')
     .eq('phone', teacherData.phone)
-    .single();
+    .maybeSingle();
 
   if (existingPhone) {
     throw new Error('Bu telefon numarası zaten kullanılıyor');
