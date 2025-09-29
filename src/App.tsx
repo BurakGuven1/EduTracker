@@ -25,11 +25,18 @@ function App() {
   // Check for teacher session on load
   React.useEffect(() => {
     const teacherSession = localStorage.getItem('teacherSession');
+    const classViewerSession = localStorage.getItem('classViewerSession');
+    
     if (teacherSession) {
       const teacherData = JSON.parse(teacherSession);
       console.log('Teacher session found:', teacherData);
       setTeacherUser(teacherData);
       setCurrentView('dashboard'); // This should trigger dashboard view
+    } else if (classViewerSession) {
+      const classData = JSON.parse(classViewerSession);
+      console.log('Class viewer session found:', classData);
+      // Handle class viewer session - could redirect to class view
+      // For now, we'll stay on home page but with access to premium features
     }
   }, []);
 
