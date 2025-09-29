@@ -28,7 +28,7 @@ function App() {
       const teacherData = JSON.parse(teacherSession);
       console.log('Teacher session found:', teacherData);
       setTeacherUser(teacherData);
-      setCurrentView('dashboard');
+      setCurrentView('dashboard'); // This should trigger dashboard view
     }
   }, []);
 
@@ -162,7 +162,7 @@ function App() {
 
   return (
     <>
-      {(currentView === 'home' || !user) && (
+      {(currentView === 'home' && !teacherUser) && (
         <Navbar 
           user={user} 
           onLogin={() => setShowLoginModal(true)}
@@ -170,7 +170,7 @@ function App() {
         />
       )}
       
-      {currentView === 'home' || !user ? renderHomePage() : renderDashboard()}
+      {(currentView === 'home' && !teacherUser) ? renderHomePage() : renderDashboard()}
       
       <LoginModal
         isOpen={showLoginModal}
@@ -186,6 +186,7 @@ function App() {
           setShowTeacherLogin(false);
           setTeacherUser(teacher);
           setCurrentView('dashboard');
+          console.log('Teacher login success, setting view to dashboard');
         }}
       />
     </>
