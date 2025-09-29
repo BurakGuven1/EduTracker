@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react';
-import { getStudentData, getExamResults, getHomeworks, getAIRecommendations } from '../lib/supabase';
+import { 
+  getStudentData, 
+  getExamResults, 
+  getHomeworks, 
+  getAIRecommendations,
+  getClassAssignmentsForStudent,
+  getClassAnnouncementsForStudent,
+  getClassExamResultsForStudent
+} from '../lib/supabase';
 import { getStudentClasses } from '../lib/teacherApi';
 
 export const useStudentData = (userId: string | undefined) => {
@@ -8,6 +16,9 @@ export const useStudentData = (userId: string | undefined) => {
   const [homeworks, setHomeworks] = useState<any[]>([]);
   const [aiRecommendations, setAIRecommendations] = useState<any[]>([]);
   const [studentClasses, setStudentClasses] = useState<any[]>([]);
+  const [classAssignments, setClassAssignments] = useState<any[]>([]);
+  const [classAnnouncements, setClassAnnouncements] = useState<any[]>([]);
+  const [classExamResults, setClassExamResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchStudentData = async () => {
@@ -46,6 +57,21 @@ export const useStudentData = (userId: string | undefined) => {
         const { data: classes } = await getStudentClasses(student.id);
         console.log('Student classes:', classes);
         setStudentClasses(classes || []);
+
+        // Get class assignments
+        const { data: assignments } = await getClassAssignmentsForStudent(student.id);
+        console.log('Class assignments:', assignments);
+        setClassAssignments(assignments || []);
+
+        // Get class announcements
+        const { data: announcements } = await getClassAnnouncementsForStudent(student.id);
+        console.log('Class announcements:', announcements);
+        setClassAnnouncements(announcements || []);
+
+        // Get class exam results
+        const { data: examResults } = await getClassExamResultsForStudent(student.id);
+        console.log('Class exam results:', examResults);
+        setClassExamResults(examResults || []);
       } else {
         console.log('No student data found');
       }
@@ -67,6 +93,9 @@ export const useStudentData = (userId: string | undefined) => {
     homeworks,
     aiRecommendations,
     studentClasses,
+    classAssignments,
+    classAnnouncements,
+    classExamResults,
     loading,
     refetch: fetchStudentData
   };

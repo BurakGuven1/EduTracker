@@ -227,6 +227,82 @@ export const addStudySession = async (sessionData: any) => {
   return { data, error };
 };
 
+// Class-related functions for students
+export const getClassAssignmentsForStudent = async (studentId: string) => {
+  // Get classes that student is member of
+  const { data: studentClasses } = await supabase
+    .from('class_students')
+    .select('class_id')
+    .eq('student_id', studentId)
+    .eq('status', 'active');
+
+  if (!studentClasses || studentClasses.length === 0) {
+    return { data: [], error: null };
+  }
+
+  const classIds = studentClasses.map(sc => sc.class_id);
+
+  const { data, error } = await supabase
+    .from('class_assignments')
+    .select('*')
+    .in('class_id', classIds)
+    .order('due_date', { ascending: true });
+
+  return { data, error };
+};
+
+export const getClassAnnouncementsForStudent = async (studentId: string) => {
+  // Get classes that student is member of
+  const { data: studentClasses } = await supabase
+    .from('class_students')
+    .select('class_id')
+    .eq('student_id', studentId)
+    .eq('status', 'active');
+
+  if (!studentClasses || studentClasses.length === 0) {
+    return { data: [], error: null };
+  }
+
+  const classIds = studentClasses.map(sc => sc.class_id);
+
+  const { data, error } = await supabase
+    .from('class_announcements')
+    .select('*')
+    .in('class_id', classIds)
+    .order('created_at', { ascending: false });
+
+  return { data, error };
+};
+
+export const getClassExamResultsForStudent = async (studentId: string) => {
+  // Get classes that student is member of
+  const { data: studentClasses } = await supabase
+    .from('class_students')
+    .select('class_id')
+    .eq('student_id', studentId)
+    .eq('status', 'active');
+
+  if (!studentClasses || studentClasses.length === 0) {
+    return { data: [], error: null };
+  }
+
+  const classIds = studentClasses.map(sc => sc.class_id);
+
+  const { data, error } = await supabase
+    .from('class_exam_results')
+    .select(`
+      *,
+      class_exams!inner(
+        *,
+        classes!inner(class_name)
+      )
+    `)
+    .eq('student_id', studentId)
+    .in('class_exams.class_id', classIds)
+    .order('created_at', { ascending: false });
+
+  return { data, error };
+};
 // Weekly Study Goals
 export const getWeeklyStudyGoal = async (studentId: string) => {
   const { data, error } = await supabase

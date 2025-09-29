@@ -43,6 +43,7 @@ export default function StudentDashboard() {
   const [goalLoading, setGoalLoading] = useState(false);
   const [showJoinClassModal, setShowJoinClassModal] = useState(false);
   const [classInviteCodeInput, setClassInviteCodeInput] = useState('');
+  const [showPaymentNotice, setShowPaymentNotice] = useState(true);
 
   const handleCreateWeeklyGoal = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +106,29 @@ export default function StudentDashboard() {
   const [weeklyStudyHours, setWeeklyStudyHours] = useState(0);
   
   const { user } = useAuth();
-  const { studentData, examResults, homeworks, aiRecommendations, studentClasses, loading, refetch } = useStudentData(user?.id);
+  const { 
+    studentData, 
+    examResults, 
+    homeworks, 
+    aiRecommendations, 
+    studentClasses, 
+    classAssignments,
+    classAnnouncements,
+    classExamResults,
+    loading, 
+    refetch 
+  } = useStudentData(user?.id);
+
+  // Calculate package pricing
+  const getPackagePrice = () => {
+    const packageType = user?.profile?.package_type || 'basic';
+    const packages = {
+      basic: { monthly: 200, yearly: 2000, name: 'Temel Paket' },
+      advanced: { monthly: 300, yearly: 3000, name: 'Gelişmiş Paket' },
+      professional: { monthly: 500, yearly: 5000, name: 'Profesyonel Paket' }
+    };
+    return packages[packageType as keyof typeof packages] || packages.basic;
+  };
 
   const handleJoinClass = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -482,7 +505,7 @@ export default function StudentDashboard() {
                 <p>Henüz ödev eklenmemiş</p>
               </div>
             ) : (
-              homeworks.slice(0, 4).map((homework) => (
+              [...homeworks, ...classAssignments].slice(0, 4).map((homework, index) => (
               <div key={homework.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center space-x-3">
                   {homework.completed ? (
@@ -494,6 +517,7 @@ export default function StudentDashboard() {
                     <p className="text-sm font-medium">{homework.title}</p>
                     <p className="text-xs text-gray-500">
                       {new Date(homework.due_date).toLocaleDateString('tr-TR')}
+                      {homework.subject && ` • ${homework.subject}`}
                     </p>
                   </div>
                 </div>
@@ -607,13 +631,48 @@ export default function StudentDashboard() {
               Veli Davet Kodu
             </button>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center space-x-2 bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-            <span>Çıkış Yap</span>
-          </button>
+          <div className="flex flex-col items-end space-y-2">
+            <button
+              onClick={handleLogout}
+              className="flex items-center space-x-2 bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Çıkış Yap</span>
+            </button>
+            <div className="text-right">
+              <p className="text-sm font-medium text-gray-900">
+                {getPackagePrice().name}
+              </p>
+              <p className="text-xs text-gray-600">
+                Aylık {getPackagePrice().monthly}₺ / Yıllık {getPackagePrice().yearly}₺
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Notice */}
+        {showPaymentNotice && (
+          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-yellow-800 font-medium">Ödeme Bildirimi</h3>
+                <p className="text-yellow-700 text-sm mt-1">
+                  <strong>{getPackagePrice().name}</strong> seçtiniz. 
+                  Aylık <strong>{getPackagePrice().monthly}₺</strong> veya 
+                  Yıllık <strong>{getPackagePrice().yearly}₺</strong> ödemeniz beklenmektedir.
+                </p>
+                <p className="text-yellow-600 text-xs mt-2">
+                  ⚠️ Ödeme yapılmadığı takdirde hesabınız silinecektir.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowPaymentNotice(false)}
+                className="text-yellow-600 hover:text-yellow-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="flex space-x-1 mb-8">
@@ -659,6 +718,19 @@ export default function StudentDashboard() {
                 <div className="text-center py-8">
                   <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">Henüz hiçbir sınıfa katılmadınız</p>
+                  {classAnnouncements.length > 0 && (
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                      <p className="text-blue-800 text-sm font-medium">Sınıf Duyuruları</p>
+                      <div className="mt-2 space-y-2">
+                        {classAnnouncements.slice(0, 3).map((announcement) => (
+                          <div key={announcement.id} className="text-left p-2 bg-white rounded border">
+                            <p className="font-medium text-sm">{announcement.title}</p>
+                            <p className="text-xs text-gray-600">{announcement.content}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <button 
                     onClick={() => setShowJoinClassModal(true)}
                     className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
@@ -687,10 +759,37 @@ export default function StudentDashboard() {
                     </div>
                     <div className="text-sm text-gray-600">
                       <p>Katılım Tarihi: {new Date(classData.joined_at).toLocaleDateString('tr-TR')}</p>
-                      {classData.classes?.description && (
-                        <p className="mt-1 text-xs">{classData.classes.description}</p>
-                      )}
                     </div>
+                    
+                    {/* Show class assignments for this class */}
+                    {classAssignments.filter(a => a.class_id === classData.class_id).length > 0 && (
+                      <div className="mt-3 p-2 bg-blue-50 rounded">
+                        <p className="text-blue-800 text-xs font-medium mb-1">Sınıf Ödevleri:</p>
+                        {classAssignments
+                          .filter(a => a.class_id === classData.class_id)
+                          .slice(0, 2)
+                          .map((assignment) => (
+                            <div key={assignment.id} className="text-xs text-blue-700">
+                              • {assignment.title} - {new Date(assignment.due_date).toLocaleDateString('tr-TR')}
+                            </div>
+                          ))}
+                      </div>
+                    )}
+
+                    {/* Show class exam results */}
+                    {classExamResults.filter(r => r.class_exams?.class_id === classData.class_id).length > 0 && (
+                      <div className="mt-2 p-2 bg-green-50 rounded">
+                        <p className="text-green-800 text-xs font-medium mb-1">Son Sınav Sonuçlarım:</p>
+                        {classExamResults
+                          .filter(r => r.class_exams?.class_id === classData.class_id)
+                          .slice(0, 2)
+                          .map((result) => (
+                            <div key={result.id} className="text-xs text-green-700">
+                              • {result.class_exams?.exam_name}: {result.score?.toFixed(1) || 'N/A'} puan
+                            </div>
+                          ))}
+                      </div>
+                    )}
                   </div>
                 ))
               )}
@@ -714,6 +813,27 @@ export default function StudentDashboard() {
                 <div className="text-center py-8">
                   <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">Henüz ödev eklenmemiş</p>
+                  {classAssignments.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-gray-700 font-medium mb-2">Sınıf Ödevleri:</p>
+                      {classAssignments.slice(0, 3).map((assignment) => (
+                        <div key={assignment.id} className="p-3 bg-blue-50 rounded-lg mb-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-medium text-blue-900">{assignment.title}</p>
+                              <p className="text-sm text-blue-700">{assignment.subject}</p>
+                              {assignment.description && (
+                                <p className="text-xs text-blue-600 mt-1">{assignment.description}</p>
+                              )}
+                            </div>
+                            <span className="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded">
+                              {new Date(assignment.due_date).toLocaleDateString('tr-TR')}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <button 
                     onClick={() => setShowHomeworkForm(true)}
                     className="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
@@ -722,25 +842,38 @@ export default function StudentDashboard() {
                   </button>
                 </div>
               ) : (
-                homeworks.map((homework) => (
+                [...homeworks, ...classAssignments.map(a => ({...a, isClassAssignment: true}))].map((homework) => (
                 <div key={homework.id} className="flex items-center justify-between p-4 border rounded-lg relative">
                   <div className="flex items-center space-x-3">
-                    <button
-                      onClick={() => handleToggleHomework(homework)}
-                      className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                        homework.completed 
-                          ? 'bg-green-500 border-green-500 text-white' 
-                          : 'border-gray-300 hover:border-green-400'
-                      }`}
-                    >
-                      {homework.completed && <CheckCircle className="h-3 w-3" />}
-                    </button>
+                    {!homework.isClassAssignment && (
+                      <button
+                        onClick={() => handleToggleHomework(homework)}
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                          homework.completed 
+                            ? 'bg-green-500 border-green-500 text-white' 
+                            : 'border-gray-300 hover:border-green-400'
+                        }`}
+                      >
+                        {homework.completed && <CheckCircle className="h-3 w-3" />}
+                      </button>
+                    )}
+                    {homework.isClassAssignment && (
+                      <div className="w-5 h-5 rounded border-2 border-blue-300 bg-blue-100 flex items-center justify-center">
+                        <BookOpen className="h-3 w-3 text-blue-600" />
+                      </div>
+                    )}
                     <div className={homework.completed ? 'opacity-60' : ''}>
                       <p className={`font-medium ${homework.completed ? 'line-through' : ''}`}>
                         {homework.title}
+                        {homework.isClassAssignment && (
+                          <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                            Sınıf Ödevi
+                          </span>
+                        )}
                       </p>
                       <p className="text-sm text-gray-600">
                         Son teslim: {new Date(homework.due_date).toLocaleDateString('tr-TR')}
+                        {homework.subject && ` • ${homework.subject}`}
                       </p>
                       {homework.description && (
                         <p className="text-xs text-gray-500 mt-1">{homework.description}</p>
@@ -750,44 +883,51 @@ export default function StudentDashboard() {
                   
                   <div className="flex items-center space-x-2">
                     <span className={`px-2 py-1 rounded text-xs ${
-                      homework.completed 
+                      homework.isClassAssignment
+                        ? 'bg-blue-100 text-blue-800'
+                        : homework.completed 
                         ? 'bg-green-100 text-green-800'
                         : 'bg-orange-100 text-orange-800'
                     }`}>
-                      {homework.completed ? 'Tamamlandı' : 'Bekliyor'}
+                      {homework.isClassAssignment 
+                        ? 'Sınıf Ödevi' 
+                        : homework.completed ? 'Tamamlandı' : 'Bekliyor'
+                      }
                     </span>
                     
                     {/* Homework Menu */}
-                    <div className="relative">
-                      <button
-                        onClick={() => setShowHomeworkMenu(showHomeworkMenu === homework.id ? null : homework.id)}
-                        className="p-1 hover:bg-gray-100 rounded"
-                      >
-                        <MoreVertical className="h-4 w-4 text-gray-500" />
-                      </button>
-                      
-                      {showHomeworkMenu === homework.id && (
-                        <div className="absolute right-0 top-8 bg-white border rounded-lg shadow-lg z-10 min-w-[120px]">
-                          <button
-                            onClick={() => {
-                              handleToggleHomework(homework);
-                              setShowHomeworkMenu(null);
-                            }}
-                            className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center space-x-2"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                            <span>{homework.completed ? 'Geri Al' : 'Tamamla'}</span>
-                          </button>
-                          <button
-                            onClick={() => { handleDeleteHomework(homework.id); setShowHomeworkMenu(null); }}
-                            className="w-full px-3 py-2 text-left hover:bg-gray-50 text-red-600 flex items-center space-x-2"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span>Sil</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                    {!homework.isClassAssignment && (
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowHomeworkMenu(showHomeworkMenu === homework.id ? null : homework.id)}
+                          className="p-1 hover:bg-gray-100 rounded"
+                        >
+                          <MoreVertical className="h-4 w-4 text-gray-500" />
+                        </button>
+                        
+                        {showHomeworkMenu === homework.id && (
+                          <div className="absolute right-0 top-8 bg-white border rounded-lg shadow-lg z-10 min-w-[120px]">
+                            <button
+                              onClick={() => {
+                                handleToggleHomework(homework);
+                                setShowHomeworkMenu(null);
+                              }}
+                              className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center space-x-2"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                              <span>{homework.completed ? 'Geri Al' : 'Tamamla'}</span>
+                            </button>
+                            <button
+                              onClick={() => { handleDeleteHomework(homework.id); setShowHomeworkMenu(null); }}
+                              className="w-full px-3 py-2 text-left hover:bg-gray-50 text-red-600 flex items-center space-x-2"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span>Sil</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
                 ))

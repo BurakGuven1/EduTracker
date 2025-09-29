@@ -19,9 +19,7 @@ function App() {
   const [showStudentParentLoginModal, setShowStudentParentLoginModal] = useState(false);
   const [showTeacherLoginModal, setShowTeacherLoginModal] = useState(false);
   const [currentView, setCurrentView] = useState<'home' | 'dashboard'>('home');
-  const [selectedPackageIdForRegistration, setSelectedPackageIdForRegistration] = useState<string | null>(null);
   const [teacherUser, setTeacherUser] = useState<any>(null);
-  const [classUser, setClassUser] = useState<any>(null);
 
   // Check for teacher session on load
   React.useEffect(() => {
@@ -31,14 +29,6 @@ function App() {
       console.log('Teacher session found:', teacherData);
       setTeacherUser(teacherData);
       setCurrentView('dashboard'); // This should trigger dashboard view
-    }
-    
-    const classSession = localStorage.getItem('tempClassUser');
-    if (classSession) {
-      const classData = JSON.parse(classSession);
-      console.log('Class session found:', classData);
-      setClassUser(classData);
-      setCurrentView('dashboard');
     }
   }, []);
 
@@ -78,7 +68,6 @@ function App() {
       const price = billingCycle === 'monthly' ? selectedPackage?.monthlyPrice : selectedPackage?.yearlyPrice;
       alert(`${selectedPackage?.name} (${billingCycle === 'monthly' ? 'Aylık' : 'Yıllık'}) - ${price}₺ seçildi! Ödeme sayfasına yönlendiriliyorsunuz...`);
     } else {
-      setSelectedPackageIdForRegistration(packageId);
       setShowStudentParentLoginModal(true);
     }
   };
@@ -95,21 +84,6 @@ function App() {
   }
 
   const renderDashboard = () => {
-    // If class is logged in, show class dashboard
-    if (classUser) {
-      console.log('Rendering class dashboard for:', classUser);
-      return (
-        <ClassDashboard 
-          classData={classUser.classData} 
-          onBack={() => {
-            localStorage.removeItem('tempClassUser');
-            setClassUser(null);
-            setCurrentView('home');
-          }}
-        />
-      );
-    }
-    
     // If teacher is logged in, show teacher dashboard
     if (teacherUser) {
       console.log('Rendering teacher dashboard for:', teacherUser);
@@ -187,7 +161,7 @@ function App() {
 
   return (
     <>
-      {(currentView === 'home' && !teacherUser && !classUser) && (
+      {(currentView === 'home' && !teacherUser) && (
         <Navbar 
           user={user} 
           onStudentParentLogin={() => setShowStudentParentLoginModal(true)}
@@ -196,20 +170,12 @@ function App() {
         />
       )}
       
-      {(currentView === 'home' && !teacherUser && !classUser) ? renderHomePage() : renderDashboard()}
+      {(currentView === 'home' && !teacherUser) ? renderHomePage() : renderDashboard()}
       
       <LoginModal
         isOpen={showStudentParentLoginModal}
         onClose={() => setShowStudentParentLoginModal(false)}
-        onLogin={(loginUser) => {
-          if (loginUser?.isClassLogin) {
-            setClassUser(loginUser);
-            setCurrentView('dashboard');
-          } else {
-            handleLogin(loginUser);
-          }
-        }}
-        preselectedPackageId={selectedPackageIdForRegistration}
+        onLogin={handleLogin}
       />
       
       <TeacherLogin

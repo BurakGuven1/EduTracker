@@ -51,9 +51,9 @@ export default function Navbar({ user, onStudentParentLogin, onTeacherLogin, onM
             )}
             <button
               onClick={onMenuToggle}
-              className="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500"
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
             >
-              <Menu className="h-6 w-6" />
+              Öğretmen Girişi
             </button>
           </div>
         </div>
