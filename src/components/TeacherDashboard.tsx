@@ -379,6 +379,7 @@ export default function TeacherDashboard() {
                       </button>
                     </div>
                   </div>
+                </div>
                   );
                 })()
               ))}
