@@ -669,11 +669,11 @@ export default function StudentDashboard() {
                 onClick={() => setShowPaymentNotice(false)}
                 className="text-yellow-600 hover:text-yellow-800"
               >
-                <X className="h-5 w-5" />
+                ✕
               </button>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="flex space-x-1 mb-8">
           {[
