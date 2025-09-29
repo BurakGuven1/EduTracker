@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Users, BookOpen, TrendingUp, Shield, Star, Calculator } from 'lucide-react';
-import { calculateClassPrice } from '../lib/teacherApi';
-import { PACKAGE_OPTIONS } from '../types/teacher';
+import { PACKAGE_OPTIONS, calculateClassPrice } from '../types/teacher';
 import TeacherRegistration from './TeacherRegistration';
 import TeacherLogin from './TeacherLogin';
 

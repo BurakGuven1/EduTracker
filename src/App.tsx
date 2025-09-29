@@ -11,6 +11,7 @@ import LoginModal from './components/LoginModal';
 import StudentDashboard from './components/StudentDashboard';
 import ParentDashboard from './components/ParentDashboard';
 import TeacherLogin from './components/TeacherLogin';
+import TeacherDashboard from './components/TeacherDashboard';
 
 function App() {
   const { user, loading, setParentUser, clearUser } = useAuth();
@@ -18,6 +19,17 @@ function App() {
   const [showTeacherLogin, setShowTeacherLogin] = useState(false);
   const [currentView, setCurrentView] = useState<'home' | 'dashboard'>('home');
   const [selectedPackageIdForRegistration, setSelectedPackageIdForRegistration] = useState<string | null>(null);
+  const [teacherUser, setTeacherUser] = useState<any>(null);
+
+  // Check for teacher session on load
+  React.useEffect(() => {
+    const teacherSession = localStorage.getItem('teacherSession');
+    if (teacherSession) {
+      const teacherData = JSON.parse(teacherSession);
+      setTeacherUser(teacherData);
+      setCurrentView('dashboard');
+    }
+  }, []);
 
   // Listen for teacher login modal trigger
   React.useEffect(() => {
@@ -72,6 +84,11 @@ function App() {
   }
 
   const renderDashboard = () => {
+    // If teacher is logged in, show teacher dashboard
+    if (teacherUser) {
+      return <TeacherDashboard />;
+    }
+    
     if (!user) {
       console.log('No user in renderDashboard, redirecting to home');
       setCurrentView('home');
@@ -165,8 +182,8 @@ function App() {
         onClose={() => setShowTeacherLogin(false)}
         onSuccess={(teacher) => {
           setShowTeacherLogin(false);
-          alert(`Hoş geldiniz ${teacher.full_name}! Öğretmen panelinize yönlendiriliyorsunuz...`);
-          // TODO: Navigate to teacher dashboard when ready
+          setTeacherUser(teacher);
+          setCurrentView('dashboard');
         }}
       />
     </>

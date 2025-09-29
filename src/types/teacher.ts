@@ -88,3 +88,22 @@ export const PACKAGE_OPTIONS: PackageOption[] = [
 export const MAX_CLASS_CAPACITY = 40;
 export const MIN_CLASS_CAPACITY = 5;
 export const MAX_CLASSES_PER_STUDENT = 3;
+
+export const calculateClassPrice = (studentCount: number, packageType: 'monthly' | '3_months' | '9_months') => {
+  const packageOption = PACKAGE_OPTIONS.find(p => p.type === packageType);
+  if (!packageOption) return { monthlyPrice: 0, totalPrice: 0, originalPrice: 0, savings: 0, pricePerStudent: 0, duration: 0 };
+
+  const monthlyPrice = packageOption.price_per_student * studentCount;
+  const totalPrice = monthlyPrice * packageOption.duration_months;
+  const originalPrice = 40 * studentCount * packageOption.duration_months;
+  const savings = originalPrice - totalPrice;
+
+  return {
+    monthlyPrice,
+    totalPrice,
+    originalPrice,
+    savings,
+    pricePerStudent: packageOption.price_per_student,
+    duration: packageOption.duration_months
+  };
+};

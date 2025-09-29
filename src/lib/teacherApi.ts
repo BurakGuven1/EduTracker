@@ -367,22 +367,3 @@ export const leaveClass = async (studentId: string, classId: string) => {
 const generateConfirmationToken = (): string => {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 };
-
-export const calculateClassPrice = (studentCount: number, packageType: 'monthly' | '3_months' | '9_months') => {
-  const packageOption = PACKAGE_OPTIONS.find(p => p.type === packageType);
-  if (!packageOption) return 0;
-
-  const monthlyPrice = packageOption.price_per_student * studentCount;
-  const totalPrice = monthlyPrice * packageOption.duration_months;
-  const originalPrice = 40 * studentCount * packageOption.duration_months;
-  const savings = originalPrice - totalPrice;
-
-  return {
-    monthlyPrice,
-    totalPrice,
-    originalPrice,
-    savings,
-    pricePerStudent: packageOption.price_per_student,
-    duration: packageOption.duration_months
-  };
-};
