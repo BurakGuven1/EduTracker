@@ -143,12 +143,11 @@ export const createClass = async (classData: {
 };
 
 export const getTeacherClasses = async (teacherId: string) => {
-  // Use service role key to bypass RLS temporarily for this query
   const { data, error } = await supabase
     .from('classes')
     .select(`
       *,
-      class_students!inner (
+      class_students (
         id,
         student_id,
         joined_at,
@@ -158,50 +157,9 @@ export const getTeacherClasses = async (teacherId: string) => {
     .eq('teacher_id', teacherId)
     .order('created_at', { ascending: false });
 
-  // If RLS still causes issues, fallback to simpler query
-  if (error && error.message.includes('infinite recursion')) {
-    console.log('RLS recursion detected, using fallback query');
-    
-    // Get classes first
-    const { data: classesData, error: classesError } = await supabase
-      .from('classes')
-      .select('*')
-      .eq('teacher_id', teacherId)
-      .order('created_at', { ascending: false });
-
-    if (classesError) return { data: null, error: classesError };
-
-    // Get class students separately for each class
-    const classesWithStudents = await Promise.all(
-      (classesData || []).map(async (classItem) => {
-        const { data: studentsData } = await supabase
-          .from('class_students')
-          .select('id, student_id, joined_at, status')
-          .eq('class_id', classItem.id);
-
-        return {
-          ...classItem,
-          class_students: studentsData || []
-        };
-      })
-    );
-
-    return { data: classesWithStudents, error: null };
-  }
-
   return { data, error };
 };
 
-// Backup method - completely separate queries
-export const getTeacherClassesFallback = async (teacherId: string) => {
-  const { data, error } = await supabase
-    .from('classes')
-    .select('*')
-    .eq('teacher_id', teacherId)
-    .order('created_at', { ascending: false });
-
-  return { data, error };
-};
 
 export const joinClassWithCode = async (studentId: string, inviteCode: string) => {
   // Find class by invite code
