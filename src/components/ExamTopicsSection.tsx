@@ -4,10 +4,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 interface ExamTopicsSectionProps {
   user?: any;
-  onUpgrade?: () => void;
+  hasClassViewerSession?: boolean;
 }
 
-// Gerçek sınav verileri
+export default function ExamTopicsSection({ user, hasClassViewerSession = false, onUpgrade }: ExamTopicsSectionProps) {
 const examData = {
   "TYT_Biyoloji": {
     "konular": [
