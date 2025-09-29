@@ -275,32 +275,32 @@ export default function TeacherLogin({ isOpen, onClose, onSuccess }: TeacherLogi
         )}
 
         {loginType === 'teacher' && (
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Hesabınız yok mu?{' '}
-              <button
-                onClick={() => {
-                  onClose();
-                  // Trigger teacher registration modal
-                  const event = new CustomEvent('openTeacherRegistration');
-                  window.dispatchEvent(event);
-                }}
-                className="text-green-600 hover:text-green-700 font-medium"
-              >
-                Öğretmen Kaydı
-              </button>
-            </p>
-          </div>
-        )}
-
-        {loginType === 'teacher' && (
-          <div className="mt-4 p-4 bg-green-50 rounded-lg">
-            <p className="text-green-800 text-sm font-medium mb-2">Demo Hesabı:</p>
-            <div className="text-xs text-green-700 space-y-1">
-              <p>Email: demo@ogretmen.com</p>
-              <p>Şifre: Demo123456</p>
+          <>
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                Hesabınız yok mu?{' '}
+                <button
+                  onClick={() => {
+                    onClose();
+                    // Trigger teacher registration modal
+                    const event = new CustomEvent('openTeacherRegistration');
+                    window.dispatchEvent(event);
+                  }}
+                  className="text-green-600 hover:text-green-700 font-medium"
+                >
+                  Öğretmen Kaydı
+                </button>
+              </p>
             </div>
-          </div>
+
+            <div className="mt-4 p-4 bg-green-50 rounded-lg">
+              <p className="text-green-800 text-sm font-medium mb-2">Demo Hesabı:</p>
+              <div className="text-xs text-green-700 space-y-1">
+                <p>Email: demo@ogretmen.com</p>
+                <p>Şifre: Demo123456</p>
+              </div>
+            </div>
+          </>
         )}
 
         {loginType === 'class' && (
