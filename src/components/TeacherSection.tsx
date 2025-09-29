@@ -240,9 +240,10 @@ export default function TeacherSection() {
       <TeacherLogin
         isOpen={showLogin}
         onClose={() => setShowLogin(false)}
-        onSuccess={(teacher) => {
-          alert(`Hoş geldiniz ${teacher.full_name}! Öğretmen panelinize yönlendiriliyorsunuz...`);
-          // TODO: Navigate to teacher dashboard
+        onSuccess={() => {
+          setShowLogin(false);
+          // Trigger page reload to activate teacher dashboard
+          window.location.reload();
         }}
       />
     </div>

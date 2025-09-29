@@ -26,6 +26,7 @@ function App() {
     const teacherSession = localStorage.getItem('teacherSession');
     if (teacherSession) {
       const teacherData = JSON.parse(teacherSession);
+      console.log('Teacher session found:', teacherData);
       setTeacherUser(teacherData);
       setCurrentView('dashboard');
     }
@@ -86,6 +87,7 @@ function App() {
   const renderDashboard = () => {
     // If teacher is logged in, show teacher dashboard
     if (teacherUser) {
+      console.log('Rendering teacher dashboard for:', teacherUser);
       return <TeacherDashboard />;
     }
     

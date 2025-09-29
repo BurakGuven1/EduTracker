@@ -20,11 +20,14 @@ export default function TeacherDashboard() {
   useEffect(() => {
     // Get teacher from localStorage
     const teacherSession = localStorage.getItem('teacherSession');
+    console.log('TeacherDashboard - checking session:', teacherSession);
     if (teacherSession) {
       const teacherData = JSON.parse(teacherSession);
+      console.log('TeacherDashboard - teacher data:', teacherData);
       setTeacher(teacherData);
       loadClasses(teacherData.id);
     } else {
+      console.log('TeacherDashboard - no session, redirecting to home');
       // Redirect to home if no session
       window.location.href = '/';
     }
