@@ -275,48 +275,25 @@ export default function TeacherLogin({ isOpen, onClose, onSuccess }: TeacherLogi
         )}
 
         {loginType === 'teacher' && (
-          <>
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                Hesabınız yok mu?{' '}
-                <button
-                  onClick={() => {
-                    onClose();
-                    // Trigger teacher registration modal
-                    const event = new CustomEvent('openTeacherRegistration');
-                    window.dispatchEvent(event);
-                  }}
-                  className="text-green-600 hover:text-green-700 font-medium"
-                >
-                  Öğretmen Kaydı
-                </button>
-              </p>
-            </div>
-
-            <div className="mt-4 p-4 bg-green-50 rounded-lg">
-              <p className="text-green-800 text-sm font-medium mb-2">Demo Hesabı:</p>
-              <div className="text-xs text-green-700 space-y-1">
-                <p>Email: demo@ogretmen.com</p>
-                <p>Şifre: Demo123456</p>
-              </div>
-            </div>
-          </>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Hesabınız yok mu?{' '}
+              <button
+                onClick={() => {
+                  onClose();
+                  // Trigger teacher registration modal
+                  const event = new CustomEvent('openTeacherRegistration');
+                  window.dispatchEvent(event);
+                }}
+                className="text-green-600 hover:text-green-700 font-medium"
+              >
+                Öğretmen Kaydı
+              </button>
+            </p>
+          </div>
         )}
 
-        {loginType === 'class' && (
-            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-              <p className="text-blue-800 text-sm font-medium mb-2">Sınıf Kodu Nasıl Alınır?</p>
-              <div className="text-xs text-blue-700 space-y-1">
-                <p>• Öğretmeninizden sınıf davet kodunu isteyin</p>
-                <p>• Kod formatı: ABC1-DEF2-GHI3 şeklindedir</p>
-                <p>• Kodu girdikten sonra sınıf içeriğini görüntüleyebilirsiniz</p>
-              </div>
-            </div>
-        )}
-      </div>
-    </div>
-  );
-}
+        {loginType === 'teacher' && (
           <div className="mt-4 p-4 bg-green-50 rounded-lg">
             <p className="text-green-800 text-sm font-medium mb-2">Demo Hesabı:</p>
             <div className="text-xs text-green-700 space-y-1">
