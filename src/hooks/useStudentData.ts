@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { getStudentData, getExamResults, getHomeworks, getAIRecommendations } from '../lib/supabase';
+import { getStudentClasses } from '../lib/teacherApi';
 
 export const useStudentData = (userId: string | undefined) => {
   const [studentData, setStudentData] = useState<any>(null);
   const [examResults, setExamResults] = useState<any[]>([]);
   const [homeworks, setHomeworks] = useState<any[]>([]);
   const [aiRecommendations, setAIRecommendations] = useState<any[]>([]);
+  const [studentClasses, setStudentClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchStudentData = async () => {
@@ -59,6 +61,7 @@ export const useStudentData = (userId: string | undefined) => {
     examResults,
     homeworks,
     aiRecommendations,
+    studentClasses,
     loading,
     refetch: fetchStudentData
   };

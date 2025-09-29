@@ -3,11 +3,12 @@ import { BookOpen, User, Bell, Menu } from 'lucide-react';
 
 interface NavbarProps {
   user?: any;
-  onLogin: () => void;
+  onStudentParentLogin: () => void;
+  onTeacherLogin: () => void;
   onMenuToggle: () => void;
 }
 
-export default function Navbar({ user, onLogin, onMenuToggle }: NavbarProps) {
+export default function Navbar({ user, onStudentParentLogin, onTeacherLogin, onMenuToggle }: NavbarProps) {
   return (
     <nav className="bg-white shadow-lg border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -21,15 +22,6 @@ export default function Navbar({ user, onLogin, onMenuToggle }: NavbarProps) {
             <a href="#features" className="text-gray-700 hover:text-blue-600 transition-colors">Özellikler</a>
             <a href="#pricing" className="text-gray-700 hover:text-blue-600 transition-colors">Paketler</a>
             <a href="#teacher" className="text-gray-700 hover:text-blue-600 transition-colors">Öğretmenler</a>
-            <button 
-              onClick={() => {
-                const event = new CustomEvent('openTeacherLogin');
-                window.dispatchEvent(event);
-              }}
-              className="text-gray-700 hover:text-green-600 transition-colors font-medium"
-            >
-              Öğretmen Girişi
-            </button>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -42,12 +34,20 @@ export default function Navbar({ user, onLogin, onMenuToggle }: NavbarProps) {
                 </div>
               </>
             ) : (
-              <button
-                onClick={onLogin}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Giriş Yap
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={onStudentParentLogin}
+                  className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                >
+                  Öğrenci / Veli Girişi
+                </button>
+                <button
+                  onClick={onTeacherLogin}
+                  className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                >
+                  Öğretmen Girişi
+                </button>
+              </div>
             )}
             <button
               onClick={onMenuToggle}

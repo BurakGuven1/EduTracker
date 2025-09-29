@@ -176,7 +176,7 @@ export default function TeacherDashboard() {
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Aylık Gelir</p>
+                <p className="text-gray-600 text-sm">Aylık Tutar</p>
                 <p className="text-2xl font-bold text-orange-600">
                   {classes
                     .filter(cls => cls.status === 'active')

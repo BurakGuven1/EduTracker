@@ -15,8 +15,8 @@ import TeacherDashboard from './components/TeacherDashboard';
 
 function App() {
   const { user, loading, setParentUser, clearUser } = useAuth();
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showTeacherLogin, setShowTeacherLogin] = useState(false);
+  const [showStudentParentLoginModal, setShowStudentParentLoginModal] = useState(false);
+  const [showTeacherLoginModal, setShowTeacherLoginModal] = useState(false);
   const [currentView, setCurrentView] = useState<'home' | 'dashboard'>('home');
   const [selectedPackageIdForRegistration, setSelectedPackageIdForRegistration] = useState<string | null>(null);
   const [teacherUser, setTeacherUser] = useState<any>(null);
@@ -35,7 +35,7 @@ function App() {
   // Listen for teacher login modal trigger
   React.useEffect(() => {
     const handleOpenTeacherLogin = () => {
-      setShowTeacherLogin(true);
+      setShowTeacherLoginModal(true);
     };
     
     window.addEventListener('openTeacherLogin', handleOpenTeacherLogin);
@@ -51,14 +51,14 @@ function App() {
     }
     
     setCurrentView('dashboard');
-    setShowLoginModal(false);
+    setShowStudentParentLoginModal(false);
   };
 
   const handleGetStarted = () => {
     if (user) {
       setCurrentView('dashboard');
     } else {
-      setShowLoginModal(true);
+      setShowStudentParentLoginModal(true);
     }
   };
 
@@ -69,7 +69,7 @@ function App() {
       alert(`${selectedPackage?.name} (${billingCycle === 'monthly' ? 'Aylık' : 'Yıllık'}) - ${price}₺ seçildi! Ödeme sayfasına yönlendiriliyorsunuz...`);
     } else {
       setSelectedPackageIdForRegistration(packageId);
-      setShowLoginModal(true);
+      setShowStudentParentLoginModal(true);
     }
   };
 
@@ -165,7 +165,8 @@ function App() {
       {(currentView === 'home' && !teacherUser) && (
         <Navbar 
           user={user} 
-          onLogin={() => setShowLoginModal(true)}
+          onStudentParentLogin={() => setShowStudentParentLoginModal(true)}
+          onTeacherLogin={() => setShowTeacherLoginModal(true)}
           onMenuToggle={() => {}}
         />
       )}
@@ -173,17 +174,17 @@ function App() {
       {(currentView === 'home' && !teacherUser) ? renderHomePage() : renderDashboard()}
       
       <LoginModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
+        isOpen={showStudentParentLoginModal}
+        onClose={() => setShowStudentParentLoginModal(false)}
         onLogin={handleLogin}
         preselectedPackageId={selectedPackageIdForRegistration}
       />
       
       <TeacherLogin
-        isOpen={showTeacherLogin}
-        onClose={() => setShowTeacherLogin(false)}
+        isOpen={showTeacherLoginModal}
+        onClose={() => setShowTeacherLoginModal(false)}
         onSuccess={(teacher) => {
-          setShowTeacherLogin(false);
+          setShowTeacherLoginModal(false);
           setTeacherUser(teacher);
           setCurrentView('dashboard');
           console.log('Teacher login success, setting view to dashboard');

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Plus, TrendingUp, Calendar, Target, Award, Clock, CheckCircle, AlertCircle, LogOut, CreditCard as Edit, Trash2, MoreVertical, Trophy, Star } from 'lucide-react';
+import { BookOpen, Plus, TrendingUp, Calendar, Target, Award, Clock, CheckCircle, AlertCircle, LogOut, CreditCard as Edit, Trash2, MoreVertical, Trophy, Star, Users } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
 import { useStudentData } from '../hooks/useStudentData';
@@ -103,7 +103,7 @@ export default function StudentDashboard() {
   const [weeklyStudyHours, setWeeklyStudyHours] = useState(0);
   
   const { user } = useAuth();
-  const { studentData, examResults, homeworks, aiRecommendations, loading, refetch } = useStudentData(user?.id);
+  const { studentData, examResults, homeworks, aiRecommendations, studentClasses, loading, refetch } = useStudentData(user?.id);
 
   // Load weekly study goal and calculate hours
   React.useEffect(() => {
@@ -603,6 +603,7 @@ export default function StudentDashboard() {
             { key: 'overview', label: 'Genel Bakış', icon: TrendingUp },
             { key: 'exams', label: 'Denemeler', icon: BookOpen },
             { key: 'homeworks', label: 'Ödevler', icon: Calendar },
+            { key: 'classes', label: 'Sınıflarım', icon: Users },
             { key: 'analysis', label: 'AI Analiz', icon: Target },
           ].map(({ key, label, icon: Icon }) => (
             <button
@@ -623,6 +624,61 @@ export default function StudentDashboard() {
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'exams' && renderExams()}
         {activeTab === 'analysis' && renderAnalysis()}
+        {activeTab === 'classes' && (
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">Sınıflarım</h3>
+              <button 
+                onClick={() => setShowJoinClassModal(true)}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-700"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Sınıfa Katıl</span>
+              </button>
+            </div>
+            <div className="space-y-4">
+              {studentClasses.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">Henüz hiçbir sınıfa katılmadınız</p>
+                  <button 
+                    onClick={() => setShowJoinClassModal(true)}
+                    className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                  >
+                    İlk Sınıfa Katıl
+                  </button>
+                </div>
+              ) : (
+                studentClasses.map((classData) => (
+                  <div key={classData.id} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-semibold">{classData.classes?.class_name}</h4>
+                        <p className="text-sm text-gray-600">
+                          Öğretmen: {classData.classes?.teachers?.full_name}
+                        </p>
+                        {classData.classes?.teachers?.school_name && (
+                          <p className="text-xs text-gray-500">
+                            {classData.classes.teachers.school_name}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
+                        Aktif
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      <p>Katılım Tarihi: {new Date(classData.joined_at).toLocaleDateString('tr-TR')}</p>
+                      {classData.classes?.description && (
+                        <p className="mt-1 text-xs">{classData.classes.description}</p>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
         {activeTab === 'homeworks' && (
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <div className="flex justify-between items-center mb-6">
@@ -869,6 +925,55 @@ export default function StudentDashboard() {
                   className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
                 >
                   {goalLoading ? 'Kaydediliyor...' : (weeklyGoal ? 'Güncelle' : 'Belirle')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Join Class Modal */}
+      {showJoinClassModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-4">Sınıfa Katıl</h3>
+            <p className="text-gray-600 mb-4 text-sm">
+              Öğretmeninizden aldığınız davet kodunu girin.
+            </p>
+            <form onSubmit={handleJoinClass} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Davet Kodu
+                </label>
+                <input
+                  type="text"
+                  value={classInviteCodeInput}
+                  onChange={(e) => setClassInviteCodeInput(e.target.value.toUpperCase())}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 font-mono text-center"
+                  placeholder="XXXX-XXXX-XXXX"
+                  maxLength={14}
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Örnek: 645A-A006-208D
+                </p>
+              </div>
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowJoinClassModal(false);
+                    setClassInviteCodeInput('');
+                  }}
+                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                >
+                  Katıl
                 </button>
               </div>
             </form>

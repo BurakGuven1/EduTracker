@@ -110,7 +110,7 @@ export const createClass = async (classData: {
     .select('id')
     .eq('teacher_id', classData.teacher_id)
     .eq('class_name', classData.class_name)
-    .single();
+    .maybeSingle();
 
   if (existingClass) {
     throw new Error('Bu sınıf adını zaten kullanıyorsunuz');
