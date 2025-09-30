@@ -349,7 +349,6 @@ export default function StudentDashboard() {
     .sort((a, b) => new Date(a.exam_date).getTime() - new Date(b.exam_date).getTime())
     .slice(-10) // Last 10 exams
     .map((exam, index) => ({
-      date: new Date(exam.exam_date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' }),
       puan: exam.total_score || 0,
       examType: exam.exam_type,
       examName: exam.exam_name,
@@ -477,7 +476,7 @@ export default function StudentDashboard() {
           <YAxis />
           <Tooltip 
             formatter={(value, name, props) => [
-              ` puan`,
+              `${value} puan`,
               `${props.payload.examName} (${props.payload.examType})`
             ]}
           />
