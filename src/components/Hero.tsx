@@ -61,7 +61,7 @@ export default function Hero({ onGetStarted }: HeroProps) {
             <div className="text-center">
               <Target className="h-12 w-12 text-orange-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-900">Hedef Odaklı</h3>
-              <p className="text-gray-600 text-sm">Kişisel gelişim planları</p>
+              <p className="text-gray-600 text-sm">Kişisel gelişim planları ve Yapay Zeka Önerileri</p>
             </div>
           </div>
         </div>
