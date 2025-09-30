@@ -415,7 +415,7 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
       .map((item: any) => ({
         topic: item.konu,
         yearData: item.yillar,
-        // Sadece availableYears'daki yılları topla
+        // Sadece availableYears'daki yılları topla (selectedYears değil)
         total: availableYears.reduce((sum, year) => sum + (item.yillar[year] || 0), 0)
       }))
       .sort((a, b) => b.total - a.total);
@@ -429,7 +429,7 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
     
     if (!topicData) return [];
 
-    // Sadece availableYears'daki yılları göster
+    // Sadece availableYears'daki yılları göster (selectedYears değil)
     return availableYears.map(year => ({
       year,
       questions: topicData.yillar[year] || 0
@@ -437,7 +437,7 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
   }, [selectedTopic, selectedSubject, availableYears]);
 
   const handleYearToggle = (year: string) => {
-    // Eğer yıl availableYears'da yoksa ve premium değilse, upgrade'i tetikle
+    // Eğer yıl availableYears'da yoksa (premium değilse 2021-2025), upgrade'i tetikle
     if (!availableYears.includes(year)) {
       if (onUpgrade) {
         onUpgrade();
@@ -445,6 +445,7 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
       return;
     }
 
+    // Sadece availableYears'daki yılları seçebilir
     setSelectedYears(prev => 
       prev.includes(year) 
         ? prev.filter(y => y !== year)
