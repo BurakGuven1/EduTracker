@@ -82,7 +82,10 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
       alert('Ödev başarıyla eklendi!');
       setShowForm(false);
       setAssignmentForm({ title: '', description: '', subject: '', due_date: '' });
-      await loadClassContent(); // Reload data instead of page refresh
+      // Refresh the parent component
+      onRefresh();
+      // Also refresh current view by reloading the page
+      window.location.reload();
     } catch (error: any) {
       alert('Ödev ekleme hatası: ' + error.message);
     } finally {
@@ -104,7 +107,10 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
       alert('Duyuru başarıyla eklendi!');
       setShowForm(false);
       setAnnouncementForm({ title: '', content: '', type: 'info' });
-      await loadClassContent(); // Reload data instead of page refresh
+      // Refresh the parent component
+      onRefresh();
+      // Also refresh current view by reloading the page
+      window.location.reload();
     } catch (error: any) {
       alert('Duyuru ekleme hatası: ' + error.message);
     } finally {
@@ -129,7 +135,10 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
       alert('Sınav başarıyla eklendi!');
       setShowForm(false);
       setExamForm({ exam_name: '', exam_type: '', exam_date: '', total_questions: '' });
-      await loadClassContent(); // Reload data instead of page refresh
+      // Refresh the parent component
+      onRefresh();
+      // Also refresh current view by reloading the page
+      window.location.reload();
     } catch (error: any) {
       alert('Sınav ekleme hatası: ' + error.message);
     } finally {
@@ -186,31 +195,32 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
 
         {/* Content */}
         <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold">
-              {activeTab === 'assignments' && 'Ödev Yönetimi'}
-              {activeTab === 'announcements' && 'Duyuru Yönetimi'}
-              {activeTab === 'exams' && 'Sınav Yönetimi'}
-            </h3>
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700"
-            >
-              <Plus className="h-4 w-4" />
-              <span>
-                {activeTab === 'assignments' && 'Yeni Ödev'}
-                {activeTab === 'announcements' && 'Yeni Duyuru'}
-                {activeTab === 'exams' && 'Yeni Sınav'}
-              </span>
-            </button>
-          </div>
-
-          {dataLoading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Veriler yükleniyor...</p>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">
+                {activeTab === 'assignments' && 'Ödev Yönetimi'}
+                {activeTab === 'announcements' && 'Duyuru Yönetimi'}
+                {activeTab === 'exams' && 'Sınav Yönetimi'}
+              </h3>
+              <button
+                onClick={() => setShowForm(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4" />
+                <span>
+                  {activeTab === 'assignments' && 'Yeni Ödev'}
+                  {activeTab === 'announcements' && 'Yeni Duyuru'}
+                  {activeTab === 'exams' && 'Yeni Sınav'}
+                </span>
+              </button>
             </div>
-          ) : (
+
+            {dataLoading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Veriler yükleniyor...</p>
+              </div>
+            ) : (
+            {/* Content List */}
             <div className="space-y-4">
               {activeTab === 'assignments' && (
                 assignments.length === 0 ? (
@@ -333,7 +343,7 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
                 )
               )}
             </div>
-          )}
+            )}
         </div>
 
         {/* Forms */}
