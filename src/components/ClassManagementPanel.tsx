@@ -188,10 +188,25 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
       await loadClassContent();
     } catch (error: any) {
       alert('Dosya yükleme hatası: ' + error.message);
-        // Refresh exam data to show uploaded file
-        loadClassData();
     } finally {
       setUploadLoading(false);
+    }
+  };
+
+  const handleDeleteFile = async (fileId: string) => {
+    if (!confirm('Bu dosyayı silmek istediğinizden emin misiniz?')) return;
+
+    try {
+      const result = await deleteExamFile(fileId);
+      if (result.error) {
+        alert(`Hata: ${result.error.message}`);
+      } else {
+        alert('Dosya başarıyla silindi!');
+        // Refresh exam data
+        loadClassData();
+      }
+    } catch (error: any) {
+      alert(`Hata: ${error.message}`);
     }
   };
 
