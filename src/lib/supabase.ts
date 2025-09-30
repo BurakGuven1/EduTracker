@@ -294,23 +294,11 @@ export const getClassExamResultsForStudent = async (studentId: string) => {
       *,
       class_exams!inner(
         *,
-        classes!inner(class_name),
-        exam_files(*)
+        classes!inner(class_name)
       )
     `)
     .eq('student_id', studentId)
     .in('class_exams.class_id', classIds)
-    .order('created_at', { ascending: false });
-
-  return { data, error };
-};
-
-// Get exam files for students
-export const getExamFilesForStudent = async (examId: string) => {
-  const { data, error } = await supabase
-    .from('exam_files')
-    .select('*')
-    .eq('exam_id', examId)
     .order('created_at', { ascending: false });
 
   return { data, error };

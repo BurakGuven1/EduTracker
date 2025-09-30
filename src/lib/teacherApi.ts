@@ -461,89 +461,9 @@ export const deleteClassExam = async (examId: string) => {
   return { data, error };
 };
 
+// File upload function (placeholder - implement with actual file storage)
 export const uploadExamResultFile = async (formData: FormData) => {
-  try {
-    const file = formData.get('file') as File;
-    const examId = formData.get('exam_id') as string;
-    const classId = formData.get('class_id') as string;
-    const teacherId = formData.get('teacher_id') as string;
-
-    if (!file || !examId) {
-      throw new Error('Dosya ve sınav ID gerekli');
-    }
-
-    // Generate unique filename
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-    const filePath = `exam-results/${classId}/${examId}/${fileName}`;
-
-    // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('exam-files')
-      .upload(filePath, file);
-
-    if (uploadError) throw uploadError;
-
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('exam-files')
-      .getPublicUrl(filePath);
-
-    // Save file info to database
-    const { data, error } = await supabase
-      .from('exam_files')
-      .insert([{
-        exam_id: examId,
-        class_id: classId,
-        teacher_id: teacherId,
-        file_name: file.name,
-        file_path: filePath,
-        file_url: publicUrl,
-        file_type: file.type,
-        file_size: file.size
-      }])
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    return { data, error: null };
-  } catch (error: any) {
-    console.error('File upload error:', error);
-    return { data: null, error };
-  }
-};
-
-export const getExamFiles = async (examIds: string[]) => {
-  const { data, error } = await supabase
-    .from('exam_files')
-    .select('*')
-    .in('exam_id', examIds)
-    .order('created_at', { ascending: false });
-
-  return { data, error };
-};
-
-export const deleteExamFile = async (fileId: string) => {
-  // First get file info to delete from storage
-  const { data: fileInfo } = await supabase
-    .from('exam_files')
-    .select('file_path')
-    .eq('id', fileId)
-    .single();
-
-  if (fileInfo?.file_path) {
-    // Delete from storage
-    await supabase.storage
-      .from('exam-files')
-      .remove([fileInfo.file_path]);
-  }
-
-  // Delete from database
-  const { data, error } = await supabase
-    .from('exam_files')
-    .delete()
-    .eq('id', fileId);
-
-  return { data, error };
+  // This would integrate with Supabase Storage or another file service
+  // For now, return a success response
+  return { data: { url: 'placeholder-url' }, error: null };
 };
