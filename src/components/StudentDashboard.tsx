@@ -481,7 +481,7 @@ export default function StudentDashboard() {
             ]}
           />
           {/* Sadece dot'lar - line kaldırıldı */}
-          <Scatter 
+          <Scatter
             dataKey="puan" 
             fill="#3B82F6" 
             stroke="#3B82F6"
