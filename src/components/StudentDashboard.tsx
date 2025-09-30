@@ -781,37 +781,4 @@ export default function StudentDashboard() {
                           .filter(a => a.class_id === classData.class_id)
                           .slice(0, 3)
                           .map((assignment) => (
-                            <div key={assignment.id} className="text-sm text-blue-700 mb-1 p-2 bg-white rounded border-l-4 border-blue-400">
-                              <p className="font-medium">{assignment.title}</p>
-                              <p className="text-xs text-gray-600">
-                                Son Tarih: {new Date(assignment.due_date).toLocaleDateString('tr-TR')}
-                              </p>
-                            </div>
-                          ))}
-                      </div>
-                    )}
-                    
-                    {/* Show class exam results for this class */}
-                    {classExamResults.filter(r => r.class_exams?.class_id === classData.class_id).length > 0 && (
-                      <div className="mt-3 p-2 bg-green-50 rounded">
-                        <p className="text-green-800 text-sm font-medium mb-2">📊 Sınıf Sınav Sonuçları:</p>
-                        {classExamResults
-                          .filter(r => r.class_exams?.class_id === classData.class_id)
-                          .slice(0, 3)
-                          .map((result) => (
-                            <div key={result.id} className="text-sm text-green-700 mb-1 p-2 bg-white rounded border-l-4 border-green-400">
-                              <p className="font-medium">{result.class_exams?.exam_name}</p>
-                              <p className="text-xs text-gray-600">
-                                Puan: {result.score} | Doğru: {result.correct_answers} | Yanlış: {result.wrong_answers}
-                              </p>
-                            </div>
-                          ))}
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-          )}
+                            <div key={assignment.id} className="text-sm text-blue-700 mb-1 p-2 bg-white rounded border-l
