@@ -790,7 +790,7 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
               <li>• <strong>Ders seçin:</strong> Analiz etmek istediğiniz dersi seçin</li>
               <li>• <strong>Yıl filtreleyin:</strong> Hangi yılları dahil etmek istediğinizi seçin {!isPremium && '(Premium: 2021-2025)'}</li>
               <li>• <strong>Konu arayın:</strong> Belirli bir konuyu bulmak için arama kutusunu kullanın</li>
-              <li>• <strong>Detay görün:</strong> Tablodaki bir konuya tıklayarak yıllık dağılım grafiğini görün</li>
+              <li>• <strong>Detay göün:</strong> Tablodaki bir konuya tıklayarak yıllık dağılım grafiğini görün</li>
             </ul>
           </div>
         </div>
