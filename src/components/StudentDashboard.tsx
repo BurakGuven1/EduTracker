@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BookOpen, Plus, TrendingUp, Calendar, Target, Award, Clock, CheckCircle, AlertCircle, LogOut, CreditCard as Edit, Trash2, MoreVertical, Trophy, Star, Users, X } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { Scatter, ScatterChart } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
 import { useStudentData } from '../hooks/useStudentData';
 import ExamForm from './ExamForm';
@@ -348,7 +349,6 @@ export default function StudentDashboard() {
     .sort((a, b) => new Date(a.exam_date).getTime() - new Date(b.exam_date).getTime())
     .slice(-10) // Last 10 exams
     .map((exam, index) => ({
-      date: new Date(exam.exam_date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' }),
       puan: exam.total_score || 0,
       examType: exam.exam_type,
       examName: exam.exam_name,
@@ -454,49 +454,50 @@ export default function StudentDashboard() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Deneme İlerlemesi</h3>
-            <select
-              value={chartFilter}
-              onChange={(e) => setChartFilter(e.target.value as any)}
-              className="px-3 py-1 border border-gray-300 rounded text-sm"
-            >
-              <option value="all">Tümü</option>
-              <option value="TYT">TYT</option>
-              <option value="AYT">AYT</option>
-              <option value="LGS">LGS</option>
-            </select>
-          </div>
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip 
-                  formatter={(value, name, props) => [
-                    `${value} puan`,
-                    `${props.payload.examName} (${props.payload.examType})`
-                  ]}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="puan" 
-                  stroke="#3B82F6" 
-                  strokeWidth={2} 
-                  name="Puan"
-                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="text-center py-16 text-gray-500">
-              <TrendingUp className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>{chartFilter === 'all' ? 'Grafik için deneme sonucu gerekli' : `${chartFilter} denemesi bulunamadı`}</p>
-            </div>
-          )}
-        </div>
+  <div className="bg-white rounded-lg p-6 shadow-sm">
+    <div className="flex justify-between items-center mb-4">
+      <h3 className="text-lg font-semibold">Deneme İlerlemesi</h3>
+      <select
+        value={chartFilter}
+        onChange={(e) => setChartFilter(e.target.value as any)}
+        className="px-3 py-1 border border-gray-300 rounded text-sm"
+      >
+        <option value="all">Tümü</option>
+        <option value="TYT">TYT</option>
+        <option value="AYT">AYT</option>
+        <option value="LGS">LGS</option>
+      </select>
+    </div>
+    {chartData.length > 0 ? (
+      <ResponsiveContainer width="100%" height={250}>
+        <LineChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="date" />
+          <YAxis />
+          <Tooltip 
+            formatter={(value, name, props) => [
+              `${value} puan`,
+              `${props.payload.examName} (${props.payload.examType})`
+            ]}
+          />
+          {/* Sadece dot'lar - line kaldırıldı */}
+          <Scatter 
+            dataKey="puan" 
+            fill="#3B82F6" 
+            stroke="#3B82F6"
+            strokeWidth={2}
+            r={6}
+            name="Puan"
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    ) : (
+      <div className="text-center py-16 text-gray-500">
+        <TrendingUp className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+        <p>{chartFilter === 'all' ? 'Grafik için deneme sonucu gerekli' : `${chartFilter} denemesi bulunamadı`}</p>
+      </div>
+    )}
+  </div>
 
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Yaklaşan Ödevler</h3>

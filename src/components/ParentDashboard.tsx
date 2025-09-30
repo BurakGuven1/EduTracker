@@ -369,7 +369,7 @@ export default function ParentDashboard() {
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" fontSize={12} />
-                  <YAxis domain={[0, 500]} />
+                  <YAxis domain={[100, 500]} />
                   <Tooltip 
                     formatter={(value, name, props) => [
                       `${value} puan`,
