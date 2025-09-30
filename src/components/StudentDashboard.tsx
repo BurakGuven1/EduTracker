@@ -299,55 +299,51 @@ export default function StudentDashboard() {
   const stats = calculateStats();
 
   // Add study session handler
-  const handleAddStudySession = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!studentData || !studyFormData.hours) return;
+const handleAddStudySession = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!studentData || !studyFormData.hours) return;
 
-    try {
-      const sessionData = {
-        student_id: studentData.id,
-        subject: studyFormData.subject || 'Genel',
-        duration_minutes: parseFloat(studyFormData.hours) * 60,
-        session_date: studyFormData.date,
-        notes: studyFormData.notes
-      };
+  try {
+    const sessionData = {
+      student_id: studentData.id,
+      subject: studyFormData.subject || 'Genel',
+      duration_minutes: parseFloat(studyFormData.hours) * 60,
+      session_date: studyFormData.date,
+      notes: studyFormData.notes
+    };
 
-      const { error } = await addStudySession(sessionData);
-      if (error) throw error;
+    const { error } = await addStudySession(sessionData);
+    if (error) throw error;
 
-      if (weeklyGoal) {
+    // Haftalık çalışma saatlerini yeniden hesapla
+    if (weeklyGoal) {
       await reloadWeeklyStudyHours(weeklyGoal);
     }
+
+    // Update local study data
+    const dayIndex = new Date(studyFormData.date).getDay();
+    const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+    const dayName = dayNames[dayIndex];
     
-    alert('Çalışma oturumu başarıyla eklendi!');
+    setStudyData(prev => prev.map(day => 
+      day.day === dayName 
+        ? { ...day, hours: day.hours + parseFloat(studyFormData.hours) }
+        : day
+    ));
+
+    setShowStudyForm(false);
+    setStudyFormData({
+      date: new Date().toISOString().split('T')[0],
+      hours: '',
+      subject: '',
+      notes: ''
+    });
+    alert('Çalışma seansı eklendi!');
   } catch (error) {
     console.error('Error adding study session:', error);
+    alert('Çalışma seansı eklenirken hata oluştu');
   }
-
-      // Update local study data
-      const dayIndex = new Date(studyFormData.date).getDay();
-      const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
-      const dayName = dayNames[dayIndex];
-      
-      setStudyData(prev => prev.map(day => 
-        day.day === dayName 
-          ? { ...day, hours: day.hours + parseFloat(studyFormData.hours) }
-          : day
-      ));
-
-      setShowStudyForm(false);
-      setStudyFormData({
-        date: new Date().toISOString().split('T')[0],
-        hours: '',
-        subject: '',
-        notes: ''
-      });
-      alert('Çalışma seansı eklendi!');
-    } catch (error) {
-      console.error('Error adding study session:', error);
-      alert('Çalışma seansı eklenirken hata oluştu');
-    }
-  };
+};
 
   // Prepare chart data from real exam results
 const filteredExamResults = chartFilter === 'all' 
