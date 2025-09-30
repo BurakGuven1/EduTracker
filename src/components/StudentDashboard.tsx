@@ -341,30 +341,28 @@ export default function StudentDashboard() {
   };
 
   // Prepare chart data from real exam results
-  const filteredExamResults = chartFilter === 'all' 
-    ? examResults 
-    : examResults.filter(exam => exam.exam_type === chartFilter);
+const filteredExamResults = chartFilter === 'all' 
+  ? examResults 
+  : examResults.filter(exam => exam.exam_type === chartFilter);
 
-  const chartData = filteredExamResults
-    .sort((a, b) => new Date(a.exam_date).getTime() - new Date(b.exam_date).getTime())
-    .slice(-10) // Last 10 exams
-    .map((exam, index) => ({
+const chartData = filteredExamResults
+  .sort((a, b) => new Date(a.exam_date).getTime() - new Date(b.exam_date).getTime())
+  .slice(-10) // Son 10 deneme
+  .map((exam, index) => {
+    // Tarihi formatlamak için yeni bir Date objesi oluştur
+    const date = new Date(exam.exam_date);
+    // Tarihi GG.AA formatında formatla (ör: 25.09)
+    const formattedDate = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+    // Yeni objeyi formatlanmış tarih ile birlikte döndür
+    return {
       puan: exam.total_score || 0,
       examType: exam.exam_type,
       examName: exam.exam_name,
+      date: formattedDate, // <<< EKLENEN SATIR
       color: `hsl(${(index * 36) % 360}, 70%, 50%)`
-    }));
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Veriler yükleniyor...</p>
-        </div>
-      </div>
-    );
-  }
+    };
+  });
 
   const renderOverview = () => (
     <div className="space-y-6">
@@ -472,29 +470,29 @@ export default function StudentDashboard() {
       <ResponsiveContainer width="100%" height={250}>
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis />
+          <XAxis dataKey="date" fontSize={12} />
+          <YAxis domain={[100, 500]} />
           <Tooltip 
             formatter={(value, name, props) => [
               `${value} puan`,
               `${props.payload.examName} (${props.payload.examType})`
             ]}
           />
-          {/* Sadece dot'lar - line kaldırıldı */}
-          <Scatter 
+          <Line 
+            type="monotone" 
             dataKey="puan" 
-            fill="#3B82F6" 
-            stroke="#3B82F6"
-            strokeWidth={2}
-            r={6}
+            stroke="#3B82F6" 
+            strokeWidth={3} 
             name="Puan"
+            dot={{ fill: '#3B82F6', strokeWidth: 2, r: 5 }}
+            activeDot={{ r: 7, stroke: '#3B82F6', strokeWidth: 2 }}
           />
         </LineChart>
       </ResponsiveContainer>
     ) : (
       <div className="text-center py-16 text-gray-500">
         <TrendingUp className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-        <p>{chartFilter === 'all' ? 'Grafik için deneme sonucu gerekli' : `${chartFilter} denemesi bulunamadı`}</p>
+        <p>{chartFilter === 'all' ? 'Grafik için deneme sonucu gerekli' : `${chartFilter} denemesi bulunmuyor`}</p>
       </div>
     )}
   </div>
