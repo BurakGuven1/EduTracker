@@ -472,6 +472,20 @@ export const uploadExamResultFile = async (formData: FormData) => {
       throw new Error('Dosya ve sınav ID gerekli');
     }
 
+    // Check if bucket exists, if not create it
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const examFilesBucket = buckets?.find(bucket => bucket.name === 'exam-files');
+    
+    if (!examFilesBucket) {
+      const { error: bucketError } = await supabase.storage.createBucket('exam-files', {
+        public: true
+      });
+      if (bucketError) {
+        console.error('Bucket creation error:', bucketError);
+        throw new Error('Storage bucket oluşturulamadı');
+      }
+    }
+
     // Generate unique filename
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -482,7 +496,10 @@ export const uploadExamResultFile = async (formData: FormData) => {
       .from('exam-files')
       .upload(filePath, file);
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      throw new Error(`Dosya yüklenemedi: ${uploadError.message}`);
+    }
 
     // Get public URL
     const { data: { publicUrl } } = supabase.storage
@@ -505,12 +522,15 @@ export const uploadExamResultFile = async (formData: FormData) => {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Database error:', error);
+      throw new Error(`Veritabanı hatası: ${error.message}`);
+    }
 
     return { data, error: null };
   } catch (error: any) {
     console.error('File upload error:', error);
-    return { data: null, error };
+    return { data: null, error: error.message || 'Dosya yükleme hatası' };
   }
 };
 
