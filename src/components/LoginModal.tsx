@@ -587,18 +587,6 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                 <GraduationCap className="h-6 w-6 mx-auto mb-2" />
                 <span className="text-sm font-medium">Öğrenci</span>
               </button>
-              <button
-                type="button"
-                onClick={() => setUserType('parent')}
-                className={`p-3 rounded-lg border-2 text-center transition-colors ${
-                  userType === 'parent'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <User className="h-6 w-6 mx-auto mb-2" />
-                <span className="text-sm font-medium">Veli</span>
-              </button>
             </div>
           </div>
         ) : null}
