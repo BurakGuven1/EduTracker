@@ -79,7 +79,7 @@ export default function PricingSection({ onSelectPackage }: PricingSectionProps)
               {billingCycle === 'yearly' && savings > 0 && (
                 <div className="absolute -top-3 right-4">
                   <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                    {savings}₺ Tasarruf
+                    {savings.toFixed(0)}₺ Tasarruf
                   </div>
                 </div>
               )}
