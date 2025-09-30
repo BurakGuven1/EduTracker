@@ -152,28 +152,6 @@ export default function AIInsights({ examResults, studentData }: AIInsightsProps
         </div>
       )}
 
-      {/* Strengths */}
-      {analysis.strengths.length > 0 && (
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="flex items-start mb-4">
-            <div className="bg-green-100 p-2 rounded-full mr-4">
-              <TrendingUp className="h-6 w-6 text-green-600" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-green-900 mb-2">Güçlü Olduğunuz Alanlar</h3>
-              <div className="space-y-2">
-                {analysis.strengths.map((strength: string, index: number) => (
-                  <div key={index} className="flex items-center text-green-800 text-sm">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                    {strength}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Recommendations */}
       {analysis.recommendations.length > 0 && (
         <div className="bg-white rounded-lg p-6 shadow-sm">
