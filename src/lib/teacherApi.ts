@@ -185,3 +185,29 @@ export const joinClassWithCode = async (studentId: string, inviteCode: string) =
 
   // Check if student already in this class
   const { data: existingMembership } = await supabase
+    .from('class_students')
+    .select('id')
+    .eq('class_id', classData.id)
+    .eq('student_id', studentId)
+    .eq('status', 'active')
+    .maybeSingle();
+
+  if (existingMembership) {
+    throw new Error('Bu sınıfa zaten kayıtlısınız');
+  }
+
+  // Add student to class
+  const { data, error } = await supabase
+    .from('class_students')
+    .insert([{
+      class_id: classData.id,
+      student_id: studentId,
+      status: 'active'
+    }])
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return { data, error: null };
+};
