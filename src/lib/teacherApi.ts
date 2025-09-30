@@ -370,6 +370,66 @@ export const deleteClassExam = async (id: string) => {
 };
 
 // File management
+export const uploadExamResultFile = async (formData: FormData) => {
+  try {
+    const file = formData.get('file') as File;
+    const examId = formData.get('exam_id') as string;
+    const classId = formData.get('class_id') as string;
+    const teacherId = formData.get('teacher_id') as string;
+
+    if (!file || !examId || !classId || !teacherId) {
+      throw new Error('Gerekli bilgiler eksik');
+    }
+
+    // Generate unique file path
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `exam-results/${classId}/${examId}/${fileName}`;
+
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('exam-files')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      throw new Error(`Dosya yükleme hatası: ${uploadError.message}`);
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('exam-files')
+      .getPublicUrl(filePath);
+
+    // Save file metadata to database
+    const { data, error } = await supabase
+      .from('exam_files')
+      .insert([{
+        exam_id: examId,
+        class_id: classId,
+        teacher_id: teacherId,
+        file_name: file.name,
+        file_path: filePath,
+        file_url: publicUrl,
+        file_size: file.size,
+        file_type: file.type
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      // If database insert fails, clean up uploaded file
+      await supabase.storage
+        .from('exam-files')
+        .remove([filePath]);
+      throw new Error(`Veritabanı hatası: ${error.message}`);
+    }
+
+    return { data, error: null };
+  } catch (error: any) {
+    throw new Error(`Dosya yükleme hatası: ${error.message}`);
+  }
+};
+
 export const getExamFiles = async (examId: string) => {
   const { data, error } = await supabase
     .from('exam_files')
