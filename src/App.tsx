@@ -169,7 +169,7 @@ function App() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-            <p>&copy; 2024 EduTracker. Tüm hakları saklıdır.</p>
+            <p>&copy; 2024 BaşarıYolu. Tüm hakları saklıdır.</p>
           </div>
         </div>
       </footer>
