@@ -398,3 +398,72 @@ export const addClassExamResult = async (resultData: {
 
   return { data, error };
 };
+
+// Update functions
+export const updateClassAssignment = async (assignmentId: string, updates: any) => {
+  const { data, error } = await supabase
+    .from('class_assignments')
+    .update(updates)
+    .eq('id', assignmentId)
+    .select()
+    .single();
+
+  return { data, error };
+};
+
+export const updateClassAnnouncement = async (announcementId: string, updates: any) => {
+  const { data, error } = await supabase
+    .from('class_announcements')
+    .update(updates)
+    .eq('id', announcementId)
+    .select()
+    .single();
+
+  return { data, error };
+};
+
+export const updateClassExam = async (examId: string, updates: any) => {
+  const { data, error } = await supabase
+    .from('class_exams')
+    .update(updates)
+    .eq('id', examId)
+    .select()
+    .single();
+
+  return { data, error };
+};
+
+// Delete functions
+export const deleteClassAssignment = async (assignmentId: string) => {
+  const { data, error } = await supabase
+    .from('class_assignments')
+    .delete()
+    .eq('id', assignmentId);
+
+  return { data, error };
+};
+
+export const deleteClassAnnouncement = async (announcementId: string) => {
+  const { data, error } = await supabase
+    .from('class_announcements')
+    .delete()
+    .eq('id', announcementId);
+
+  return { data, error };
+};
+
+export const deleteClassExam = async (examId: string) => {
+  const { data, error } = await supabase
+    .from('class_exams')
+    .delete()
+    .eq('id', examId);
+
+  return { data, error };
+};
+
+// File upload function (placeholder - implement with actual file storage)
+export const uploadExamResultFile = async (formData: FormData) => {
+  // This would integrate with Supabase Storage or another file service
+  // For now, return a success response
+  return { data: { url: 'placeholder-url' }, error: null };
+};
