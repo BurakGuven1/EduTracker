@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft, CreditCard as Edit, Trash2, X, Upload, Download, BarChart3 } from 'lucide-react';
+import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft, CreditCard as Edit, Trash2, X, Upload, Download, BarChart3,FileText,Paperclip,Trash2 } from 'lucide-react';
 import { 
   addClassAssignment, 
   addClassAnnouncement, 
@@ -734,7 +734,7 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
                   )}
                 </div>
               </div>
-
+{/* thisss */}
               <div className="mt-8">
   <h4 className="font-semibold mb-4 flex items-center">
     <FileText className="h-5 w-5 mr-2 text-purple-600" />
