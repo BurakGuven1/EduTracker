@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft } from 'lucide-react';
+import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft, Edit, Trash2, BarChart3, X } from 'lucide-react';
 import { addClassAssignment, addClassAnnouncement, addClassExam, addClassExamResult, getClassAssignments, getClassAnnouncements, getClassExams } from '../lib/teacherApi';
 
 interface ClassManagementPanelProps {
@@ -16,6 +16,11 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [exams, setExams] = useState<any[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showResultsModal, setShowResultsModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Load fresh data when component mounts
   useEffect(() => {
@@ -68,6 +73,87 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
     total_questions: ''
   });
 
+  // Handle edit functionality
+  const handleEdit = (item: any, type: 'assignment' | 'announcement' | 'exam') => {
+    setSelectedItem({ ...item, type });
+    
+    if (type === 'assignment') {
+      setAssignmentForm({
+        title: item.title,
+        description: item.description || '',
+        subject: item.subject,
+        due_date: item.due_date
+      });
+    } else if (type === 'announcement') {
+      setAnnouncementForm({
+        title: item.title,
+        content: item.content,
+        type: item.type
+      });
+    } else if (type === 'exam') {
+      setExamForm({
+        exam_name: item.exam_name,
+        exam_type: item.exam_type,
+        exam_date: item.exam_date,
+        total_questions: item.total_questions?.toString() || ''
+      });
+    }
+    
+    setShowEditModal(true);
+  };
+
+  // Handle delete functionality
+  const handleDelete = (item: any, type: 'assignment' | 'announcement' | 'exam') => {
+    setSelectedItem({ ...item, type });
+    setShowDeleteModal(true);
+  };
+
+  // Handle exam results
+  const handleShowResults = (exam: any) => {
+    setSelectedItem(exam);
+    setShowResultsModal(true);
+  };
+
+  // Confirm delete
+  const confirmDelete = async () => {
+    if (!selectedItem) return;
+    
+    setDeleteLoading(true);
+    try {
+      // Here you would call the appropriate delete API
+      // For now, we'll just show an alert
+      alert(`${selectedItem.type} silme işlemi henüz implement edilmemiş`);
+      
+      setShowDeleteModal(false);
+      setSelectedItem(null);
+      await loadClassContent();
+    } catch (error: any) {
+      alert('Silme hatası: ' + error.message);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  // Handle edit submit
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedItem) return;
+    
+    setLoading(true);
+    try {
+      // Here you would call the appropriate update API
+      // For now, we'll just show an alert
+      alert(`${selectedItem.type} düzenleme işlemi henüz implement edilmemiş`);
+      
+      setShowEditModal(false);
+      setSelectedItem(null);
+      await loadClassContent();
+    } catch (error: any) {
+      alert('Düzenleme hatası: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleSubmitAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
