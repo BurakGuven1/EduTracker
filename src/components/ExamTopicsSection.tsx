@@ -407,8 +407,7 @@ export default function ExamTopicsSection({ user, onUpgrade }: ExamTopicsSection
     if (classViewerSession) return true;
     
     // Check if user is viewing via class code
-    const classViewerSession = localStorage.getItem('classViewerSession');
-    if (classViewerSession) return true;
+    if (hasClassViewerSession) return true;
     if (user.isParentLogin && user.connectedStudents) {
       return user.connectedStudents?.some((student: any) =>
         student.profiles?.package_type === 'professional'
