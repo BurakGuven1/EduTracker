@@ -37,9 +37,6 @@ export default function Hero({ onGetStarted }: HeroProps) {
             >
               Öğretmen Kaydı
             </button>
-            <button className="bg-white text-blue-600 px-8 py-3 rounded-lg text-lg font-semibold border-2 border-blue-600 hover:bg-blue-50 transition-colors">
-              Demo İzle
-            </button>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mt-16">
