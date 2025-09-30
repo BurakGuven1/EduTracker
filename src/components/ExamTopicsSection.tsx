@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 interface ExamTopicsSectionProps {
   user?: any;
+  hasClassViewerSession?: boolean;
   onUpgrade?: () => void;
 }
 
@@ -386,7 +387,7 @@ const examData = {
 const years = ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
 const freeYears = ['2018', '2019', '2020']; // Ücretsiz kullanıcılar için
 
-export default function ExamTopicsSection({ user, onUpgrade }: ExamTopicsSectionProps) {
+export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgrade }: ExamTopicsSectionProps) {
   const [selectedSubject, setSelectedSubject] = useState('AYT_Matematik');
   const [selectedYears, setSelectedYears] = useState(freeYears);
   const [searchTerm, setSearchTerm] = useState('');
@@ -395,25 +396,11 @@ export default function ExamTopicsSection({ user, onUpgrade }: ExamTopicsSection
   const subjects = Object.keys(examData);
 
   // Check if user has premium access
-  const hasPremiumAccess = () => {
-    // Premium access for:
-    // 1. Professional package users
-    // 2. Students in classes
-    // Check if user is viewing via class code
-    if (hasClassViewerSession) return true;
-    
-    // Check if user is viewing via class code (passed as prop)
-    if (hasClassViewerSession) return true;
-    if (user.isParentLogin && user.connectedStudents) {
-      return user.connectedStudents?.some((student: any) =>
-        student.profiles?.package_type === 'professional'
-      );
-    }
-    
-    return false;
+  const hasPremiumAccess = (hasClassViewerSession: boolean) => {
+    return user?.profile?.package_type === 'professional' || hasClassViewerSession;
   };
 
-  const isPremium = hasPremiumAccess();
+  const isPremium = hasPremiumAccess(hasClassViewerSession || false);
   const availableYears = isPremium ? years : freeYears;
 
   const filteredTopics = useMemo(() => {
