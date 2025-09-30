@@ -383,39 +383,8 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
                     <p>Henüz sınav eklenmemiş</p>
                   </div>
                 ) : (
-                  exams.map((exam) => (
-                    <div key={exam.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg">{exam.exam_name}</h4>
-                          <p className="text-purple-600 font-medium">{exam.exam_type}</p>
-                          <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
-                            <span>Sınav Tarihi: {new Date(exam.exam_date).toLocaleDateString('tr-TR')}</span>
-                            {exam.total_questions > 0 && (
-                              <span>Soru Sayısı: {exam.total_questions}</span>
-                            )}
-                            <span>Oluşturulma: {new Date(exam.created_at).toLocaleDateString('tr-TR')}</span>
-                          </div>
-                          {exam.class_exam_results && exam.class_exam_results.length > 0 && (
-                            <div className="mt-2 text-sm text-green-600">
-                              {exam.class_exam_results.length} öğrenci sonucu girildi
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex space-x-2">
-                          <button className="text-green-600 hover:text-green-800 px-3 py-1 rounded border border-green-600 hover:bg-green-50">
-                            Sonuçlar
-                          </button>
-                          <button className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-600 hover:bg-blue-50">
-                            Düzenle
-                          </button>
-                          <button className="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600 hover:bg-red-50">
-                            Sil
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
+                  // Exams are now handled above in the combined section
+                  null
                 )
               )}
             </div>
