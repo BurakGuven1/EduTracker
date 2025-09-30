@@ -429,182 +429,148 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10 bg-white rounded-full p-1"
-        >
-          <X className="h-6 w-6" />
-        </button>
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10 bg-white rounded-full p-1"
+      >
+        <X className="h-6 w-6" />
+      </button>
 
-        <div className="text-center mb-6">
-          <div className="flex justify-center mb-4">
-            <div className="bg-gray-100 p-1 rounded-lg">
-              <button
-                onClick={() => setActiveTab('student')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'student'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Öğrenci
-              </button>
-              <button
-                onClick={() => setActiveTab('parent')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'parent'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Veli
-              </button>
+      <div className="text-center mb-6">
+        <div className="flex justify-center mb-4">
+          <div className="bg-gray-100 p-1 rounded-lg">
+            <button
+              onClick={() => setActiveTab('student')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'student'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Öğrenci
+            </button>
+            <button
+              onClick={() => setActiveTab('parent')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'parent'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Veli
+            </button>
+          </div>
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900">
+          {activeTab === 'parent' ? 'Veli Girişi' : (isLoginMode ? 'Öğrenci Girişi' : 'Öğrenci Kaydı')}
+        </h2>
+        <p className="text-gray-600 mt-2">
+          {activeTab === 'parent' 
+            ? 'Öğrencinizden aldığınız davet kodu ile giriş yapın'
+            : (isLoginMode ? 'Hesabınıza giriş yapın' : 'Yeni hesap oluşturun')
+          }
+        </p>
+      </div>
+
+      {activeTab === 'parent' ? (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Davet Kodu
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                type="text"
+                name="parentCode"
+                value={formData.parentCode}
+                onChange={handleInputChange}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Öğrencinizden aldığınız kodu girin"
+                required
+              />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            {activeTab === 'parent' ? 'Veli Girişi' : (isLoginMode ? 'Öğrenci Girişi' : 'Öğrenci Kaydı')}
-          </h2>
-          <p className="text-gray-600 mt-2">
-            {activeTab === 'parent' 
-              ? 'Öğrencinizden aldığınız davet kodu ile giriş yapın'
-              : (isLoginMode ? 'Hesabınıza giriş yapın' : 'Yeni hesap oluşturun')
-            }
-          </p>
-        </div>
-
-        {activeTab === 'parent' ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          
+          {!isLoginMode && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Davet Kodu
+                Sınıf Kodu (Opsiyonel)
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
                   type="text"
-                  name="parentCode"
-                  value={formData.parentCode}
+                  name="classCode"
+                  value={formData.classCode}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Öğrencinizden aldığınız kodu girin"
-                  required
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center"
+                  placeholder="645A-A006-208D (Opsiyonel)"
+                  maxLength={14}
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Öğretmeninizden aldığınız sınıf kodunu girebilirsiniz
+              </p>
             </div>
-            
-            {!isLoginMode && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Sınıf Kodu (Opsiyonel)
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                  <input
-                    type="text"
-                    name="classCode"
-                    value={formData.classCode}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center"
-                    placeholder="645A-A006-208D (Opsiyonel)"
-                    maxLength={14}
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Öğretmeninizden aldığınız sınıf kodunu girebilirsiniz
-                </p>
-              </div>
-            )}
+          )}
 
-            {!isLoginMode && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Paket Seçimi *
-                </label>
-                <select
-                  name="packageType"
-                  value={formData.packageType}
-                  onChange={handleSelectChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="basic">Temel Paket</option>
-                  <option value="advanced">Gelişmiş Paket</option>
-                  <option value="professional">Profesyonel Paket</option>
-                </select>
-              </div>
-            )}
-
-            {!isLoginMode && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ödeme Döngüsü *
-                </label>
-                <select
-                  name="billingCycle"
-                  value={formData.billingCycle}
-                  onChange={handleSelectChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="monthly">Aylık</option>
-                  <option value="yearly">Yıllık (%17 İndirim)</option>
-                </select>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Giriş yapılıyor...
-                </div>
-              ) : (
-                'Veli Girişi Yap'
-              )}
-            </button>
-          </form>
-        ) : !isLoginMode && activeTab === 'student' ? (
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Hesap Türü
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setUserType('student')}
-                className={`p-3 rounded-lg border-2 text-center transition-colors ${
-                  userType === 'student'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+          {!isLoginMode && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Paket Seçimi *
+              </label>
+              <select
+                name="packageType"
+                value={formData.packageType}
+                onChange={handleSelectChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
               >
-                <GraduationCap className="h-6 w-6 mx-auto mb-2" />
-                <span className="text-sm font-medium">Öğrenci</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setUserType('parent')}
-                className={`p-3 rounded-lg border-2 text-center transition-colors ${
-                  userType === 'parent'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <User className="h-6 w-6 mx-auto mb-2" />
-                <span className="text-sm font-medium">Veli</span>
-              </button>
+                <option value="basic">Temel Paket</option>
+                <option value="advanced">Gelişmiş Paket</option>
+                <option value="professional">Profesyonel Paket</option>
+              </select>
             </div>
-          </div>
-        ) : null}
+          )}
 
-        {activeTab === 'student' ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLoginMode && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Ödeme Döngüsü *
+              </label>
+              <select
+                name="billingCycle"
+                value={formData.billingCycle}
+                onChange={handleSelectChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              >
+                <option value="monthly">Aylık</option>
+                <option value="yearly">Yıllık (%17 İndirim)</option>
+              </select>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Giriş yapılıyor...
+              </div>
+            ) : (
+              'Veli Girişi Yap'
+            )}
+          </button>
+        </form>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
           {!isLoginMode && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -858,29 +824,28 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
               isLoginMode ? 'Giriş Yap' : 'Kayıt Ol'
             )}
           </button>
-          </form>
-        ) : null}
+        </form>
+      )}
 
-        {activeTab === 'student' && (
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => setIsLoginMode(!isLoginMode)}
-              className="text-blue-600 hover:text-blue-700 text-sm"
-            >
-              {isLoginMode ? 'Hesabınız yok mu? Kayıt olun' : 'Zaten hesabınız var mı? Giriş yapın'}
-            </button>
-          </div>
-        )}
+      {activeTab === 'student' && (
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => setIsLoginMode(!isLoginMode)}
+            className="text-blue-600 hover:text-blue-700 text-sm"
+          >
+            {isLoginMode ? 'Hesabınız yok mu? Kayıt olun' : 'Zaten hesabınız var mı? Giriş yapın'}
+          </button>
+        </div>
+      )}
 
-        {isLoginMode && (
-          <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-            <p className="text-blue-800 text-sm font-medium mb-2">Demo Hesapları:</p>
-            <div className="text-xs text-blue-700 space-y-1">
-              <p>Öğrenci: student@demo.com / 123456</p>
-            </div>
+      {isLoginMode && (
+        <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+          <p className="text-blue-800 text-sm font-medium mb-2">Demo Hesapları:</p>
+          <div className="text-xs text-blue-700 space-y-1">
+            <p>Öğrenci: student@demo.com / 123456</p>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
-  );
-}
+  </div>
+);
