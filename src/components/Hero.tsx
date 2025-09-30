@@ -55,8 +55,8 @@ export default function Hero({ onGetStarted }: HeroProps) {
             </div>
             <div className="text-center">
               <Users className="h-12 w-12 text-purple-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-900">Veli Takibi</h3>
-              <p className="text-gray-600 text-sm">Çocuğunu kolayca izle</p>
+              <h3 className="font-semibold text-gray-900">Veli ve Öğretmen Takibi</h3>
+              <p className="text-gray-600 text-sm">Öğrencinin başarı yolculuğunu kolayca izle</p>
             </div>
             <div className="text-center">
               <Target className="h-12 w-12 text-orange-600 mx-auto mb-3" />
