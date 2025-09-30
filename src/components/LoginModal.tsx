@@ -570,6 +570,27 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
             </button>
           </form>
         ) : !isLoginMode && activeTab === 'student' ? (
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Hesap Türü
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setUserType('student')}
+                className={`p-3 rounded-lg border-2 text-center transition-colors ${
+                  userType === 'student'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <GraduationCap className="h-6 w-6 mx-auto mb-3" />
+                <span className="text-sm font-medium">Öğrenci</span>
+              </button>
+            </div>
+          </div>
+        ) : null}
+          )}
 
           {!isLoginMode && (
             <div>
