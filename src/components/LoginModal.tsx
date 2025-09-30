@@ -841,9 +841,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
           </div>
         )}
       </div>
-    </div>
-
-    {/* Payment Page */}
+      {/* Payment Page */}
     {registrationData && (
       <PaymentPage
         isOpen={showPayment}
@@ -855,5 +853,6 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
         registrationData={registrationData}
       />
     )}
+    </div>
   );
 }
