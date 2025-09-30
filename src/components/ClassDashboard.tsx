@@ -262,6 +262,59 @@ export default function ClassDashboard({ classData, onBack }: ClassDashboardProp
           </div>
         )}
       </div>
+
+      {/* Student Exam Results Section */}
+      {studentId && (
+        <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart3 className="w-5 h-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-800">Sınav Sonuçlarım</h3>
+          </div>
+          
+          {examFiles.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">
+              Henüz sınav sonucu dosyası yüklenmemiş.
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {examFiles.map((file) => (
+                <div key={file.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-800">
+                        {file.class_exams?.exam_name || 'Sınav'}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {file.class_exams?.classes?.class_name} - {file.class_exams?.classes?.teachers?.full_name}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Dosya: {file.file_name} • {new Date(file.created_at).toLocaleDateString('tr-TR')}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => window.open(file.file_url, '_blank')}
+                        className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
+                      >
+                        <Eye className="w-4 h-4" />
+                        Görüntüle
+                      </button>
+                      <a
+                        href={file.file_url}
+                        download={file.file_name}
+                        className="flex items-center gap-1 px-3 py-1 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors"
+                      >
+                        <Download className="w-4 h-4" />
+                        İndir
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

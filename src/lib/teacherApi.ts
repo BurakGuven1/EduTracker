@@ -472,20 +472,6 @@ export const uploadExamResultFile = async (formData: FormData) => {
       throw new Error('Dosya ve sınav ID gerekli');
     }
 
-    // Check if bucket exists, if not create it
-    const { data: buckets } = await supabase.storage.listBuckets();
-    const examFilesBucket = buckets?.find(bucket => bucket.name === 'exam-files');
-    
-    if (!examFilesBucket) {
-      const { error: bucketError } = await supabase.storage.createBucket('exam-files', {
-        public: true
-      });
-      if (bucketError) {
-        console.error('Bucket creation error:', bucketError);
-        throw new Error('Storage bucket oluşturulamadı');
-      }
-    }
-
     // Generate unique filename
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -566,3 +552,29 @@ export const deleteExamFile = async (fileId: string) => {
     .eq('id', fileId);
 
   return { data, error };
+};
+
+// Student functions for viewing exam files
+export const getStudentExamFiles = async (studentId: string) => {
+  const { data, error } = await supabase
+    .from('exam_files')
+    .select(`
+      *,
+      class_exams (
+        exam_name,
+        exam_type,
+        exam_date,
+        classes (
+          class_name,
+          teachers (
+            full_name
+          )
+        )
+      )
+    `)
+    .eq('class_exams.classes.class_students.student_id', studentId)
+    .eq('class_exams.classes.class_students.status', 'active')
+    .order('created_at', { ascending: false });
+
+  return { data, error };
+};
