@@ -188,6 +188,8 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
       await loadClassContent();
     } catch (error: any) {
       alert('Dosya yükleme hatası: ' + error.message);
+        // Refresh exam data to show uploaded file
+        loadClassData();
     } finally {
       setUploadLoading(false);
     }
