@@ -340,31 +340,28 @@ export default function StudentDashboard() {
     }
   };
 
-  // Prepare chart data from real exam results
   const filteredExamResults = chartFilter === 'all' 
-    ? examResults 
-    : examResults.filter(exam => exam.exam_type === chartFilter);
+  ? examResults 
+  : examResults.filter(exam => exam.exam_type === chartFilter);
 
-  const chartData = filteredExamResults
-    .sort((a, b) => new Date(a.exam_date).getTime() - new Date(b.exam_date).getTime())
-    .slice(-10) // Last 10 exams
-    .map((exam, index) => ({
+const chartData = filteredExamResults
+  .sort((a, b) => new Date(a.exam_date).getTime() - new Date(b.exam_date).getTime())
+  .slice(-10) // Son 10 deneme
+  .map((exam, index) => {
+    // Tarihi formatlamak için yeni bir Date objesi oluştur
+    const date = new Date(exam.exam_date);
+    // Tarihi GG.AA formatında formatla (ör: 25.09)
+    const formattedDate = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+    // Yeni objeyi formatlanmış tarih ile birlikte döndür
+    return {
       puan: exam.total_score || 0,
       examType: exam.exam_type,
       examName: exam.exam_name,
+      date: formattedDate, // <<< EKLENEN SATIR
       color: `hsl(${(index * 36) % 360}, 70%, 50%)`
-    }));
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Veriler yükleniyor...</p>
-        </div>
-      </div>
-    );
-  }
+    };
+  });
 
   const renderOverview = () => (
     <div className="space-y-6">
