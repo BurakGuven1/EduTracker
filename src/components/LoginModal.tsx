@@ -584,7 +584,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <GraduationCap className="h-6 w-6 mx-auto mb-2" />
+                <GraduationCap className="h-6 w-6 mx-auto mb-6" />
                 <span className="text-sm font-medium">Öğrenci</span>
               </button>
             </div>
