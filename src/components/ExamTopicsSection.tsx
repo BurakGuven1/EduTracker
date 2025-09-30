@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, BookOpen, BarChart3, Lock, Crown, Star } from 'lucide-react';
+import { TrendingUp, BookOpen, BarChart3, Lock, Crown, Star, Search } from 'lucide-react';
 
 interface ExamTopicsSectionProps {
   user?: any;
@@ -30,14 +30,14 @@ const examTopics = {
     2025: ['Sözcük Türleri', 'Fiil Çekimi', 'Paragraf', 'Noktalama', 'Anlatım Teknikleri']
   },
   AYT_Matematik: {
-    2018: ['Türev Uygulamaları', 'İntegral Uygulamaları', 'Analitik Geometri', 'Diziler ve Seriler', 'Olasılık'],
-    2019: ['Fonksiyon Analizi', 'Türev', 'İntegral', 'Analitik Geometri', 'İstatistik'],
-    2020: ['Limit ve Süreklilik', 'Türev', 'İntegral', 'Analitik Geometri', 'Olasılık'],
-    2021: ['Fonksiyonlar', 'Türev Uygulamaları', 'İntegral', 'Diziler', 'İstatistik'],
-    2022: ['Limit', 'Türev', 'İntegral Uygulamaları', 'Analitik Geometri', 'Olasılık'],
-    2023: ['Fonksiyon Analizi', 'Türev', 'İntegral', 'Diziler ve Seriler', 'İstatistik'],
-    2024: ['Limit ve Süreklilik', 'Türev Uygulamaları', 'İntegral', 'Analitik Geometri', 'Olasılık'],
-    2025: ['Fonksiyonlar', 'Türev', 'İntegral Uygulamaları', 'Diziler', 'İstatistik']
+    2018: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık'],
+    2019: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık'],
+    2020: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık'],
+    2021: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık'],
+    2022: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık'],
+    2023: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık'],
+    2024: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık'],
+    2025: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık']
   },
   AYT_Fizik: {
     2018: ['Elektrik ve Manyetizma', 'Optik', 'Modern Fizik', 'Dalgalar', 'Termodinamik'],
@@ -91,26 +91,29 @@ const freeYears = ['2018', '2019', '2020']; // Ücretsiz kullanıcılar için
 
 function ExamTopicsSection({ user, hasClassViewerSession = false, onUpgrade }: ExamTopicsSectionProps) {
   const [selectedSubject, setSelectedSubject] = useState('AYT_Matematik');
-  const [selectedYears, setSelectedYears] = useState(['2018', '2019', '2020']);
   const [searchTerm, setSearchTerm] = useState('');
 
   const isPremium = hasPremiumAccess(user, hasClassViewerSession);
   const availableYears = isPremium ? Object.keys(examTopics[selectedSubject as keyof typeof examTopics]) : freeYears;
 
-  // Konu istatistikleri hesaplama
+  // Konu istatistikleri hesaplama - sadece erişilebilir yıllar için
   const calculateTopicStats = () => {
-    const topicCounts: Record<string, number> = {};
+    const topicCounts: Record<string, { count: number; years: string[] }> = {};
     const subjectData = examTopics[selectedSubject as keyof typeof examTopics];
     
-    selectedYears.forEach(year => {
+    availableYears.forEach(year => {
       const topics = subjectData[year as keyof typeof subjectData] || [];
       topics.forEach(topic => {
-        topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+        if (!topicCounts[topic]) {
+          topicCounts[topic] = { count: 0, years: [] };
+        }
+        topicCounts[topic].count += 1;
+        topicCounts[topic].years.push(year);
       });
     });
 
     return Object.entries(topicCounts)
-      .map(([topic, count]) => ({ topic, count }))
+      .map(([topic, data]) => ({ topic, count: data.count, years: data.years }))
       .sort((a, b) => b.count - a.count);
   };
 
@@ -128,278 +131,270 @@ function ExamTopicsSection({ user, hasClassViewerSession = false, onUpgrade }: E
     { key: 'AYT_Biyoloji', name: 'AYT Biyoloji', color: 'bg-indigo-500' }
   ];
 
-  const handleYearToggle = (year: string) => {
-    if (!isPremium && !freeYears.includes(year)) {
-      onUpgrade();
-      return;
-    }
-
-    setSelectedYears(prev => 
-      prev.includes(year) 
-        ? prev.filter(y => y !== year)
-        : [...prev, year]
-    );
-  };
+  const totalTopics = filteredStats.length;
+  const totalQuestions = filteredStats.reduce((sum, stat) => sum + stat.count, 0);
+  const selectedYearsCount = availableYears.length;
 
   return (
     <div id="exam-topics" className="py-16 bg-gradient-to-br from-indigo-50 to-purple-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="flex items-center justify-center mb-4">
-            <BarChart3 className="h-12 w-12 text-indigo-600 mr-4" />
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900">
-                TYT-AYT Çıkmış Konular Analizi
-              </h2>
-              <div className="flex items-center justify-center mt-2">
-                <span className="text-indigo-600 font-semibold">2018-2025</span>
-                {isPremium ? (
-                  <div className="ml-3 flex items-center bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                    <Crown className="h-4 w-4 mr-1" />
-                    Premium Erişim
-                  </div>
-                ) : (
-                  <div className="ml-3 flex items-center bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">
-                    <Lock className="h-4 w-4 mr-1" />
-                    Sınırlı Erişim (2018-2020)
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          <p className="text-gray-600 max-w-3xl mx-auto">
-            Son 8 yılın TYT ve AYT sınavlarında çıkan konuları analiz edin. 
-            Hangi konuların ne sıklıkta çıktığını görün ve çalışma planınızı optimize edin.
-            {!isPremium && (
-              <span className="block mt-2 text-sm text-orange-600 font-medium">
-                Ücretsiz kullanıcılar 2018-2020 yıllarına erişebilir. Tüm yıllar için Profesyonel pakete geçin.
-              </span>
-            )}
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            TYT-AYT Çıkmış Konular Analizi
+          </h2>
+          <p className="text-gray-600 max-w-3xl mx-auto mb-6">
+            2018-2025 yılları arasında TYT ve AYT sınavlarında hangi konulardan kaç soru çıktığını detaylı olarak
+            inceleyin. Sınav stratejinizi bu verilere göre planlayın.
           </p>
         </div>
 
         {/* Premium Upgrade Banner */}
         {!isPremium && (
-          <div className="mb-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-6 text-white">
+          <div className="mb-8 bg-gradient-to-r from-orange-100 to-yellow-100 border border-orange-200 rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <Star className="h-8 w-8 mr-4" />
+                <Lock className="h-8 w-8 mr-4 text-orange-600" />
                 <div>
-                  <h3 className="text-xl font-bold mb-1">Profesyonel Pakete Geçin!</h3>
-                  <p className="text-purple-100">
-                    2021-2025 yıllarının tüm verilerine erişin. Gelişmiş AI analizi ile çalışma planınızı optimize edin.
+                  <h3 className="text-xl font-bold text-orange-800 mb-1">Ücretsiz Önizleme</h3>
+                  <p className="text-orange-700">
+                    Şu anda sadece 2018-2020 yılları görüntüleniyor. Tüm yılları (2018-2025) görmek için premium pakete geçin.
                   </p>
                 </div>
               </div>
               <button
                 onClick={onUpgrade}
-                className="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors whitespace-nowrap"
+                className="bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors whitespace-nowrap"
               >
-                Şimdi Yükselt
+                Premium'a Geç
               </button>
             </div>
           </div>
         )}
 
-        <div className="grid lg:grid-cols-4 gap-8">
-          {/* Sol Panel - Kontroller */}
-          <div className="lg:col-span-1 space-y-6">
+        {/* Main Interface */}
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          {/* Controls Row */}
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
             {/* Ders Seçimi */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <BookOpen className="h-5 w-5 mr-2 text-indigo-600" />
+            <div>
+              <label className="flex items-center text-sm font-medium text-gray-700 mb-3">
+                <BookOpen className="h-4 w-4 mr-2" />
                 Ders Seçimi
-              </h3>
-              <div className="space-y-2">
+              </label>
+              <select
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+              >
                 {subjects.map(subject => (
-                  <button
-                    key={subject.key}
-                    onClick={() => setSelectedSubject(subject.key)}
-                    className={`w-full text-left p-3 rounded-lg transition-colors ${
-                      selectedSubject === subject.key
-                        ? 'bg-indigo-50 border-2 border-indigo-500 text-indigo-700'
-                        : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <div className={`w-3 h-3 rounded-full ${subject.color} mr-3`}></div>
-                      <span className="font-medium">{subject.name}</span>
-                    </div>
-                  </button>
+                  <option key={subject.key} value={subject.key}>{subject.name}</option>
                 ))}
-              </div>
+              </select>
             </div>
 
-            {/* Yıl Seçimi */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4">Yıl Seçimi</h3>
-              <div className="grid grid-cols-2 gap-2">
-                {Object.keys(examTopics[selectedSubject as keyof typeof examTopics]).map(year => (
-                  <button
-                    key={year}
-                    onClick={() => handleYearToggle(year)}
-                    disabled={!isPremium && !freeYears.includes(year)}
-                    className={`p-2 rounded-lg text-sm font-medium transition-colors relative ${
-                      selectedYears.includes(year)
-                        ? 'bg-indigo-500 text-white'
-                        : !isPremium && !freeYears.includes(year)
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {year}
-                    {!isPremium && !freeYears.includes(year) && (
-                      <Lock className="h-3 w-3 absolute top-1 right-1 text-gray-400" />
-                    )}
-                  </button>
-                ))}
-              </div>
-              <div className="mt-3 text-xs text-center">
-                {isPremium ? (
-                  <div className="text-green-600">
-                    <Crown className="h-3 w-3 inline mr-1" />
-                    Tüm yıllara erişim aktif
-                  </div>
-                ) : (
-                  <div className="text-orange-600">
-                    <Lock className="h-3 w-3 inline mr-1" />
-                    2021-2025 yılları için Profesyonel paket gerekli
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Arama */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4">Konu Ara</h3>
+            {/* Konu Ara */}
+            <div>
+              <label className="flex items-center text-sm font-medium text-gray-700 mb-3">
+                <Search className="h-4 w-4 mr-2" />
+                Konu Ara
+              </label>
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Konu adı yazın..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
+            </div>
+
+            {/* Yıl Filtresi */}
+            <div>
+              <label className="flex items-center text-sm font-medium text-gray-700 mb-3">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Yıl Filtresi 🔒
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {['2018', '2019', '2020'].map(year => (
+                  <button
+                    key={year}
+                    className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium"
+                  >
+                    {year}
+                  </button>
+                ))}
+                {['2021', '2022', '2023', '2024', '2025'].map(year => (
+                  <button
+                    key={year}
+                    disabled
+                    className="px-3 py-2 bg-gray-200 text-gray-400 rounded-lg text-sm font-medium cursor-not-allowed relative"
+                  >
+                    {year}
+                    <Lock className="h-3 w-3 absolute -top-1 -right-1 text-orange-500" />
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-orange-600 mt-2">
+                2021-2025 yılları premium kullanıcılar için
+              </p>
             </div>
           </div>
 
-          {/* Sağ Panel - Sonuçlar */}
-          <div className="lg:col-span-3">
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold">
-                  {subjects.find(s => s.key === selectedSubject)?.name} - Konu Analizi
-                </h3>
-                <div className="text-sm text-gray-500">
-                  {selectedYears.length} yıl seçili • {filteredStats.length} konu
-                </div>
-              </div>
+          {/* Stats Cards */}
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-blue-50 rounded-lg p-6 text-center">
+              <div className="text-3xl font-bold text-blue-600 mb-2">{totalTopics}</div>
+              <div className="text-blue-800 font-medium">Toplam Konu</div>
+            </div>
+            <div className="bg-green-50 rounded-lg p-6 text-center">
+              <div className="text-3xl font-bold text-green-600 mb-2">{totalQuestions}</div>
+              <div className="text-green-800 font-medium">Toplam Soru</div>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-6 text-center">
+              <div className="text-3xl font-bold text-purple-600 mb-2">{selectedYearsCount}</div>
+              <div className="text-purple-800 font-medium">Seçili Yıl</div>
+            </div>
+          </div>
 
+          {/* Results */}
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Konu Listesi */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <TrendingUp className="h-5 w-5 mr-2 text-indigo-600" />
+                {subjects.find(s => s.key === selectedSubject)?.name} Konuları
+              </h3>
+              
               {filteredStats.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <BarChart3 className="h-16 w-16 mx-auto mb-4 text-gray-300" />
                   <p>Seçilen kriterlere uygun konu bulunamadı.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 max-h-96 overflow-y-auto">
                   {filteredStats.map((stat, index) => (
                     <div
                       key={stat.topic}
                       className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-center flex-1">
                         <div className="flex items-center justify-center w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full text-sm font-bold mr-4">
                           {index + 1}
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-semibold text-gray-900">{stat.topic}</h4>
-                          <p className="text-sm text-gray-600">
-                            {selectedYears.length} yılda {stat.count} kez çıktı
-                          </p>
+                          <div className="flex items-center mt-1">
+                            <span className="text-sm text-gray-600 mr-4">
+                              Toplam Soru: {stat.count}
+                            </span>
+                            <div className="flex items-center space-x-1">
+                              {stat.years.map(year => (
+                                <span key={year} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                  {year}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center">
-                        <div className="w-32 bg-gray-200 rounded-full h-2 mr-4">
-                          <div
-                            className="bg-indigo-500 h-2 rounded-full"
-                            style={{
-                              width: `${(stat.count / Math.max(...filteredStats.map(s => s.count))) * 100}%`
-                            }}
-                          ></div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-indigo-600">{stat.count}</div>
-                          <div className="text-xs text-gray-500">
-                            %{((stat.count / selectedYears.length) * 100).toFixed(0)}
-                          </div>
+                      <div className="text-right ml-4">
+                        <div className="text-lg font-bold text-indigo-600">{stat.count}</div>
+                        <div className="text-xs text-gray-500">
+                          Yıllık Dağılım: {stat.years.join(', ')}
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
+            </div>
 
-              {/* İstatistik Özeti */}
-              {filteredStats.length > 0 && (
-                <div className="mt-8 grid md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {filteredStats.length}
-                    </div>
-                    <div className="text-sm text-blue-800">Toplam Konu</div>
+            {/* Grafik Alanı */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <BarChart3 className="h-5 w-5 mr-2 text-green-600" />
+                Konu Seçim
+              </h3>
+              
+              {filteredStats.length === 0 ? (
+                <div className="bg-gray-50 rounded-lg p-12 text-center">
+                  <BarChart3 className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                  <p className="text-gray-500">Grafik görmek için bir konu seçin</p>
+                </div>
+              ) : (
+                <div className="bg-gray-50 rounded-lg p-8 text-center">
+                  <div className="mb-6">
+                    <BarChart3 className="h-24 w-24 mx-auto text-gray-300 mb-4" />
+                    <p className="text-gray-600 text-lg font-medium">
+                      {filteredStats.length} konu analiz edildi
+                    </p>
+                    <p className="text-gray-500 text-sm">
+                      {availableYears.join(', ')} yılları baz alınarak
+                    </p>
                   </div>
-                  <div className="bg-green-50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-green-600">
-                      {Math.max(...filteredStats.map(s => s.count))}
+                  
+                  {/* En çok çıkan konular */}
+                  <div className="text-left">
+                    <h4 className="font-semibold text-gray-800 mb-3">En Çok Çıkan Konular:</h4>
+                    <div className="space-y-2">
+                      {filteredStats.slice(0, 5).map((stat, index) => (
+                        <div key={stat.topic} className="flex items-center justify-between bg-white p-3 rounded-lg">
+                          <div className="flex items-center">
+                            <span className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center mr-3 ${
+                              index === 0 ? 'bg-yellow-100 text-yellow-800' :
+                              index === 1 ? 'bg-gray-100 text-gray-800' :
+                              index === 2 ? 'bg-orange-100 text-orange-800' :
+                              'bg-blue-100 text-blue-800'
+                            }`}>
+                              {index + 1}
+                            </span>
+                            <span className="text-sm font-medium">{stat.topic}</span>
+                          </div>
+                          <span className="text-sm font-bold text-indigo-600">{stat.count} soru</span>
+                        </div>
+                      ))}
                     </div>
-                    <div className="text-sm text-green-800">En Çok Çıkan</div>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-purple-600">
-                      {(filteredStats.reduce((sum, stat) => sum + stat.count, 0) / filteredStats.length).toFixed(1)}
-                    </div>
-                    <div className="text-sm text-purple-800">Ortalama Çıkma</div>
                   </div>
                 </div>
               )}
             </div>
-
-            {/* AI Önerileri - Sadece Premium */}
-            {isPremium && filteredStats.length > 0 && (
-              <div className="mt-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
-                <div className="flex items-center mb-4">
-                  <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-2 rounded-full mr-3">
-                    <TrendingUp className="h-5 w-5 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900">AI Çalışma Önerileri</h3>
-                </div>
-                <div className="space-y-3">
-                  <div className="bg-white p-4 rounded-lg border border-yellow-200">
-                    <h4 className="font-semibold text-yellow-800 mb-2">🎯 Öncelikli Konular</h4>
-                    <p className="text-yellow-700 text-sm">
-                      <strong>{filteredStats.slice(0, 3).map(s => s.topic).join(', ')}</strong> konularına 
-                      odaklanın. Bu konular son {selectedYears.length} yılda en sık çıkan konulardır.
-                    </p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border border-yellow-200">
-                    <h4 className="font-semibold text-yellow-800 mb-2">📊 Çalışma Stratejisi</h4>
-                    <p className="text-yellow-700 text-sm">
-                      Yüksek çıkma oranına sahip konulara günlük çalışma sürenizin %60'ını ayırın. 
-                      Düşük çıkma oranlı konular için haftalık tekrar yapın.
-                    </p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border border-yellow-200">
-                    <h4 className="font-semibold text-yellow-800 mb-2">⚡ Hızlı İpucu</h4>
-                    <p className="text-yellow-700 text-sm">
-                      {filteredStats[0]?.topic} konusu {filteredStats[0]?.count} kez çıkmış. 
-                      Bu konuda günde en az 30 dakika çalışmanızı öneriyoruz.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
+
+        {/* AI Önerileri - Sadece Premium */}
+        {isPremium && filteredStats.length > 0 && (
+          <div className="mt-8 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
+            <div className="flex items-center mb-4">
+              <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-2 rounded-full mr-3">
+                <TrendingUp className="h-5 w-5 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">AI Çalışma Önerileri</h3>
+            </div>
+            <div className="space-y-3">
+              <div className="bg-white p-4 rounded-lg border border-yellow-200">
+                <h4 className="font-semibold text-yellow-800 mb-2">🎯 Öncelikli Konular</h4>
+                <p className="text-yellow-700 text-sm">
+                  <strong>{filteredStats.slice(0, 3).map(s => s.topic).join(', ')}</strong> konularına 
+                  odaklanın. Bu konular son {availableYears.length} yılda en sık çıkan konulardır.
+                </p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-yellow-200">
+                <h4 className="font-semibold text-yellow-800 mb-2">📊 Çalışma Stratejisi</h4>
+                <p className="text-yellow-700 text-sm">
+                  Yüksek çıkma oranına sahip konulara günlük çalışma sürenizin %60'ını ayırın. 
+                  Düşük çıkma oranlı konular için haftalık tekrar yapın.
+                </p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-yellow-200">
+                <h4 className="font-semibold text-yellow-800 mb-2">⚡ Hızlı İpucu</h4>
+                <p className="text-yellow-700 text-sm">
+                  {filteredStats[0]?.topic} konusu {filteredStats[0]?.count} kez çıkmış. 
+                  Bu konuda günde en az 30 dakika çalışmanızı öneriyoruz.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
