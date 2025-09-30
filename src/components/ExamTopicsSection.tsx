@@ -91,7 +91,7 @@ const freeYears = ['2018', '2019', '2020']; // Ücretsiz kullanıcılar için
 
 function ExamTopicsSection({ user, hasClassViewerSession = false, onUpgrade }: ExamTopicsSectionProps) {
   const [selectedSubject, setSelectedSubject] = useState('AYT_Matematik');
-  const [selectedYears, setSelectedYears] = useState(freeYears);
+  const [selectedYears, setSelectedYears] = useState(['2018', '2019', '2020']);
   const [searchTerm, setSearchTerm] = useState('');
 
   const isPremium = hasPremiumAccess(user, hasClassViewerSession);
@@ -162,7 +162,7 @@ function ExamTopicsSection({ user, hasClassViewerSession = false, onUpgrade }: E
                 ) : (
                   <div className="ml-3 flex items-center bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">
                     <Lock className="h-4 w-4 mr-1" />
-                    Sınırlı Erişim
+                    Sınırlı Erişim (2018-2020)
                   </div>
                 )}
               </div>
@@ -171,6 +171,11 @@ function ExamTopicsSection({ user, hasClassViewerSession = false, onUpgrade }: E
           <p className="text-gray-600 max-w-3xl mx-auto">
             Son 8 yılın TYT ve AYT sınavlarında çıkan konuları analiz edin. 
             Hangi konuların ne sıklıkta çıktığını görün ve çalışma planınızı optimize edin.
+            {!isPremium && (
+              <span className="block mt-2 text-sm text-orange-600 font-medium">
+                Ücretsiz kullanıcılar 2018-2020 yıllarına erişebilir. Tüm yıllar için Profesyonel pakete geçin.
+              </span>
+            )}
           </p>
         </div>
 
@@ -230,29 +235,39 @@ function ExamTopicsSection({ user, hasClassViewerSession = false, onUpgrade }: E
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <h3 className="text-lg font-semibold mb-4">Yıl Seçimi</h3>
               <div className="grid grid-cols-2 gap-2">
-                {availableYears.map(year => (
+                {Object.keys(examTopics[selectedSubject as keyof typeof examTopics]).map(year => (
                   <button
                     key={year}
                     onClick={() => handleYearToggle(year)}
+                    disabled={!isPremium && !freeYears.includes(year)}
                     className={`p-2 rounded-lg text-sm font-medium transition-colors relative ${
                       selectedYears.includes(year)
                         ? 'bg-indigo-500 text-white'
+                        : !isPremium && !freeYears.includes(year)
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
                     {year}
                     {!isPremium && !freeYears.includes(year) && (
-                      <Lock className="h-3 w-3 absolute top-1 right-1" />
+                      <Lock className="h-3 w-3 absolute top-1 right-1 text-gray-400" />
                     )}
                   </button>
                 ))}
               </div>
-              {!isPremium && (
-                <div className="mt-3 text-xs text-gray-500 text-center">
-                  <Lock className="h-3 w-3 inline mr-1" />
-                  Premium: 2021-2025 erişimi
-                </div>
-              )}
+              <div className="mt-3 text-xs text-center">
+                {isPremium ? (
+                  <div className="text-green-600">
+                    <Crown className="h-3 w-3 inline mr-1" />
+                    Tüm yıllara erişim aktif
+                  </div>
+                ) : (
+                  <div className="text-orange-600">
+                    <Lock className="h-3 w-3 inline mr-1" />
+                    2021-2025 yılları için Profesyonel paket gerekli
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Arama */}
