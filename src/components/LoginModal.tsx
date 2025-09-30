@@ -192,11 +192,13 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
         const parentUser = {
           id: `parent_${student.id}`,
           email: `parent_${student.id}@temp.com`,
+          phone: formData.parentPhone.trim(),
           profile: {
             id: `parent_${student.id}`,
             full_name: 'Veli',
             role: 'parent',
-            email: `parent_${student.id}@temp.com`
+            email: `parent_${student.id}@temp.com`,
+            phone: formData.parentPhone.trim()
           },
           isParentLogin: true,
           connectedStudents: [completeStudent]
@@ -494,65 +496,27 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
               </div>
             </div>
             
-            {!isLoginMode && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Sınıf Kodu (Opsiyonel)
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                  <input
-                    type="text"
-                    name="classCode"
-                    value={formData.classCode}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center"
-                    placeholder="645A-A006-208D (Opsiyonel)"
-                    maxLength={14}
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Öğretmeninizden aldığınız sınıf kodunu girebilirsiniz
-                </p>
-              </div>
-            )}
-
-            {!isLoginMode && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Paket Seçimi *
-                </label>
-                <select
-                  name="packageType"
-                  value={formData.packageType}
-                  onChange={handleSelectChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Telefon Numarası *
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <input
+                  type="tel"
+                  name="parentPhone"
+                  value={formData.parentPhone}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="0 507 XXX XX XX"
                   required
-                >
-                  <option value="basic">Temel Paket</option>
-                  <option value="advanced">Gelişmiş Paket</option>
-                  <option value="professional">Profesyonel Paket</option>
-                </select>
+                />
               </div>
-            )}
-
-            {!isLoginMode && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ödeme Döngüsü *
-                </label>
-                <select
-                  name="billingCycle"
-                  value={formData.billingCycle}
-                  onChange={handleSelectChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="monthly">Aylık</option>
-                  <option value="yearly">Yıllık (%17 İndirim)</option>
-                </select>
-              </div>
-            )}
+              <p className="text-xs text-gray-500 mt-1">
+                Telefon numaranızı 0 507 XXX XX XX formatında girin
+              </p>
+            </div>
+            
 
             <button
               type="submit"
