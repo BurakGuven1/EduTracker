@@ -843,8 +843,6 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
       </div>
     </div>
 
-    </>
-
     {/* Payment Page */}
     {registrationData && (
       <PaymentPage
