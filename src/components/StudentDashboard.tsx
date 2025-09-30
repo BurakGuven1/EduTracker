@@ -480,16 +480,15 @@ export default function StudentDashboard() {
                     `${props.payload.examName} (${props.payload.examType})`
                   ]}
                 />
-                <Line 
-      type="monotone" 
+                <Scatter 
       dataKey="puan" 
-      stroke="#3B82F6" 
-      strokeWidth={3} 
+      fill="#3B82F6" 
+      stroke="#1D4ED8"
+      strokeWidth={2}
+      r={6}
       name="Puan"
-      dot={{ fill: '#3B82F6', strokeWidth: 2, r: 5 }}
-      activeDot={{ r: 7, fill: '#1D4ED8' }}
     />
-              </LineChart>
+  </ScatterChart>
             </ResponsiveContainer>
           ) : (
             <div className="text-center py-16 text-gray-500">
