@@ -401,6 +401,9 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
 
   const isPremium = hasPremiumAccess(hasClassViewerSession || false);
 
+  // Premium değilse sadece freeYears kullan, premiumsa tüm yılları kullan
+  const availableYears = isPremium ? years : freeYears;
+
   const filteredTopics = useMemo(() => {
     const subjectData = examData[selectedSubject as keyof typeof examData];
     if (!subjectData) return [];
@@ -412,10 +415,11 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
       .map((item: any) => ({
         topic: item.konu,
         yearData: item.yillar,
-        total: selectedYears.reduce((sum, year) => sum + (item.yillar[year] || 0), 0)
+        // Sadece availableYears'daki yılları topla
+        total: availableYears.reduce((sum, year) => sum + (item.yillar[year] || 0), 0)
       }))
       .sort((a, b) => b.total - a.total);
-  }, [selectedSubject, searchTerm, selectedYears]);
+  }, [selectedSubject, searchTerm, availableYears]);
 
   const chartData = useMemo(() => {
     if (!selectedTopic) return [];
@@ -425,14 +429,16 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
     
     if (!topicData) return [];
 
-    return selectedYears.map(year => ({
+    // Sadece availableYears'daki yılları göster
+    return availableYears.map(year => ({
       year,
       questions: topicData.yillar[year] || 0
     }));
-  }, [selectedTopic, selectedSubject, selectedYears]);
+  }, [selectedTopic, selectedSubject, availableYears]);
 
   const handleYearToggle = (year: string) => {
-    if (!isPremium && !freeYears.includes(year)) {
+    // Eğer yıl availableYears'da yoksa ve premium değilse, upgrade'i tetikle
+    if (!availableYears.includes(year)) {
       if (onUpgrade) {
         onUpgrade();
       }
@@ -542,7 +548,7 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
               </label>
               <div className="flex flex-wrap gap-2">
                 {years.map(year => {
-                  const isAvailable = isPremium || freeYears.includes(year);
+                  const isAvailable = availableYears.includes(year);
                   const isSelected = selectedYears.includes(year);
                   const isLocked = !isAvailable;
                   
@@ -604,7 +610,7 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
             </div>
             <div className="bg-purple-50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-purple-600">
-                {selectedYears.length}{!isPremium && `/${years.length}`}
+                {selectedYears.length}{!isPremium && `/${availableYears.length}`}
               </div>
               <div className="text-purple-800 text-sm">Seçili Yıl</div>
             </div>
@@ -652,7 +658,7 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex flex-wrap gap-1 justify-center">
-                              {selectedYears.map(year => {
+                              {availableYears.map(year => {
                                 const count = yearData[year] || 0;
                                 return (
                                   <span
