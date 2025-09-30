@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, BookOpen, Bell, Users, FileText, BarChart3, Download, Eye, ArrowLeft, Settings, Trophy } from 'lucide-react';
+import { Users, BookOpen, Bell, Trophy, Calendar, LogOut, ArrowLeft } from 'lucide-react';
 import { getClassData, getClassAssignments, getClassAnnouncements, getClassExams } from '../lib/teacherApi';
-import { getStudentExamFiles } from '../lib/teacherApi';
 
 interface ClassDashboardProps {
   classData: any;
-  studentId?: string;
   onBack: () => void;
 }
 
-export default function ClassDashboard({ classData, studentId, onBack }: ClassDashboardProps) {
+export default function ClassDashboard({ classData, onBack }: ClassDashboardProps) {
   const [assignments, setAssignments] = useState<any[]>([]);
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [exams, setExams] = useState<any[]>([]);
@@ -259,56 +257,6 @@ export default function ClassDashboard({ classData, studentId, onBack }: ClassDa
               <div className="text-center py-8 text-gray-500">
                 <Trophy className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p>Henüz sınav sonucu yok</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Student Exam Results Section */}
-        {studentId && (
-          <div className="mt-6 bg-white rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-semibold mb-4 flex items-center">
-              <FileText className="h-5 w-5 mr-2 text-blue-600" />
-              Sınav Sonuçlarım
-            </h3>
-            {studentExamFiles.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p>Henüz sınav sonucu dosyası yok</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {studentExamFiles.map((file) => (
-                  <div key={file.id} className="p-4 bg-gray-50 rounded-lg border">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">
-                          {file.class_exams?.exam_name || 'Sınav'}
-                        </h4>
-                        <p className="text-sm text-gray-600">
-                          {file.class_exams?.classes?.class_name}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Dosya: {file.file_name}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          Yüklenme: {new Date(file.created_at).toLocaleDateString('tr-TR')}
-                        </p>
-                      </div>
-                      <div className="flex space-x-2">
-                        <a
-                          href={file.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 flex items-center space-x-1"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          <span>Görüntüle</span>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                ))}
               </div>
             )}
           </div>

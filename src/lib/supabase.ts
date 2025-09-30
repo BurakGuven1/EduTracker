@@ -303,17 +303,6 @@ export const getClassExamResultsForStudent = async (studentId: string) => {
 
   return { data, error };
 };
-
-// Get exam files for students
-export const getExamFilesForStudent = async (examId: string) => {
-  const { data, error } = await supabase
-    .from('exam_files')
-    .select('*')
-    .eq('exam_id', examId)
-    .order('created_at', { ascending: false });
-
-  return { data, error };
-};
 // Weekly Study Goals
 export const getWeeklyStudyGoal = async (studentId: string) => {
   const { data, error } = await supabase
@@ -348,24 +337,5 @@ export const getWeeklyStudySessions = async (studentId: string, startDate: strin
     .eq('student_id', studentId)
     .gte('session_date', startDate)
     .lte('session_date', endDate);
-  return { data, error };
-};
-
-// Get classes that a student is enrolled in
-export const getStudentClasses = async (studentId: string) => {
-  const { data, error } = await supabase
-    .from('class_students')
-    .select(`
-      *,
-      classes!inner(
-        id,
-        class_name,
-        description,
-        teacher_id,
-        teachers!inner(full_name)
-      )
-    `)
-    .eq('student_id', studentId)
-    .eq('status', 'active');
   return { data, error };
 };

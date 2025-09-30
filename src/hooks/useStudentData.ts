@@ -8,7 +8,7 @@ import {
   getClassAnnouncementsForStudent,
   getClassExamResultsForStudent
 } from '../lib/supabase';
-import { getStudentClasses } from '../lib/supabase';
+import { getStudentClasses } from '../lib/teacherApi';
 
 export const useStudentData = (userId: string | undefined) => {
   const [studentData, setStudentData] = useState<any>(null);

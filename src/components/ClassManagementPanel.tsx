@@ -12,10 +12,7 @@ import {
   updateClassExam,
   deleteClassAssignment,
   deleteClassAnnouncement,
-  deleteClassExam,
-  uploadExamResultFile,
-  getExamFiles,
-  deleteExamFile
+  deleteClassExam
 } from '../lib/teacherApi';
 
 interface ClassManagementPanelProps {
@@ -42,7 +39,6 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
 
   // Load fresh data when component mounts
   useEffect(() => {
@@ -61,13 +57,6 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
       setAssignments(assignmentsRes.data || []);
       setAnnouncements(announcementsRes.data || []);
       setExams(examsRes.data || []);
-      
-      // Load uploaded files for exams
-      const examIds = (examsRes.data || []).map((exam: any) => exam.id);
-      if (examIds.length > 0) {
-        const { data: files } = await getExamFiles(examIds);
-        setUploadedFiles(files || []);
-      }
     } catch (error) {
       console.error('Error loading class content:', error);
     } finally {
@@ -175,13 +164,13 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
 
     setUploadLoading(true);
     try {
+      // Simulate file upload - replace with actual implementation
       const formData = new FormData();
       formData.append('file', selectedFile);
       formData.append('exam_id', selectedItem.id);
-      formData.append('class_id', classData.id);
-      formData.append('teacher_id', classData.teacher_id);
       
-      const { data } = await uploadExamResultFile(formData);
+      // Here you would call your file upload API
+      // await uploadExamResultFile(formData);
       
       alert('Dosya başarıyla yüklendi!');
       setSelectedFile(null);
@@ -191,41 +180,6 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
     } finally {
       setUploadLoading(false);
     }
-  };
-
-  const handleDeleteFile = async (fileId: string) => {
-    if (!confirm('Bu dosyayı silmek istediğinizden emin misiniz?')) return;
-
-    try {
-      const result = await deleteExamFile(fileId);
-      if (result.error) {
-        alert(`Hata: ${result.error.message}`);
-      } else {
-        alert('Dosya başarıyla silindi!');
-        // Refresh exam data
-        loadClassData();
-      }
-    } catch (error: any) {
-      alert(`Hata: ${error.message}`);
-    }
-  };
-
-  // File delete handler
-  const handleFileDelete = async (fileId: string) => {
-    if (!confirm('Bu dosyayı silmek istediğinizden emin misiniz?')) return;
-
-    try {
-      await deleteExamFile(fileId);
-      alert('Dosya başarıyla silindi!');
-      await loadClassContent();
-    } catch (error: any) {
-      alert('Dosya silme hatası: ' + error.message);
-    }
-  };
-
-  // Get files for selected exam
-  const getExamFiles = (examId: string) => {
-    return uploadedFiles.filter(file => file.exam_id === examId);
   };
 
   const handleSubmitAssignment = async (e: React.FormEvent) => {
@@ -776,41 +730,6 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
                       >
                         {uploadLoading ? 'Yükleniyor...' : 'Yükle'}
                       </button>
-                    </div>
-                  )}
-                  
-                  {/* Show uploaded files */}
-                  {selectedItem && getExamFiles(selectedItem.id).length > 0 && (
-                    <div className="mt-4">
-                      <h5 className="font-medium text-gray-800 mb-2">Yüklenmiş Dosyalar:</h5>
-                      <div className="space-y-2">
-                        {getExamFiles(selectedItem.id).map((file: any) => (
-                          <div key={file.id} className="flex items-center justify-between bg-green-50 p-3 rounded-lg">
-                            <div className="flex items-center">
-                              <span className="text-sm text-green-800 font-medium">{file.file_name}</span>
-                              <span className="text-xs text-green-600 ml-2">
-                                ({new Date(file.created_at).toLocaleDateString('tr-TR')})
-                              </span>
-                            </div>
-                            <div className="flex space-x-2">
-                              <a
-                                href={file.file_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700"
-                              >
-                                Görüntüle
-                              </a>
-                              <button
-                                onClick={() => handleFileDelete(file.id)}
-                                className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700"
-                              >
-                                Sil
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   )}
                 </div>
