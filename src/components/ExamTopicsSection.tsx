@@ -399,8 +399,8 @@ export default function ExamTopicsSection({ user, onUpgrade }: ExamTopicsSection
     // Premium access for:
     // 1. Professional package users
     // 2. Students in classes
-    // Check if user is viewing via class code
-    if (hasClassViewerSession) return true;
+    // 3. Teachers
+    if (classViewerSession) return true;
     
     // Check if user is viewing via class code (passed as prop)
     if (hasClassViewerSession) return true;
