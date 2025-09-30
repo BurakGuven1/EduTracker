@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft, CreditCard as Edit, Trash2, X, Upload, Download, BarChart3,FileText,Paperclip,Trash2 } from 'lucide-react';
+import { 
+  Plus, 
+  BookOpen, 
+  Bell, 
+  Trophy, 
+  Users, 
+  ArrowLeft, 
+  CreditCard as Edit, // 'as' ile CreditCard ikonunu Edit olarak isimlendirmişsiniz
+  Trash2,           // <-- Sadece bir tane yeterli
+  X, 
+  Upload, 
+  Download, 
+  BarChart3,
+  FileText,
+  Paperclip
+} from 'lucide-react';
 import { 
   addClassAssignment, 
   addClassAnnouncement, 
