@@ -16,7 +16,7 @@ export default function Hero({ onGetStarted }: HeroProps) {
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
             Deneme sonuçları, ödevler ve gelişim süreçlerini yapay zeka desteğiyle analiz eden 
-            akıllı eğitim platformu. Öğrenci-Veli ve Öğretmenler için tasarlandı.
+            akıllı eğitim platformu. Hem öğrenciler hem veliler için tasarlandı.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
