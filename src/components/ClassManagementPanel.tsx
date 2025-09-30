@@ -735,6 +735,38 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
                 </div>
               </div>
 
+              <div className="mt-8">
+  <h4 className="font-semibold mb-4 flex items-center">
+    <FileText className="h-5 w-5 mr-2 text-purple-600" />
+    Yüklenen Sınav Dosyaları
+  </h4>
+  {selectedItem?.class_exam_files && selectedItem.class_exam_files.length > 0 ? (
+    <ul className="space-y-2">
+      {selectedItem.class_exam_files.map((file: any) => (
+        <li key={file.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+          <a
+            href={file.file_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-2 text-sm text-purple-800 hover:underline"
+          >
+            <Paperclip className="h-4 w-4" />
+            <span>{file.file_name || 'Dosya'}</span>
+          </a>
+          <button
+            onClick={() => handleDeleteFile(file.id)} // Opsiyonel: Dosya silme fonksiyonu
+            className="text-red-500 hover:text-red-700"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p className="text-sm text-gray-500">Bu sınav için henüz dosya yüklenmemiş.</p>
+  )}
+</div>
+
               {/* Exam Results Table */}
               <div>
                 <h4 className="font-semibold mb-4 flex items-center">
