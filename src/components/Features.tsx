@@ -64,7 +64,7 @@ export default function Features() {
             Platform Özellikleri
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            EduTracker ile öğrenme sürecinizi optimize edin. Modern teknoloji ve yapay zeka 
+            BaşarıYolu ile öğrenme sürecinizi optimize edin. Modern teknoloji ve yapay zeka 
             desteğiyle akademik başarınızı artırın.
           </p>
         </div>
