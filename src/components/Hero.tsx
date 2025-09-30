@@ -42,7 +42,7 @@ export default function Hero({ onGetStarted }: HeroProps) {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mt-16">
             <div className="text-center">
               <TrendingUp className="h-12 w-12 text-blue-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-900">Analiz & Raporlama</h3>
@@ -62,6 +62,11 @@ export default function Hero({ onGetStarted }: HeroProps) {
               <Target className="h-12 w-12 text-orange-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-900">Hedef Odaklı</h3>
               <p className="text-gray-600 text-sm">Kişisel gelişim planları ve Yapay Zeka Önerileri</p>
+            </div>
+            <div className="text-center">
+              <BarChart3 className="h-12 w-12 text-red-600 mx-auto mb-3" />
+              <h3 className="font-semibold text-gray-900">Çıkmış Sorular Analizi</h3>
+              <p className="text-gray-600 text-sm">2018-2025 TYT-AYT konu dağılımı ve trend analizi</p>
             </div>
           </div>
         </div>
