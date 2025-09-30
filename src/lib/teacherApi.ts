@@ -211,3 +211,222 @@ export const joinClassWithCode = async (studentId: string, inviteCode: string) =
 
   return { data, error: null };
 };
+
+// Class Content Management
+export const addClassAssignment = async (assignmentData: {
+  class_id: string;
+  teacher_id: string;
+  title: string;
+  description?: string;
+  subject: string;
+  due_date: string;
+}) => {
+  const { data, error } = await supabase
+    .from('class_assignments')
+    .insert([assignmentData])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return { data, error: null };
+};
+
+export const addClassAnnouncement = async (announcementData: {
+  class_id: string;
+  teacher_id: string;
+  title: string;
+  content: string;
+  type?: 'info' | 'warning' | 'success' | 'error';
+}) => {
+  const { data, error } = await supabase
+    .from('class_announcements')
+    .insert([announcementData])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return { data, error: null };
+};
+
+export const addClassExam = async (examData: {
+  class_id: string;
+  teacher_id: string;
+  exam_name: string;
+  exam_type: string;
+  exam_date: string;
+  total_questions?: number;
+}) => {
+  const { data, error } = await supabase
+    .from('class_exams')
+    .insert([examData])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return { data, error: null };
+};
+
+// Get class content
+export const getClassAssignments = async (classId: string) => {
+  const { data, error } = await supabase
+    .from('class_assignments')
+    .select('*')
+    .eq('class_id', classId)
+    .order('created_at', { ascending: false });
+
+  return { data, error };
+};
+
+export const getClassAnnouncements = async (classId: string) => {
+  const { data, error } = await supabase
+    .from('class_announcements')
+    .select('*')
+    .eq('class_id', classId)
+    .order('created_at', { ascending: false });
+
+  return { data, error };
+};
+
+export const getClassExams = async (classId: string) => {
+  const { data, error } = await supabase
+    .from('class_exams')
+    .select(`
+      *,
+      class_exam_results (*),
+      exam_files!exam_id (*)
+    `)
+    .eq('class_id', classId)
+    .order('created_at', { ascending: false });
+
+  return { data, error };
+};
+
+// Update class content
+export const updateClassAssignment = async (id: string, updates: any) => {
+  const { data, error } = await supabase
+    .from('class_assignments')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return { data, error: null };
+};
+
+export const updateClassAnnouncement = async (id: string, updates: any) => {
+  const { data, error } = await supabase
+    .from('class_announcements')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return { data, error: null };
+};
+
+export const updateClassExam = async (id: string, updates: any) => {
+  const { data, error } = await supabase
+    .from('class_exams')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return { data, error: null };
+};
+
+// Delete class content
+export const deleteClassAssignment = async (id: string) => {
+  const { error } = await supabase
+    .from('class_assignments')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+  return { error: null };
+};
+
+export const deleteClassAnnouncement = async (id: string) => {
+  const { error } = await supabase
+    .from('class_announcements')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+  return { error: null };
+};
+
+export const deleteClassExam = async (id: string) => {
+  const { error } = await supabase
+    .from('class_exams')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+  return { error: null };
+};
+
+// File management
+export const getExamFiles = async (examId: string) => {
+  const { data, error } = await supabase
+    .from('exam_files')
+    .select('*')
+    .eq('exam_id', examId)
+    .order('created_at', { ascending: false });
+
+  return { data, error };
+};
+
+export const deleteExamFile = async (fileId: string) => {
+  // First get the file info to delete from storage
+  const { data: fileData, error: fetchError } = await supabase
+    .from('exam_files')
+    .select('file_path')
+    .eq('id', fileId)
+    .single();
+
+  if (fetchError) throw fetchError;
+
+  // Delete from storage
+  const { error: storageError } = await supabase.storage
+    .from('exam-files')
+    .remove([fileData.file_path]);
+
+  if (storageError) throw storageError;
+
+  // Delete from database
+  const { error: dbError } = await supabase
+    .from('exam_files')
+    .delete()
+    .eq('id', fileId);
+
+  if (dbError) throw dbError;
+  return { error: null };
+};
+
+// Get comprehensive class data
+export const getClassData = async (classId: string) => {
+  const { data, error } = await supabase
+    .from('classes')
+    .select(`
+      *,
+      teachers (*),
+      class_students (
+        *,
+        students (*)
+      ),
+      class_assignments (*),
+      class_announcements (*),
+      class_exams (
+        *,
+        class_exam_results (*)
+      )
+    `)
+    .eq('id', classId)
+    .single();
+
+  return { data, error };
+};
