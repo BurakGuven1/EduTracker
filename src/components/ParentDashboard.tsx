@@ -173,14 +173,19 @@ export default function ParentDashboard() {
   // Prepare chart data
   const chartData = selectedChildData?.exam_results && selectedChildData.exam_results.length > 0
     ? selectedChildData.exam_results
-      .filter((exam: any) => exam.total_score != null && exam.exam_date) // Filter out invalid data
+      .filter((exam: any) => exam.total_score != null && exam.total_score > 0 && exam.exam_date) // Filter out invalid data
       .sort((a: any, b: any) => new Date(a.exam_date).getTime() - new Date(b.exam_date).getTime())
       .slice(-6) // Son 6 deneme
       .map((exam: any, index: number) => ({
-        date: new Date(exam.exam_date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' }),
+        date: new Date(exam.exam_date).toLocaleDateString('tr-TR', { 
+          day: '2-digit', 
+          month: '2-digit',
+          year: '2-digit'
+        }),
         puan: Math.round(exam.total_score || 0),
         examType: exam.exam_type,
-        examName: exam.exam_name
+        examName: exam.exam_name,
+        fullDate: exam.exam_date
       }))
     : [];
 
@@ -367,23 +372,50 @@ export default function ParentDashboard() {
             {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" fontSize={12} />
-                  <YAxis domain={[0, 500]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="date" 
+                    fontSize={12}
+                    tick={{ fontSize: 11 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis 
+                    domain={[0, 500]} 
+                    fontSize={12}
+                    tick={{ fontSize: 11 }}
+                  />
                   <Tooltip 
-                    formatter={(value, name, props) => [
-                      `${value} puan`,
-                      `${props.payload.examName} (${props.payload.examType})`
+                    formatter={(value: any, name: any, props: any) => [
+                      [`${value} puan`, `${props.payload.examName}`],
+                      props.payload.examType
                     ]}
+                    labelFormatter={(label: any, payload: any) => {
+                      if (payload && payload[0]) {
+                        return new Date(payload[0].payload.fullDate).toLocaleDateString('tr-TR', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        });
+                      }
+                      return label;
+                    }}
+                    contentStyle={{
+                      backgroundColor: '#fff',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
                   />
                   <Line 
                     type="monotone" 
                     dataKey="puan" 
-                    stroke="#3B82F6" 
-                    strokeWidth={3} 
+                    stroke="#2563eb" 
+                    strokeWidth={2} 
                     name="Puan"
-                    dot={{ fill: '#3B82F6', strokeWidth: 2, r: 5 }}
-                    activeDot={{ r: 7, stroke: '#3B82F6', strokeWidth: 2 }}
+                    dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: '#2563eb', strokeWidth: 2, fill: '#fff' }}
                   />
                 </LineChart>
               </ResponsiveContainer>
