@@ -162,7 +162,7 @@ function App() {
             <div>
               <h4 className="font-semibold mb-3">İletişim</h4>
               <p className="text-sm text-gray-400">
-                info@edutracker.com<br />
+                info@basariyolu.com<br />
                 0850 123 45 67<br />
                 7/24 Canlı Destek
               </p>
