@@ -385,7 +385,7 @@ const examData = {
 };
 
 const years = ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
-const freeYears = ['2018', '2019', '2020']; // Ücretsiz kullanıcılar için
+const freeYears = ['2018', '2019', '2020'];
 
 export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgrade }: ExamTopicsSectionProps) {
   const [selectedSubject, setSelectedSubject] = useState('AYT_Matematik');
@@ -395,13 +395,11 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
 
   const subjects = Object.keys(examData);
 
-  // Check if user has premium access
   const hasPremiumAccess = (hasClassViewerSession: boolean) => {
     return user?.profile?.package_type === 'professional' || hasClassViewerSession;
   };
 
   const isPremium = hasPremiumAccess(hasClassViewerSession || false);
-  const availableYears = isPremium ? years : freeYears;
 
   const filteredTopics = useMemo(() => {
     const subjectData = examData[selectedSubject as keyof typeof examData];
@@ -435,11 +433,8 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
 
   const handleYearToggle = (year: string) => {
     if (!isPremium && !freeYears.includes(year)) {
-      // Show upgrade modal
       if (onUpgrade) {
         onUpgrade();
-      } else {
-        alert('Bu özellik premium kullanıcılar için ayrılmıştır. Lütfen paketinizi yükseltin.');
       }
       return;
     }
@@ -478,7 +473,6 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
   return (
     <div id="exam-topics" className="py-16 bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             TYT-AYT Çıkmış Konular Analizi
@@ -492,19 +486,17 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
             <div className="mt-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4 max-w-2xl mx-auto">
               <div className="flex items-center justify-center space-x-2 text-amber-800">
                 <Lock className="h-5 w-5" />
-                <span className="font-medium">Ücretsiz Önizleme</span>
+                <span className="font-medium">Ücretsiz Sürüm</span>
               </div>
               <p className="text-amber-700 text-sm mt-2">
-                Şu anda sadece 2018-2020 yılları görüntüleniyor. Tüm yılları (2018-2025) görmek için premium pakete geçin.
+                Şu anda sadece 2018-2020 yılları görüntüleniyor. 2021-2025 yıllarını görmek için premium pakete geçin.
               </p>
             </div>
           )}
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          {/* Controls */}
           <div className="grid md:grid-cols-3 gap-6 mb-8">
-            {/* Subject Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <BookOpen className="inline h-4 w-4 mr-1" />
@@ -526,7 +518,6 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
               </select>
             </div>
 
-            {/* Search */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Search className="inline h-4 w-4 mr-1" />
@@ -544,50 +535,58 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
               </div>
             </div>
 
-            {/* Year Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Filter className="inline h-4 w-4 mr-1" />
                 Yıl Filtresi
-                {!isPremium && (
-                  <Crown className="inline h-4 w-4 ml-1 text-amber-500" />
-                )}
               </label>
               <div className="flex flex-wrap gap-2">
                 {years.map(year => {
                   const isAvailable = isPremium || freeYears.includes(year);
                   const isSelected = selectedYears.includes(year);
+                  const isLocked = !isAvailable;
                   
                   return (
                     <button
                       key={year}
                       onClick={() => handleYearToggle(year)}
-                      disabled={!isAvailable}
-                      className={`px-3 py-1 rounded-full text-xs font-medium transition-colors relative ${
-                        isSelected && isAvailable
-                          ? 'bg-blue-600 text-white'
-                          : isAvailable
-                          ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      disabled={isLocked}
+                      className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        isLocked
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-2 border-dashed border-gray-300'
+                          : isSelected
+                          ? 'bg-blue-600 text-white shadow-md'
+                          : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-blue-400 hover:bg-blue-50'
                       }`}
+                      title={isLocked ? 'Bu yıl premium üyelere özeldir' : undefined}
                     >
-                      {year}
-                      {!isAvailable && (
-                        <Lock className="absolute -top-1 -right-1 h-3 w-3 text-amber-500" />
+                      <span className={isLocked ? 'opacity-40' : ''}>{year}</span>
+                      {isLocked && (
+                        <div className="absolute -top-2 -right-2 bg-amber-500 rounded-full p-1 shadow-lg">
+                          <Lock className="h-3 w-3 text-white" />
+                        </div>
                       )}
                     </button>
                   );
                 })}
               </div>
               {!isPremium && (
-                <p className="text-xs text-amber-600 mt-2">
-                  2021-2025 yılları premium kullanıcılar için
-                </p>
+                <div className="mt-3 flex items-center space-x-2 text-xs text-amber-700 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+                  <Crown className="h-4 w-4 flex-shrink-0" />
+                  <span>
+                    2021-2025 yıllarına erişim için{' '}
+                    <button 
+                      onClick={onUpgrade} 
+                      className="font-semibold underline hover:text-amber-900 transition-colors"
+                    >
+                      Premium'a geçin
+                    </button>
+                  </span>
+                </div>
               )}
             </div>
           </div>
 
-          {/* Stats */}
           <div className="grid md:grid-cols-3 gap-4 mb-8">
             <div className="bg-blue-50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-blue-600">{filteredTopics.length}</div>
@@ -596,15 +595,22 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
             <div className="bg-green-50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-green-600">{getTotalQuestions()}</div>
               <div className="text-green-800 text-sm">Toplam Soru</div>
+              {!isPremium && (
+                <div className="text-xs text-green-700 mt-1 flex items-center justify-center space-x-1">
+                  <span>(2018-2020)</span>
+                  <Lock className="h-3 w-3" />
+                </div>
+              )}
             </div>
             <div className="bg-purple-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-purple-600">{selectedYears.length}</div>
+              <div className="text-2xl font-bold text-purple-600">
+                {selectedYears.length}{!isPremium && `/${years.length}`}
+              </div>
               <div className="text-purple-800 text-sm">Seçili Yıl</div>
             </div>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-8">
-            {/* Topics Table */}
             <div>
               <h3 className="text-lg font-semibold mb-4 flex items-center">
                 <TrendingUp className="h-5 w-5 mr-2 text-blue-600" />
@@ -661,6 +667,19 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
                                   </span>
                                 );
                               })}
+                              {!isPremium && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onUpgrade && onUpgrade();
+                                  }}
+                                  className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
+                                  title="Premium için 5 yıl daha"
+                                >
+                                  <Lock className="h-3 w-3 mr-0.5" />
+                                  +5 yıl
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -671,7 +690,6 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
               </div>
             </div>
 
-            {/* Chart */}
             <div>
               <h3 className="text-lg font-semibold mb-4 flex items-center">
                 <BarChart3 className="h-5 w-5 mr-2 text-green-600" />
@@ -701,33 +719,47 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
                   </div>
                 )}
               </div>
+              
+              {!isPremium && (
+                <div className="mt-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-3 text-center">
+                  <Lock className="h-5 w-5 mx-auto mb-2 text-amber-600" />
+                  <p className="text-sm text-amber-800">
+                    2021-2025 verilerini grafikte görmek için{' '}
+                    <button 
+                      onClick={onUpgrade}
+                      className="font-semibold underline hover:text-amber-900"
+                    >
+                      Premium'a geçin
+                    </button>
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Premium Upgrade CTA */}
           {!isPremium && (
             <div className="mt-8 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6">
               <div className="text-center">
                 <Crown className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-                <h4 className="text-xl font-bold text-amber-900 mb-2">Premium Özellikler</h4>
+                <h4 className="text-xl font-bold text-amber-900 mb-2">Premium ile Tam Erişim</h4>
                 <p className="text-amber-800 mb-4">
-                  Tüm yılları (2018-2025) görüntülemek ve detaylı analiz yapmak için premium pakete geçin.
+                  2021-2025 yıllarını görmek ve detaylı analiz yapmak için premium pakete geçin.
                 </p>
                 <div className="grid md:grid-cols-2 gap-4 mb-6">
                   <div className="bg-white rounded-lg p-4 border border-amber-200">
                     <h5 className="font-semibold text-amber-900 mb-2">Ücretsiz</h5>
-                    <ul className="text-sm text-amber-700 space-y-1">
-                      <li>• 2018-2020 yılları</li>
+                    <ul className="text-sm text-amber-700 space-y-1 text-left">
+                      <li>• Sadece 2018-2020 yılları</li>
                       <li>• Temel konu analizi</li>
                       <li>• Sınırlı grafik görünümü</li>
                     </ul>
                   </div>
                   <div className="bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg p-4 border border-amber-300">
-                    <h5 className="font-semibold text-amber-900 mb-2 flex items-center">
+                    <h5 className="font-semibold text-amber-900 mb-2 flex items-center justify-center">
                       <Crown className="h-4 w-4 mr-1" />
                       Premium
                     </h5>
-                    <ul className="text-sm text-amber-800 space-y-1">
+                    <ul className="text-sm text-amber-800 space-y-1 text-left">
                       <li>• 2018-2025 tüm yıllar</li>
                       <li>• Detaylı trend analizi</li>
                       <li>• Gelişmiş filtreleme</li>
@@ -745,12 +777,11 @@ export default function ExamTopicsSection({ user, hasClassViewerSession, onUpgra
             </div>
           )}
 
-          {/* Additional Info */}
           <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-            <h4 className="font-semibold text-blue-900 mb-2">💡 Nasıl Kullanılır?</h4>
+            <h4 className="font-semibold text-blue-900 mb-2">Nasıl Kullanılır?</h4>
             <ul className="text-blue-800 text-sm space-y-1">
               <li>• <strong>Ders seçin:</strong> Analiz etmek istediğiniz dersi seçin</li>
-              <li>• <strong>Yıl filtreleyin:</strong> Hangi yılları dahil etmek istediğinizi seçin {!isPremium && '(Premium: Tüm yıllar)'}</li>
+              <li>• <strong>Yıl filtreleyin:</strong> Hangi yılları dahil etmek istediğinizi seçin {!isPremium && '(Premium: 2021-2025)'}</li>
               <li>• <strong>Konu arayın:</strong> Belirli bir konuyu bulmak için arama kutusunu kullanın</li>
               <li>• <strong>Detay görün:</strong> Tablodaki bir konuya tıklayarak yıllık dağılım grafiğini görün</li>
             </ul>
