@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useStudentData } from '../hooks/useStudentData';
 import ExamForm from './ExamForm';
 import HomeworkForm from './HomeworkForm';
+import ExamTopicsSection from './ExamTopicsSection';
 import AIInsights from './AIInsights';
 import { getStudentInviteCode, signOut, deleteExamResult, updateHomework, deleteHomework, addStudySession, getWeeklyStudyGoal, createWeeklyStudyGoal, updateWeeklyStudyGoal, getWeeklyStudySessions } from '../lib/supabase';
 
@@ -989,6 +990,10 @@ export default function StudentDashboard() {
               studentId={studentData.id}
               onSuccess={refetch}
             />
+            <ExamTopicsSection 
+            user={user} 
+            onUpgrade={onUpgrade}
+          />
           </>
         )}
       </div>
