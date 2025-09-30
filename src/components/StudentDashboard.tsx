@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Plus, TrendingUp, Calendar, Target, Award, Clock, CheckCircle, AlertCircle, LogOut, CreditCard as Edit, Trash2, MoreVertical, Trophy, Star, Users } from 'lucide-react';
+import { BookOpen, Plus, TrendingUp, Calendar, Target, Award, Clock, CheckCircle, AlertCircle, LogOut, CreditCard as Edit, Trash2, MoreVertical, Trophy, Star, Users, X } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
 import { useStudentData } from '../hooks/useStudentData';
@@ -45,6 +45,7 @@ export default function StudentDashboard() {
   const [showJoinClassModal, setShowJoinClassModal] = useState(false);
   const [classInviteCodeInput, setClassInviteCodeInput] = useState('');
   const [showPaymentNotice, setShowPaymentNotice] = useState(true);
+  const [showExamTopics, setShowExamTopics] = useState(false);
 
   const handleCreateWeeklyGoal = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -706,13 +707,22 @@ export default function StudentDashboard() {
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold">Sınıflarım</h3>
-              <button 
-                onClick={() => setShowJoinClassModal(true)}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-700"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Sınıfa Katıl</span>
-              </button>
+              <div className="flex space-x-2">
+                <button 
+                  onClick={() => setShowJoinClassModal(true)}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-700"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Sınıfa Katıl</span>
+                </button>
+                <button
+                  onClick={() => setShowExamTopics(true)}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center space-x-2"
+                >
+                  <Target className="h-4 w-4" />
+                  <span>Çıkmış Konular</span>
+                </button>
+              </div>
             </div>
             <div className="space-y-4">
               {studentClasses.length === 0 ? (
@@ -990,11 +1000,31 @@ export default function StudentDashboard() {
               studentId={studentData.id}
               onSuccess={refetch}
             />
-            <ExamTopicsSection 
-            user={user} 
-            onUpgrade={onUpgrade}
-            />
           </>
+        )}
+
+        {/* Exam Topics Modal */}
+        {showExamTopics && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-7xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h2 className="text-xl font-bold">TYT-AYT Çıkmış Konular Analizi</h2>
+                <button
+                  onClick={() => setShowExamTopics(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              <div className="p-6">
+                <ExamTopicsSection 
+                  user={user} 
+                  hasClassViewerSession={true}
+                  onUpgrade={() => {}}
+                />
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
