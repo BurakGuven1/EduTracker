@@ -1031,28 +1031,7 @@ const chartData = filteredExamResults
         )}
 
         {/* Exam Topics Modal */}
-        {showExamTopics && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-7xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-                <h2 className="text-xl font-bold">TYT-AYT Çıkmış Konular Analizi</h2>
-                <button
-                  onClick={() => setShowExamTopics(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-              <div className="p-6">
-                <ExamTopicsSection 
-                  user={user} 
-                  hasClassViewerSession={true}
-                  onUpgrade={() => {}}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        
       </div>
 
       {/* Study Session Form */}
