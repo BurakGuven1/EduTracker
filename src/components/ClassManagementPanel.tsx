@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft } from 'lucide-react';
-import { addClassAssignment, addClassAnnouncement, addClassExam, addClassExamResult } from '../lib/teacherApi';
+import { addClassAssignment, addClassAnnouncement, addClassExam, addClassExamResult, getClassAssignments, getClassAnnouncements, getClassExams } from '../lib/teacherApi';
 
 interface ClassManagementPanelProps {
   classData: any;
@@ -12,11 +13,38 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
   const [activeTab, setActiveTab] = useState<'assignments' | 'announcements' | 'exams'>('assignments');
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [assignments, setAssignments] = useState<any[]>([]);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [exams, setExams] = useState<any[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
 
-  // Get data from props
-  const assignments = classData?.class_assignments || [];
-  const announcements = classData?.class_announcements || [];
-  const exams = classData?.class_exams || [];
+  // Load fresh data when component mounts
+  useEffect(() => {
+    loadClassContent();
+  }, [classData.id]);
+
+  const loadClassContent = async () => {
+    setDataLoading(true);
+    try {
+      const [assignmentsRes, announcementsRes, examsRes] = await Promise.all([
+        getClassAssignments(classData.id),
+        getClassAnnouncements(classData.id),
+        getClassExams(classData.id)
+      ]);
+
+      console.log('Loaded assignments:', assignmentsRes.data);
+      console.log('Loaded announcements:', announcementsRes.data);
+      console.log('Loaded exams:', examsRes.data);
+
+      setAssignments(assignmentsRes.data || []);
+      setAnnouncements(announcementsRes.data || []);
+      setExams(examsRes.data || []);
+    } catch (error) {
+      console.error('Error loading class content:', error);
+    } finally {
+      setDataLoading(false);
+    }
+  };
 
   // Assignment form
   const [assignmentForm, setAssignmentForm] = useState({
@@ -187,6 +215,12 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
               </button>
             </div>
 
+            {dataLoading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Veriler yükleniyor...</p>
+              </div>
+            ) : (
             {/* Content List */}
             <div className="space-y-4">
               {activeTab === 'assignments' && (
@@ -310,6 +344,7 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
                 )
               )}
             </div>
+            )}
         </div>
 
         {/* Forms */}
