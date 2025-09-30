@@ -826,18 +826,6 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
           </button>
           </form>
         ) : null}
-
-        {activeTab === 'student' && (
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => setIsLoginMode(!isLoginMode)}
-              className="text-blue-600 hover:text-blue-700 text-sm"
-            >
-              {isLoginMode ? 'Hesabınız yok mu? Kayıt olun' : 'Zaten hesabınız var mı? Giriş yapın'}
-            </button>
-          </div>
-        )}
-
         {isLoginMode && (
           <div className="mt-4 p-4 bg-blue-50 rounded-lg">
             <p className="text-blue-800 text-sm font-medium mb-2">Demo Hesapları:</p>
