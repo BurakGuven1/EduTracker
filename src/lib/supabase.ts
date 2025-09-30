@@ -294,7 +294,8 @@ export const getClassExamResultsForStudent = async (studentId: string) => {
       *,
       class_exams!inner(
         *,
-        classes!inner(class_name)
+        classes!inner(class_name),
+        exam_files(*)
       )
     `)
     .eq('student_id', studentId)
@@ -348,24 +349,5 @@ export const getWeeklyStudySessions = async (studentId: string, startDate: strin
     .eq('student_id', studentId)
     .gte('session_date', startDate)
     .lte('session_date', endDate);
-  return { data, error };
-};
-
-// Get classes that a student is enrolled in
-export const getStudentClasses = async (studentId: string) => {
-  const { data, error } = await supabase
-    .from('class_students')
-    .select(`
-      *,
-      classes!inner(
-        id,
-        class_name,
-        description,
-        teacher_id,
-        teachers!inner(full_name)
-      )
-    `)
-    .eq('student_id', studentId)
-    .eq('status', 'active');
   return { data, error };
 };
