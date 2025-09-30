@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft, Edit, Trash2, BarChart3, X } from 'lucide-react';
+import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft, CreditCard as Edit, Trash2, BarChart3, X } from 'lucide-react';
 import { addClassAssignment, addClassAnnouncement, addClassExam, addClassExamResult, getClassAssignments, getClassAnnouncements, getClassExams } from '../lib/teacherApi';
 
 interface ClassManagementPanelProps {
@@ -73,87 +73,6 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
     total_questions: ''
   });
 
-  // Handle edit functionality
-  const handleEdit = (item: any, type: 'assignment' | 'announcement' | 'exam') => {
-    setSelectedItem({ ...item, type });
-    
-    if (type === 'assignment') {
-      setAssignmentForm({
-        title: item.title,
-        description: item.description || '',
-        subject: item.subject,
-        due_date: item.due_date
-      });
-    } else if (type === 'announcement') {
-      setAnnouncementForm({
-        title: item.title,
-        content: item.content,
-        type: item.type
-      });
-    } else if (type === 'exam') {
-      setExamForm({
-        exam_name: item.exam_name,
-        exam_type: item.exam_type,
-        exam_date: item.exam_date,
-        total_questions: item.total_questions?.toString() || ''
-      });
-    }
-    
-    setShowEditModal(true);
-  };
-
-  // Handle delete functionality
-  const handleDelete = (item: any, type: 'assignment' | 'announcement' | 'exam') => {
-    setSelectedItem({ ...item, type });
-    setShowDeleteModal(true);
-  };
-
-  // Handle exam results
-  const handleShowResults = (exam: any) => {
-    setSelectedItem(exam);
-    setShowResultsModal(true);
-  };
-
-  // Confirm delete
-  const confirmDelete = async () => {
-    if (!selectedItem) return;
-    
-    setDeleteLoading(true);
-    try {
-      // Here you would call the appropriate delete API
-      // For now, we'll just show an alert
-      alert(`${selectedItem.type} silme işlemi henüz implement edilmemiş`);
-      
-      setShowDeleteModal(false);
-      setSelectedItem(null);
-      await loadClassContent();
-    } catch (error: any) {
-      alert('Silme hatası: ' + error.message);
-    } finally {
-      setDeleteLoading(false);
-    }
-  };
-
-  // Handle edit submit
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedItem) return;
-    
-    setLoading(true);
-    try {
-      // Here you would call the appropriate update API
-      // For now, we'll just show an alert
-      alert(`${selectedItem.type} düzenleme işlemi henüz implement edilmemiş`);
-      
-      setShowEditModal(false);
-      setSelectedItem(null);
-      await loadClassContent();
-    } catch (error: any) {
-      alert('Düzenleme hatası: ' + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
   const handleSubmitAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -383,8 +302,39 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
                     <p>Henüz sınav eklenmemiş</p>
                   </div>
                 ) : (
-                  // Exams are now handled above in the combined section
-                  null
+                  exams.map((exam) => (
+                    <div key={exam.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-lg">{exam.exam_name}</h4>
+                          <p className="text-purple-600 font-medium">{exam.exam_type}</p>
+                          <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
+                            <span>Sınav Tarihi: {new Date(exam.exam_date).toLocaleDateString('tr-TR')}</span>
+                            {exam.total_questions > 0 && (
+                              <span>Soru Sayısı: {exam.total_questions}</span>
+                            )}
+                            <span>Oluşturulma: {new Date(exam.created_at).toLocaleDateString('tr-TR')}</span>
+                          </div>
+                          {exam.class_exam_results && exam.class_exam_results.length > 0 && (
+                            <div className="mt-2 text-sm text-green-600">
+                              {exam.class_exam_results.length} öğrenci sonucu girildi
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex space-x-2">
+                          <button className="text-green-600 hover:text-green-800 px-3 py-1 rounded border border-green-600 hover:bg-green-50">
+                            Sonuçlar
+                          </button>
+                          <button className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-600 hover:bg-blue-50">
+                            Düzenle
+                          </button>
+                          <button className="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600 hover:bg-red-50">
+                            Sil
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
                 )
               )}
             </div>
