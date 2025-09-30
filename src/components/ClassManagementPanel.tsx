@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import React, { useState, useEffect } from 'react';
 import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft } from 'lucide-react';
 import { addClassAssignment, addClassAnnouncement, addClassExam, addClassExamResult, getClassAssignments, getClassAnnouncements, getClassExams } from '../lib/teacherApi';
