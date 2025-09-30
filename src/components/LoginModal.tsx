@@ -32,7 +32,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
       name: 'Temel Paket',
       monthlyPrice: 219.99,
       yearlyPrice: 2199.99,
-      features: ['Temel özellikler', 'Sınırlı içerik', 'E-posta desteği',]
+      features: ['Temel özellikler', 'Sınırlı içerik', 'E-posta desteği']
     },
     {
       id: 'advanced',
