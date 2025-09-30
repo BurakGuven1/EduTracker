@@ -339,15 +339,12 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
                             </div>
                           )}
                         </div>
-                            onClick={() => handleShowResults(exam)}
                         <div className="flex space-x-2">
                           <button className="text-green-600 hover:text-green-800 px-3 py-1 rounded border border-green-600 hover:bg-green-50">
                             Sonuçlar
-                            onClick={() => handleEdit(exam, 'exam')}
                           </button>
                           <button className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-600 hover:bg-blue-50">
                             Düzenle
-                            onClick={() => handleDelete(exam, 'exam')}
                           </button>
                           <button className="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600 hover:bg-red-50">
                             Sil
@@ -559,6 +556,349 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Modal */}
+        {showEditModal && selectedItem && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-md w-full p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">
+                  {selectedItem.type === 'assignment' && 'Ödev Düzenle'}
+                  {selectedItem.type === 'announcement' && 'Duyuru Düzenle'}
+                  {selectedItem.type === 'exam' && 'Sınav Düzenle'}
+                </h3>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              
+              <form onSubmit={handleUpdate} className="space-y-4">
+                {selectedItem.type === 'assignment' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Ödev Başlığı *</label>
+                      <input
+                        type="text"
+                        value={assignmentForm.title}
+                        onChange={(e) => setAssignmentForm(prev => ({ ...prev, title: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Ders *</label>
+                      <select
+                        value={assignmentForm.subject}
+                        onChange={(e) => setAssignmentForm(prev => ({ ...prev, subject: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        required
+                      >
+                        <option value="">Ders seçin</option>
+                        {subjects.map(subject => (
+                          <option key={subject} value={subject}>{subject}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Son Teslim Tarihi *</label>
+                      <input
+                        type="date"
+                        value={assignmentForm.due_date}
+                        onChange={(e) => setAssignmentForm(prev => ({ ...prev, due_date: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
+                      <textarea
+                        value={assignmentForm.description}
+                        onChange={(e) => setAssignmentForm(prev => ({ ...prev, description: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        rows={3}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {selectedItem.type === 'announcement' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Duyuru Başlığı *</label>
+                      <input
+                        type="text"
+                        value={announcementForm.title}
+                        onChange={(e) => setAnnouncementForm(prev => ({ ...prev, title: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Tür</label>
+                      <select
+                        value={announcementForm.type}
+                        onChange={(e) => setAnnouncementForm(prev => ({ ...prev, type: e.target.value as any }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      >
+                        <option value="info">Bilgi</option>
+                        <option value="warning">Uyarı</option>
+                        <option value="success">Başarı</option>
+                        <option value="error">Hata</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">İçerik *</label>
+                      <textarea
+                        value={announcementForm.content}
+                        onChange={(e) => setAnnouncementForm(prev => ({ ...prev, content: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        rows={4}
+                        required
+                      />
+                    </div>
+                  </>
+                )}
+
+                {selectedItem.type === 'exam' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Sınav Adı *</label>
+                      <input
+                        type="text"
+                        value={examForm.exam_name}
+                        onChange={(e) => setExamForm(prev => ({ ...prev, exam_name: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Sınav Türü *</label>
+                      <select
+                        value={examForm.exam_type}
+                        onChange={(e) => setExamForm(prev => ({ ...prev, exam_type: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        required
+                      >
+                        <option value="">Tür seçin</option>
+                        <option value="TYT">TYT</option>
+                        <option value="AYT">AYT</option>
+                        <option value="LGS">LGS</option>
+                        <option value="Quiz">Quiz</option>
+                        <option value="Yazılı">Yazılı</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Sınav Tarihi *</label>
+                      <input
+                        type="date"
+                        value={examForm.exam_date}
+                        onChange={(e) => setExamForm(prev => ({ ...prev, exam_date: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Toplam Soru Sayısı</label>
+                      <input
+                        type="number"
+                        value={examForm.total_questions}
+                        onChange={(e) => setExamForm(prev => ({ ...prev, total_questions: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        min="1"
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg"
+                  >
+                    İptal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={editLoading}
+                    className="flex-1 bg-blue-600 text-white py-2 rounded-lg disabled:opacity-50"
+                  >
+                    {editLoading ? 'Güncelleniyor...' : 'Güncelle'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && selectedItem && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-md w-full p-6">
+              <div className="flex items-center mb-4">
+                <div className="bg-red-100 p-2 rounded-full mr-3">
+                  <Trash2 className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">Silme Onayı</h3>
+              </div>
+              
+              <p className="text-gray-600 mb-6">
+                <strong>"{selectedItem.title || selectedItem.exam_name}"</strong> öğesini silmek istediğinizden emin misiniz? 
+                Bu işlem geri alınamaz.
+              </p>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  disabled={deleteLoading}
+                  className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
+                >
+                  {deleteLoading ? 'Siliniyor...' : 'Sil'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Results Modal with File Upload */}
+        {showResultsModal && selectedItem && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-semibold">
+                  {selectedItem.exam_name} - Sonuçlar
+                </h3>
+                <button
+                  onClick={() => setShowResultsModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* File Upload Section */}
+              <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-blue-800 mb-3 flex items-center">
+                  <Upload className="h-5 w-5 mr-2" />
+                  Sonuç Dosyası Yükle
+                </h4>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.pdf,.docx,.doc,.xlsx,.xls"
+                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                    className="flex-1 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                  <button
+                    onClick={handleFileUpload}
+                    disabled={!selectedFile || uploadLoading}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
+                  >
+                    {uploadLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
+                    <span>{uploadLoading ? 'Yükleniyor...' : 'Yükle'}</span>
+                  </button>
+                </div>
+                <p className="text-xs text-blue-600 mt-2">
+                  Desteklenen formatlar: PNG, JPG, PDF, DOCX, XLSX
+                </p>
+              </div>
+
+              {/* Current File Display */}
+              {selectedItem.result_file_url && (
+                <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                  <h4 className="font-semibold text-green-800 mb-2 flex items-center">
+                    <Download className="h-5 w-5 mr-2" />
+                    Mevcut Sonuç Dosyası
+                  </h4>
+                  <div className="flex items-center justify-between">
+                    <span className="text-green-700">{selectedItem.result_file_name}</span>
+                    <a
+                      href={selectedItem.result_file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                    >
+                      İndir/Görüntüle
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Student Results Table */}
+              <div className="overflow-x-auto">
+                <h4 className="font-semibold mb-3 flex items-center">
+                  <BarChart3 className="h-5 w-5 mr-2 text-purple-600" />
+                  Öğrenci Sonuçları
+                </h4>
+                {selectedItem.class_exam_results && selectedItem.class_exam_results.length > 0 ? (
+                  <table className="w-full text-sm border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="border border-gray-300 px-4 py-2 text-left">Sıra</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Öğrenci</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Puan</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Doğru</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Yanlış</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Boş</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedItem.class_exam_results
+                        .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))
+                        .map((result: any, index: number) => (
+                          <tr key={result.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                            <td className="border border-gray-300 px-4 py-2">
+                              <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                                index === 0 ? 'bg-yellow-100 text-yellow-800' :
+                                index === 1 ? 'bg-gray-100 text-gray-800' :
+                                index === 2 ? 'bg-orange-100 text-orange-800' :
+                                'bg-blue-100 text-blue-800'
+                              }`}>
+                                {index + 1}
+                              </span>
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2 font-medium">
+                              {result.students?.profiles?.full_name || 'Bilinmeyen'}
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2 font-semibold text-blue-600">
+                              {result.score ? result.score.toFixed(1) : '0'}
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2 text-green-600">
+                              {result.correct_answers || 0}
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2 text-red-600">
+                              {result.wrong_answers || 0}
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2 text-gray-600">
+                              {result.empty_answers || 0}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <BarChart3 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>Henüz öğrenci sonucu girilmemiş</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
