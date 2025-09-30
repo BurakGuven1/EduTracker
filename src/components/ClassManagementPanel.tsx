@@ -220,7 +220,7 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
                 <p className="text-gray-600">Veriler yükleniyor...</p>
               </div>
             ) : (
-            {/* Content List */}
+            /* Content List */
             <div className="space-y-4">
               {activeTab === 'assignments' && (
                 assignments.length === 0 ? (
@@ -343,6 +343,7 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
                 )
               )}
             </div>
+            )
             )}
         </div>
 
