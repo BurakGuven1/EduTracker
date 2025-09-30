@@ -756,7 +756,7 @@ export default function ExamTopicsSection({ user, onUpgrade }: ExamTopicsSection
                   onClick={onUpgrade}
                   className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg"
                 >
-                  Premium'a Geç
+                  Paket Seç
                 </button>
               </div>
             </div>
@@ -770,6 +770,7 @@ export default function ExamTopicsSection({ user, onUpgrade }: ExamTopicsSection
               <li>• <strong>Yıl filtreleyin:</strong> Hangi yılları dahil etmek istediğinizi seçin {!isPremium && '(Premium: Tüm yıllar)'}</li>
               <li>• <strong>Konu arayın:</strong> Belirli bir konuyu bulmak için arama kutusunu kullanın</li>
               <li>• <strong>Detay görün:</strong> Tablodaki bir konuya tıklayarak yıllık dağılım grafiğini görün</li>
+              <li>• <strong>Yapay Zeka desteğinden faydalanın</strong> Paketlerden birini seç sen de ayrıcalıklardan faydalan 🚀</li>
             </ul>
           </div>
         </div>
