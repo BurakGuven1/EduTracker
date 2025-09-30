@@ -477,7 +477,7 @@ export default function StudentDashboard() {
           <YAxis />
           <Tooltip 
             formatter={(value, name, props) => [
-              `${value} puan`,
+              ` puan`,
               `${props.payload.examName} (${props.payload.examType})`
             ]}
           />
