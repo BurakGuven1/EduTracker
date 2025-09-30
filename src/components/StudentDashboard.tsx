@@ -481,13 +481,14 @@ export default function StudentDashboard() {
                   ]}
                 />
                 <Line 
-                  type="monotone" 
-                  dataKey="puan" 
-                  stroke="#3B82F6" 
-                  strokeWidth={2} 
-                  name="Puan"
-                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                />
+      type="monotone" 
+      dataKey="puan" 
+      stroke="#3B82F6" 
+      strokeWidth={3} 
+      name="Puan"
+      dot={{ fill: '#3B82F6', strokeWidth: 2, r: 5 }}
+      activeDot={{ r: 7, fill: '#1D4ED8' }}
+    />
               </LineChart>
             </ResponsiveContainer>
           ) : (
