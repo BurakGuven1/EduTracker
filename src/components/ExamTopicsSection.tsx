@@ -212,13 +212,18 @@ function ExamTopicsSection({ user, hasClassViewerSession = false, onUpgrade }: E
             <div>
               <label className="flex items-center text-sm font-medium text-gray-700 mb-3">
                 <BarChart3 className="h-4 w-4 mr-2" />
-                Yıl Filtresi 🔒
+                Yıl Filtresi
               </label>
               <div className="flex flex-wrap gap-2">
                 {['2018', '2019', '2020'].map(year => (
                   <button
                     key={year}
-                    className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium"
+                    className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                      isPremium || freeYears.includes(year)
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    }`}
+                    disabled={!isPremium && !freeYears.includes(year)}
                   >
                     {year}
                   </button>
@@ -226,17 +231,25 @@ function ExamTopicsSection({ user, hasClassViewerSession = false, onUpgrade }: E
                 {['2021', '2022', '2023', '2024', '2025'].map(year => (
                   <button
                     key={year}
-                    disabled
-                    className="px-3 py-2 bg-gray-200 text-gray-400 rounded-lg text-sm font-medium cursor-not-allowed relative"
+                    disabled={!isPremium}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium relative ${
+                      isPremium
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    }`}
                   >
                     {year}
-                    <Lock className="h-3 w-3 absolute -top-1 -right-1 text-orange-500" />
+                    {!isPremium && (
+                      <Lock className="h-3 w-3 absolute -top-1 -right-1 text-orange-500" />
+                    )}
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-orange-600 mt-2">
-                2021-2025 yılları premium kullanıcılar için
-              </p>
+              {!isPremium && (
+                <p className="text-xs text-orange-600 mt-2">
+                  2021-2025 yılları premium kullanıcılar için
+                </p>
+              )}
             </div>
           </div>
 
