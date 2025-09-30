@@ -317,13 +317,12 @@ export default function StudentDashboard() {
 
       if (weeklyGoal) {
       await reloadWeeklyStudyHours(weeklyGoal);
-      }
+    }
     
-        alert('Çalışma oturumu başarıyla eklendi!');
-          } catch (error) {
-        console.error('Error adding study session:', error);
-          }
-      
+    alert('Çalışma oturumu başarıyla eklendi!');
+  } catch (error) {
+    console.error('Error adding study session:', error);
+  }
 
       // Update local study data
       const dayIndex = new Date(studyFormData.date).getDay();
