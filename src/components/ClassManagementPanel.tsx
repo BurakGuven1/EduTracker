@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft, Edit, Trash2, X, Upload, Download, BarChart3 } from 'lucide-react';
+import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft, CreditCard as Edit, Trash2, X, Upload, Download, BarChart3 } from 'lucide-react';
 import { 
   addClassAssignment, 
   addClassAnnouncement, 
