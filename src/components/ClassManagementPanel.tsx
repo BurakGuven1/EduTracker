@@ -1,6 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft, CreditCard as Edit, Trash2, BarChart3, X } from 'lucide-react';
-import { addClassAssignment, addClassAnnouncement, addClassExam, addClassExamResult, getClassAssignments, getClassAnnouncements, getClassExams } from '../lib/teacherApi';
+import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft, Edit, Trash2, BarChart3, X, Upload, Download } from 'lucide-react';
+import { 
+  addClassAssignment, 
+  addClassAnnouncement, 
+  addClassExam, 
+  addClassExamResult, 
+  getClassAssignments, 
+  getClassAnnouncements, 
+  getClassExams,
+  updateClassAssignment,
+  updateClassAnnouncement,
+  updateClassExam,
+  deleteClassAssignment,
+  deleteClassAnnouncement,
+  deleteClassExam,
+  uploadExamResultFile
+} from '../lib/teacherApi';
 
 interface ClassManagementPanelProps {
   classData: any;
@@ -21,6 +36,9 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Load fresh data when component mounts
   useEffect(() => {
@@ -321,12 +339,15 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
                             </div>
                           )}
                         </div>
+                            onClick={() => handleShowResults(exam)}
                         <div className="flex space-x-2">
                           <button className="text-green-600 hover:text-green-800 px-3 py-1 rounded border border-green-600 hover:bg-green-50">
                             Sonuçlar
+                            onClick={() => handleEdit(exam, 'exam')}
                           </button>
                           <button className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-600 hover:bg-blue-50">
                             Düzenle
+                            onClick={() => handleDelete(exam, 'exam')}
                           </button>
                           <button className="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600 hover:bg-red-50">
                             Sil
