@@ -566,4 +566,4 @@ export const deleteExamFile = async (fileId: string) => {
     .eq('id', fileId);
 
   return { data, error };
-}
+};
