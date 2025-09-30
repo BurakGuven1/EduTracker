@@ -509,22 +509,22 @@ export default function StudentDashboard() {
               </div>
             ) : (
               [...homeworks, ...classAssignments].slice(0, 4).map((homework, index) => (
-              <div key={homework.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  {homework.completed ? (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 text-orange-500" />
-                  )}
-                  <div>
-                    <p className="text-sm font-medium">{homework.title}</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(homework.due_date).toLocaleDateString('tr-TR')}
-                      {homework.subject && ` • ${homework.subject}`}
-                    </p>
+                <div key={homework.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    {homework.completed ? (
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-5 w-5 text-orange-500" />
+                    )}
+                    <div>
+                      <p className="text-sm font-medium">{homework.title}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(homework.due_date).toLocaleDateString('tr-TR')}
+                        {homework.subject && ` • ${homework.subject}`}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
               ))
             )}
           </div>
