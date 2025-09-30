@@ -189,24 +189,14 @@ export const joinClassWithCode = async (studentId: string, inviteCode: string) =
     .select('id')
     .eq('class_id', classData.id)
     .eq('student_id', studentId)
-    .single();
+    .eq('status', 'active')
+    .maybeSingle();
 
   if (existingMembership) {
-    throw new Error('Bu sınıfa zaten katıldınız');
+    throw new Error('Bu sınıfa zaten kayıtlısınız');
   }
 
-  // Check student's class count (max 3)
-  const { data: studentClasses } = await supabase
-    .from('class_students')
-    .select('id')
-    .eq('student_id', studentId)
-    .eq('status', 'active');
-
-  if (studentClasses && studentClasses.length >= 3) {
-    throw new Error('Maksimum 3 sınıfa katılabilirsiniz');
-  }
-
-  // Join class
+  // Add student to class
   const { data, error } = await supabase
     .from('class_students')
     .insert([{
@@ -219,85 +209,70 @@ export const joinClassWithCode = async (studentId: string, inviteCode: string) =
 
   if (error) throw error;
 
-  return { data: { ...data, class: classData }, error: null };
+  return { data, error: null };
 };
 
-export const getStudentClasses = async (studentId: string) => {
+// Class Content Management
+export const addClassAssignment = async (assignmentData: {
+  class_id: string;
+  teacher_id: string;
+  title: string;
+  description?: string;
+  subject: string;
+  due_date: string;
+}) => {
   const { data, error } = await supabase
-    .from('class_students')
-    .select(`
-      *,
-      classes (
-        *,
-        teachers (
-          full_name,
-          school_name
-        )
-      )
-    `)
-    .eq('student_id', studentId)
-    .eq('status', 'active');
-
-  return { data, error };
-};
-
-export const leaveClass = async (studentId: string, classId: string) => {
-  // Check if student joined less than 24 hours ago
-  const { data: membership } = await supabase
-    .from('class_students')
-    .select('joined_at')
-    .eq('student_id', studentId)
-    .eq('class_id', classId)
-    .single();
-
-  if (membership) {
-    const joinedAt = new Date(membership.joined_at);
-    const now = new Date();
-    const hoursDiff = (now.getTime() - joinedAt.getTime()) / (1000 * 60 * 60);
-
-    if (hoursDiff < 24) {
-      throw new Error('Sınıfa katıldıktan sonra 24 saat içinde ayrılamazsınız');
-    }
-  }
-
-  const { data, error } = await supabase
-    .from('class_students')
-    .update({ status: 'left' })
-    .eq('student_id', studentId)
-    .eq('class_id', classId)
+    .from('class_assignments')
+    .insert([assignmentData])
     .select()
     .single();
 
-  return { data, error };
+  if (error) throw error;
+  return { data, error: null };
 };
 
-// Class Management Functions
-export const getClassData = async (classId: string) => {
+export const addClassAnnouncement = async (announcementData: {
+  class_id: string;
+  teacher_id: string;
+  title: string;
+  content: string;
+  type?: 'info' | 'warning' | 'success' | 'error';
+}) => {
   const { data, error } = await supabase
-    .from('classes')
-    .select(`
-      *,
-      teachers(*),
-      class_students(
-        *,
-        students(
-          *,
-          profiles(*)
-        )
-      )
-    `)
-    .eq('id', classId)
+    .from('class_announcements')
+    .insert([announcementData])
+    .select()
     .single();
 
-  return { data, error };
+  if (error) throw error;
+  return { data, error: null };
 };
 
+export const addClassExam = async (examData: {
+  class_id: string;
+  teacher_id: string;
+  exam_name: string;
+  exam_type: string;
+  exam_date: string;
+  total_questions?: number;
+}) => {
+  const { data, error } = await supabase
+    .from('class_exams')
+    .insert([examData])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return { data, error: null };
+};
+
+// Get class content
 export const getClassAssignments = async (classId: string) => {
   const { data, error } = await supabase
     .from('class_assignments')
     .select('*')
     .eq('class_id', classId)
-    .order('due_date', { ascending: true });
+    .order('created_at', { ascending: false });
 
   return { data, error };
 };
@@ -317,83 +292,200 @@ export const getClassExams = async (classId: string) => {
     .from('class_exams')
     .select(`
       *,
-      class_exam_results(
-        *,
-        students(
-          *,
-          profiles(*)
-        )
-      )
+      class_exam_results (*),
+      exam_files!exam_id (*)
     `)
     .eq('class_id', classId)
-    .order('exam_date', { ascending: false });
+    .order('created_at', { ascending: false });
 
   return { data, error };
 };
 
-// Teacher Class Management
-export const addClassAssignment = async (assignmentData: {
-  class_id: string;
-  teacher_id: string;
-  title: string;
-  description?: string;
-  subject: string;
-  due_date: string;
-}) => {
+// Update class content
+export const updateClassAssignment = async (id: string, updates: any) => {
   const { data, error } = await supabase
     .from('class_assignments')
-    .insert([assignmentData])
+    .update(updates)
+    .eq('id', id)
     .select()
     .single();
 
-  return { data, error };
+  if (error) throw error;
+  return { data, error: null };
 };
 
-export const addClassAnnouncement = async (announcementData: {
-  class_id: string;
-  teacher_id: string;
-  title: string;
-  content: string;
-  type?: 'info' | 'warning' | 'success' | 'error';
-}) => {
+export const updateClassAnnouncement = async (id: string, updates: any) => {
   const { data, error } = await supabase
     .from('class_announcements')
-    .insert([announcementData])
+    .update(updates)
+    .eq('id', id)
     .select()
     .single();
 
-  return { data, error };
+  if (error) throw error;
+  return { data, error: null };
 };
 
-export const addClassExam = async (examData: {
-  class_id: string;
-  teacher_id: string;
-  exam_name: string;
-  exam_type: string;
-  exam_date: string;
-  total_questions?: number;
-}) => {
+export const updateClassExam = async (id: string, updates: any) => {
   const { data, error } = await supabase
     .from('class_exams')
-    .insert([examData])
+    .update(updates)
+    .eq('id', id)
     .select()
     .single();
+
+  if (error) throw error;
+  return { data, error: null };
+};
+
+// Delete class content
+export const deleteClassAssignment = async (id: string) => {
+  const { error } = await supabase
+    .from('class_assignments')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+  return { error: null };
+};
+
+export const deleteClassAnnouncement = async (id: string) => {
+  const { error } = await supabase
+    .from('class_announcements')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+  return { error: null };
+};
+
+export const deleteClassExam = async (id: string) => {
+  const { error } = await supabase
+    .from('class_exams')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+  return { error: null };
+};
+
+// File management
+export const uploadExamResultFile = async (formData: FormData) => {
+  try {
+    const file = formData.get('file') as File;
+    const examId = formData.get('exam_id') as string;
+    const classId = formData.get('class_id') as string;
+    const teacherId = formData.get('teacher_id') as string;
+
+    if (!file || !examId || !classId || !teacherId) {
+      throw new Error('Gerekli bilgiler eksik');
+    }
+
+    // Generate unique file path
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `exam-results/${classId}/${examId}/${fileName}`;
+
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('exam-files')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      throw new Error(`Dosya yükleme hatası: ${uploadError.message}`);
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('exam-files')
+      .getPublicUrl(filePath);
+
+    // Save file metadata to database
+    const { data, error } = await supabase
+      .from('exam_files')
+      .insert([{
+        exam_id: examId,
+        class_id: classId,
+        teacher_id: teacherId,
+        file_name: file.name,
+        file_path: filePath,
+        file_url: publicUrl,
+        file_size: file.size,
+        file_type: file.type
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      // If database insert fails, clean up uploaded file
+      await supabase.storage
+        .from('exam-files')
+        .remove([filePath]);
+      throw new Error(`Veritabanı hatası: ${error.message}`);
+    }
+
+    return { data, error: null };
+  } catch (error: any) {
+    throw new Error(`Dosya yükleme hatası: ${error.message}`);
+  }
+};
+
+export const getExamFiles = async (examId: string) => {
+  const { data, error } = await supabase
+    .from('exam_files')
+    .select('*')
+    .eq('exam_id', examId)
+    .order('created_at', { ascending: false });
 
   return { data, error };
 };
 
-export const addClassExamResult = async (resultData: {
-  class_exam_id: string;
-  student_id: string;
-  score: number;
-  correct_answers?: number;
-  wrong_answers?: number;
-  empty_answers?: number;
-}) => {
+export const deleteExamFile = async (fileId: string) => {
+  // First get the file info to delete from storage
+  const { data: fileData, error: fetchError } = await supabase
+    .from('exam_files')
+    .select('file_path')
+    .eq('id', fileId)
+    .single();
+
+  if (fetchError) throw fetchError;
+
+  // Delete from storage
+  const { error: storageError } = await supabase.storage
+    .from('exam-files')
+    .remove([fileData.file_path]);
+
+  if (storageError) throw storageError;
+
+  // Delete from database
+  const { error: dbError } = await supabase
+    .from('exam_files')
+    .delete()
+    .eq('id', fileId);
+
+  if (dbError) throw dbError;
+  return { error: null };
+};
+
+// Get comprehensive class data
+export const getClassData = async (classId: string) => {
   const { data, error } = await supabase
-    .from('class_exam_results')
-    .insert([resultData])
-    .select()
+    .from('classes')
+    .select(`
+      *,
+      teachers (*),
+      class_students (
+        *,
+        students (*)
+      ),
+      class_assignments (*),
+      class_announcements (*),
+      class_exams (
+        *,
+        class_exam_results (*)
+      )
+    `)
+    .eq('id', classId)
     .single();
 
   return { data, error };

@@ -21,11 +21,15 @@ function App() {
   const [showTeacherLoginModal, setShowTeacherLoginModal] = useState(false);
   const [currentView, setCurrentView] = useState<'home' | 'dashboard'>('home');
   const [teacherUser, setTeacherUser] = useState<any>(null);
+  const [hasClassViewerSession, setHasClassViewerSession] = useState(false);
 
   // Check for teacher session on load
   React.useEffect(() => {
     const teacherSession = localStorage.getItem('teacherSession');
     const classViewerSession = localStorage.getItem('classViewerSession');
+    
+    // Update class viewer session state
+    setHasClassViewerSession(!!classViewerSession);
     
     if (teacherSession) {
       const teacherData = JSON.parse(teacherSession);
@@ -121,6 +125,7 @@ function App() {
       <PricingSection onSelectPackage={handleSelectPackage} />
       <ExamTopicsSection 
         user={user} 
+        hasClassViewerSession={hasClassViewerSession}
         onUpgrade={() => setShowStudentParentLoginModal(true)}
       />
       <TeacherSection />
