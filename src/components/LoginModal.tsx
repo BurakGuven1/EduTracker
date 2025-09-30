@@ -826,7 +826,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
           </button>
           </form>
         ) : null}
-      
+      }
         {isLoginMode && (
           <div className="mt-4 p-4 bg-blue-50 rounded-lg">
             <p className="text-blue-800 text-sm font-medium mb-2">Demo Hesapları:</p>
