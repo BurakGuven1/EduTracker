@@ -155,8 +155,6 @@ function App() {
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>Yardım Merkezi</li>
                 <li>İletişim</li>
-                <li>Canlı Destek</li>
-                <li>Videolar</li>
               </ul>
             </div>
             <div>
@@ -164,12 +162,11 @@ function App() {
               <p className="text-sm text-gray-400">
                 info@edutracker.com<br />
                 0850 123 45 67<br />
-                7/24 Canlı Destek
               </p>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-            <p>&copy; 2024 EduTracker. Tüm hakları saklıdır.</p>
+            <p>&copy; {new Date().getFullYear()} EduTracker. Tüm hakları saklıdır.</p>
           </div>
         </div>
       </footer>
