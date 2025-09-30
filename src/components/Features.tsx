@@ -91,7 +91,7 @@ export default function Features() {
         <div className="mt-16 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8">
           <div className="text-center">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Neden EduTracker?
+              Neden BaşarıYolu?
             </h3>
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center">
