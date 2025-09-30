@@ -313,14 +313,16 @@ export default function StudentDashboard() {
       };
 
       const { error } = await addStudySession(sessionData);
+      if (error) throw error;
+
       if (weeklyGoal) {
       await reloadWeeklyStudyHours(weeklyGoal);
-    }
+      }
     
-    alert('Çalışma oturumu başarıyla eklendi!');
-  } catch (error) {
-    console.error('Error adding study session:', error);
-  }
+        alert('Çalışma oturumu başarıyla eklendi!');
+          } catch (error) {
+        console.error('Error adding study session:', error);
+          }
       
 
       // Update local study data
