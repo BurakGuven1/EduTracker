@@ -993,7 +993,7 @@ export default function StudentDashboard() {
             <ExamTopicsSection 
             user={user} 
             onUpgrade={onUpgrade}
-          />
+            />
           </>
         )}
       </div>
