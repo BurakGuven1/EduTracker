@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft, CreditCard as Edit, Trash2, BarChart3, X } from 'lucide-react';
+import { Plus, BookOpen, Bell, Trophy, Users, ArrowLeft } from 'lucide-react';
 import { addClassAssignment, addClassAnnouncement, addClassExam, addClassExamResult, getClassAssignments, getClassAnnouncements, getClassExams } from '../lib/teacherApi';
 
 interface ClassManagementPanelProps {
@@ -16,11 +16,6 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [exams, setExams] = useState<any[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showResultsModal, setShowResultsModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Load fresh data when component mounts
   useEffect(() => {
