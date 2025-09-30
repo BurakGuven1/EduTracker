@@ -480,7 +480,7 @@ export default function StudentDashboard() {
                     `${props.payload.examName} (${props.payload.examType})`
                   ]}
                 />
-                <Scatter 
+                <Scatter
       dataKey="puan" 
       fill="#3B82F6" 
       stroke="#1D4ED8"
@@ -488,7 +488,7 @@ export default function StudentDashboard() {
       r={6}
       name="Puan"
     />
-  </ScatterChart>
+              </ScatterChart>
             </ResponsiveContainer>
           ) : (
             <div className="text-center py-16 text-gray-500">
