@@ -298,6 +298,27 @@ export default function StudentDashboard() {
 
   const stats = calculateStats();
 
+
+  const reloadWeeklyStudyHours = async (goal: any) => {
+  if (!studentData || !goal) return;
+
+  try {
+    // Calculate actual study hours for this week
+    const { data: sessions } = await getWeeklyStudySessions(
+      studentData.id,
+      goal.start_date,
+      goal.end_date
+    );
+    
+    const totalHours = sessions?.reduce((sum: number, session: any) => {
+      return sum + (session.duration_minutes || 0) / 60;
+    }, 0) || 0;
+    
+    setWeeklyStudyHours(totalHours);
+  } catch (error) {
+    console.error('Error reloading study hours:', error);
+  }
+};
   // Add study session handler
 const handleAddStudySession = async (e: React.FormEvent) => {
   e.preventDefault();
