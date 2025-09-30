@@ -39,7 +39,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
       name: 'Gelişmiş Paket',
       monthlyPrice: 319.99,
       yearlyPrice: 3199.99,
-      features: ['Gelişmiş özellikler', 'Tam içerik', 'Yapay Zeka Desteği','Öncelikli destek', 'Mobil uygulama', 'Analitik raporlar']
+      features: ['Gelişmiş özellikler', 'Tam içerik', 'Yapay Zeka Desteği','Öncelikli destek','Analitik raporlar']
     },
     {
       id: 'professional',
