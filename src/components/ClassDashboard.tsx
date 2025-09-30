@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, BookOpen, Bell, Users, FileText, BarChart3, Download, Eye, ArrowLeft, Settings, Trophy } from 'lucide-react';
+import { Users, BookOpen, Bell, Trophy, Calendar, LogOut, ArrowLeft, Settings } from 'lucide-react';
 import { getClassData, getClassAssignments, getClassAnnouncements, getClassExams } from '../lib/teacherApi';
-import { getStudentExamFiles } from '../lib/teacherApi';
 
 interface ClassDashboardProps {
   classData: any;
-  studentId?: string;
   onBack: () => void;
 }
 
-export default function ClassDashboard({ classData, studentId, onBack }: ClassDashboardProps) {
+export default function ClassDashboard({ classData, onBack }: ClassDashboardProps) {
   const [assignments, setAssignments] = useState<any[]>([]);
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [exams, setExams] = useState<any[]>([]);
+  const [examFiles, setExamFiles] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
