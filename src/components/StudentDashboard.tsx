@@ -473,7 +473,7 @@ export default function StudentDashboard() {
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" fontSize={12} />
-          <YAxis domain={['dataMin - 20', 'dataMax + 20']} />
+          <YAxis domain={[100, 500]} />
           <Tooltip 
             formatter={(value, name, props) => [
               `${value} puan`,
@@ -494,7 +494,7 @@ export default function StudentDashboard() {
     ) : (
       <div className="text-center py-16 text-gray-500">
         <TrendingUp className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-        <p>{chartFilter === 'all' ? 'Grafik için deneme sonucu gerekli' : `${chartFilter} denemesi bulunamadı`}</p>
+        <p>{chartFilter === 'all' ? 'Grafik için deneme sonucu gerekli' : `${chartFilter} denemesi bulunmuyor`}</p>
       </div>
     )}
   </div>
