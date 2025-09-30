@@ -294,8 +294,7 @@ export const getClassExamResultsForStudent = async (studentId: string) => {
       *,
       class_exams!inner(
         *,
-        classes!inner(class_name),
-        exam_files(*)
+        classes!inner(class_name)
       )
     `)
     .eq('student_id', studentId)
