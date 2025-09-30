@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, Phone } from 'lucide-react';
 import { signUp, signIn, createProfile, createStudentRecord, createParentRecord, supabase } from '../lib/supabase';
+import PaymentPage from './PaymentPage';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -13,6 +14,8 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [userType, setUserType] = useState<'student' | 'parent'>('student');
   const [loading, setLoading] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [registrationData, setRegistrationData] = useState<any>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -292,15 +295,32 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
       return;
     }
 
+    // Store registration data and show payment page
+    setRegistrationData({
+      email: formData.email,
+      password: formData.password,
+      name: formData.name,
+      grade: formData.grade,
+      schoolName: formData.schoolName,
+      packageType: formData.packageType,
+      billingCycle: formData.billingCycle,
+      classCode: formData.classCode
+    });
+    setShowPayment(true);
+    setLoading(false);
+  };
+
+  const handlePaymentSuccess = async () => {
+    setLoading(true);
     try {
       let classId = null;
       
       // If class code is provided, validate it first
-      if (formData.classCode.trim()) {
+      if (registrationData.classCode.trim()) {
         const { data: classData, error: classError } = await supabase
           .from('classes')
           .select('id, status, current_students, student_capacity')
-          .eq('invite_code', formData.classCode.trim().toUpperCase())
+          .eq('invite_code', registrationData.classCode.trim().toUpperCase())
           .single();
 
         if (classError || !classData) {
@@ -319,7 +339,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
       }
 
       // 1. Create auth user
-      const { data: authData, error: authError } = await signUp(formData.email, formData.password);
+      const { data: authData, error: authError } = await signUp(registrationData.email, registrationData.password);
       
       if (authError) {
         console.error('Auth error:', authError);
@@ -335,10 +355,10 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
         // 2. Create profile
         const profileData = {
           id: authData.user.id,
-          email: formData.email,
-          full_name: formData.name,
+          email: registrationData.email,
+          full_name: registrationData.name,
           role: userType,
-          package_type: formData.packageType
+          package_type: registrationData.packageType
         };
         
         console.log('Creating profile:', profileData);
@@ -352,8 +372,8 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
         if (userType === 'student') {
           const studentData = {
             user_id: authData.user.id,
-            grade: parseInt(formData.grade),
-            school_name: formData.schoolName
+            grade: parseInt(registrationData.grade),
+            school_name: registrationData.schoolName
           };
           console.log('Creating student:', studentData);
           const { error: studentError } = await createStudentRecord(studentData);
@@ -415,12 +435,13 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
           billingCycle: 'monthly'
         });
         
+        setShowPayment(false);
         onClose();
-        alert('Kayıt başarılı! Hoş geldiniz!');
+        alert('Ödeme başarılı! Hesabınız aktifleştirildi. Hoş geldiniz!');
       }
     } catch (error: any) {
       console.error('Registration error:', error);
-      alert('Kayıt hatası: ' + (error.message || 'Bilinmeyen hata'));
+      alert('Hesap oluşturma hatası: ' + (error.message || 'Bilinmeyen hata'));
     } finally {
       setLoading(false);
     }
@@ -821,5 +842,18 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
         )}
       </div>
     </div>
+
+    {/* Payment Page */}
+    {registrationData && (
+      <PaymentPage
+        isOpen={showPayment}
+        onClose={() => {
+          setShowPayment(false);
+          setRegistrationData(null);
+        }}
+        onPaymentSuccess={handlePaymentSuccess}
+        registrationData={registrationData}
+      />
+    )}
   );
 }
