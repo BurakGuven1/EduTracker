@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, User, GraduationCap } from 'lucide-react';
+import { X, Mail, Lock, User, Phone } from 'lucide-react';
 import { signUp, signIn, createProfile, createStudentRecord, createParentRecord, supabase } from '../lib/supabase';
 
 interface LoginModalProps {
@@ -21,6 +21,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
     grade: '',
     schoolName: '',
     parentCode: '',
+    parentPhone: '',
     classCode: '',
     packageType: 'basic',
     billingCycle: 'monthly'
@@ -72,9 +73,15 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
 
   const handleLogin = async () => {
     if (activeTab === 'parent') {
-      // Parent login with invite code
+      // Parent login with invite code and phone
       if (!formData.parentCode.trim()) {
         alert('Lütfen davet kodunu girin');
+        setLoading(false);
+        return;
+      }
+      
+      if (!formData.parentPhone.trim()) {
+        alert('Lütfen telefon numaranızı girin');
         setLoading(false);
         return;
       }
@@ -82,6 +89,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
       try {
         console.log('=== PARENT LOGIN STARTED ===');
         console.log('Invite code:', formData.parentCode.trim());
+        console.log('Phone:', formData.parentPhone.trim());
         
         // Find student by invite code
         const { data: student, error: studentError } = await supabase
@@ -196,7 +204,8 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
             id: `parent_${student.id}`,
             full_name: 'Veli',
             role: 'parent',
-            email: `parent_${student.id}@temp.com`
+            email: `parent_${student.id}@temp.com`,
+            phone: formData.parentPhone.trim()
           },
           isParentLogin: true,
           connectedStudents: [completeStudent]
@@ -219,6 +228,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
           grade: '',
           schoolName: '',
           parentCode: '',
+          parentPhone: '',
           classCode: '',
           packageType: 'basic',
           billingCycle: 'monthly'
@@ -249,6 +259,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
           grade: '',
           schoolName: '',
           parentCode: '',
+          parentPhone: '',
           classCode: '',
           packageType: 'basic',
           billingCycle: 'monthly'
@@ -398,6 +409,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
           grade: '',
           schoolName: '',
           parentCode: '',
+          parentPhone: '',
           classCode: '',
           packageType: 'basic',
           billingCycle: 'monthly'
@@ -429,424 +441,385 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
   };
 
   return (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10 bg-white rounded-full p-1"
-      >
-        <X className="h-6 w-6" />
-      </button>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10 bg-white rounded-full p-1"
+        >
+          <X className="h-6 w-6" />
+        </button>
 
-      <div className="text-center mb-6">
-        <div className="flex justify-center mb-4">
-          <div className="bg-gray-100 p-1 rounded-lg">
-            <button
-              onClick={() => setActiveTab('student')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === 'student'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Öğrenci
-            </button>
-            <button
-              onClick={() => setActiveTab('parent')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === 'parent'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Veli
-            </button>
-          </div>
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900">
-          {activeTab === 'parent' ? 'Veli Girişi' : (isLoginMode ? 'Öğrenci Girişi' : 'Öğrenci Kaydı')}
-        </h2>
-        <p className="text-gray-600 mt-2">
-          {activeTab === 'parent' 
-            ? 'Öğrencinizden aldığınız davet kodu ile giriş yapın'
-            : (isLoginMode ? 'Hesabınıza giriş yapın' : 'Yeni hesap oluşturun')
-          }
-        </p>
-      </div>
-
-      {activeTab === 'parent' ? (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Davet Kodu
-            </label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                type="text"
-                name="parentCode"
-                value={formData.parentCode}
-                onChange={handleInputChange}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Öğrencinizden aldığınız kodu girin"
-                required
-              />
+        <div className="text-center mb-6">
+          <div className="flex justify-center mb-4">
+            <div className="bg-gray-100 p-1 rounded-lg">
+              <button
+                onClick={() => setActiveTab('student')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'student'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Öğrenci
+              </button>
+              <button
+                onClick={() => setActiveTab('parent')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'parent'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Veli
+              </button>
             </div>
           </div>
-          
-          {!isLoginMode && (
+          <h2 className="text-2xl font-bold text-gray-900">
+            {activeTab === 'parent' ? 'Veli Girişi' : (isLoginMode ? 'Öğrenci Girişi' : 'Öğrenci Kaydı')}
+          </h2>
+          <p className="text-gray-600 mt-2">
+            {activeTab === 'parent' 
+              ? 'Öğrencinizden aldığınız davet kodu ile giriş yapın'
+              : (isLoginMode ? 'Hesabınıza giriş yapın' : 'Yeni hesap oluşturun')
+            }
+          </p>
+        </div>
+
+        {activeTab === 'parent' ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Sınıf Kodu (Opsiyonel)
+                Davet Kodu
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
                   type="text"
-                  name="classCode"
-                  value={formData.classCode}
+                  name="parentCode"
+                  value={formData.parentCode}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center"
-                  placeholder="645A-A006-208D (Opsiyonel)"
-                  maxLength={14}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Öğrencinizden aldığınız kodu girin"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Telefon Numarası
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <input
+                  type="tel"
+                  name="parentPhone"
+                  value={formData.parentPhone}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="0 507 XXX XX XX"
+                  required
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Öğretmeninizden aldığınız sınıf kodunu girebilirsiniz
+                Telefon numaranızı 0 507 XXX XX XX formatında girin
               </p>
             </div>
-          )}
 
-          {!isLoginMode && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Paket Seçimi *
-              </label>
-              <select
-                name="packageType"
-                value={formData.packageType}
-                onChange={handleSelectChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              >
-                <option value="basic">Temel Paket</option>
-                <option value="advanced">Gelişmiş Paket</option>
-                <option value="professional">Profesyonel Paket</option>
-              </select>
-            </div>
-          )}
-
-          {!isLoginMode && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ödeme Döngüsü *
-              </label>
-              <select
-                name="billingCycle"
-                value={formData.billingCycle}
-                onChange={handleSelectChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              >
-                <option value="monthly">Aylık</option>
-                <option value="yearly">Yıllık (%17 İndirim)</option>
-              </select>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Giriş yapılıyor...
-              </div>
-            ) : (
-              'Veli Girişi Yap'
-            )}
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLoginMode && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ad Soyad
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Adınızı ve soyadınızı giriniz"
-                  required
-                />
-              </div>
-            </div>
-          )}
-
-          {!isLoginMode && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Paket Seçimi *
-              </label>
-              <select
-                name="packageType"
-                value={formData.packageType}
-                onChange={handleSelectChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              >
-                <option value="">Paket seçin</option>
-                <option value="basic">Temel Paket - 219.99₺/ay</option>
-                <option value="advanced">Gelişmiş Paket - 319.99₺/ay</option>
-                <option value="professional">Profesyonel Paket - 499.99₺/ay</option>
-              </select>
-            </div>
-          )}
-
-          {!isLoginMode && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ödeme Döngüsü *
-              </label>
-              <select
-                name="billingCycle"
-                value={formData.billingCycle}
-                onChange={handleSelectChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              >
-                <option value="">Ödeme döngüsü seçin</option>
-                <option value="monthly">Aylık Ödeme</option>
-                <option value="yearly">Yıllık Ödeme (Tasarruf edin!)</option>
-              </select>
-            </div>
-          )}
-
-          {!isLoginMode && (
-            <>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Giriş yapılıyor...
+                </div>
+              ) : (
+                'Veli Girişi Yap'
+              )}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLoginMode && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Sınıf
-                </label>
-                <select
-                  name="grade"
-                  value={formData.grade}
-                  onChange={handleSelectChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Sınıf seçin</option>
-                  <option value="5">5. Sınıf</option>
-                  <option value="6">6. Sınıf</option>
-                  <option value="7">7. Sınıf</option>
-                  <option value="8">8. Sınıf</option>
-                  <option value="9">9. Sınıf</option>
-                  <option value="10">10. Sınıf</option>
-                  <option value="11">11. Sınıf</option>
-                  <option value="12">12. Sınıf</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Okul Adı
-                </label>
-                <input
-                  type="text"
-                  name="schoolName"
-                  value={formData.schoolName}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Okul adınızı giriniz"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Sınıf Kodu (Opsiyonel)
+                  Ad Soyad
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                   <input
                     type="text"
-                    name="classCode"
-                    value={formData.classCode}
+                    name="name"
+                    value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center"
-                    placeholder="645A-A006-208D (Opsiyonel)"
-                    maxLength={14}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Adınızı ve soyadınızı giriniz"
+                    required
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Öğretmeninizden aldığınız sınıf kodunu girebilirsiniz
-                </p>
               </div>
-            </>
-          )}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              E-posta
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="ornek@email.com"
-                required
-              />
-            </div>
-          </div>
+            )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Şifre
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Şifrenizi giriniz"
-                required
-              />
-            </div>
-          </div>
+            {!isLoginMode && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Paket Seçimi *
+                </label>
+                <select
+                  name="packageType"
+                  value={formData.packageType}
+                  onChange={handleSelectChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Paket seçin</option>
+                  <option value="basic">Temel Paket - 219.99₺/ay</option>
+                  <option value="advanced">Gelişmiş Paket - 319.99₺/ay</option>
+                  <option value="professional">Profesyonel Paket - 499.99₺/ay</option>
+                </select>
+              </div>
+            )}
 
-          {!isLoginMode && (
+            {!isLoginMode && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ödeme Döngüsü *
+                </label>
+                <select
+                  name="billingCycle"
+                  value={formData.billingCycle}
+                  onChange={handleSelectChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Ödeme döngüsü seçin</option>
+                  <option value="monthly">Aylık Ödeme</option>
+                  <option value="yearly">Yıllık Ödeme (Tasarruf edin!)</option>
+                </select>
+              </div>
+            )}
+
+            {!isLoginMode && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Sınıf
+                  </label>
+                  <select
+                    name="grade"
+                    value={formData.grade}
+                    onChange={handleSelectChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Sınıf seçin</option>
+                    <option value="5">5. Sınıf</option>
+                    <option value="6">6. Sınıf</option>
+                    <option value="7">7. Sınıf</option>
+                    <option value="8">8. Sınıf</option>
+                    <option value="9">9. Sınıf</option>
+                    <option value="10">10. Sınıf</option>
+                    <option value="11">11. Sınıf</option>
+                    <option value="12">12. Sınıf</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Okul Adı
+                  </label>
+                  <input
+                    type="text"
+                    name="schoolName"
+                    value={formData.schoolName}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Okul adınızı giriniz"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Sınıf Kodu (Opsiyonel)
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <input
+                      type="text"
+                      name="classCode"
+                      value={formData.classCode}
+                      onChange={handleInputChange}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center"
+                      placeholder="645A-A006-208D (Opsiyonel)"
+                      maxLength={14}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Öğretmeninizden aldığınız sınıf kodunu girebilirsiniz
+                  </p>
+                </div>
+              </>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Şifre Tekrar
+                E-posta
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="ornek@email.com"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Şifre
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
                   type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
+                  name="password"
+                  value={formData.password}
                   onChange={handleInputChange}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Şifrenizi tekrar giriniz"
+                  placeholder="Şifrenizi giriniz"
                   required
                 />
               </div>
             </div>
-          )}
 
-          {!isLoginMode && formData.packageType && formData.billingCycle && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-semibold text-blue-800 mb-3">Seçilen Paket Detayları</h4>
-              {(() => {
-                const selectedPkg = packages.find(pkg => pkg.id === formData.packageType);
-                if (!selectedPkg) return null;
-                
-                const currentPrice = formData.billingCycle === 'monthly' ? selectedPkg.monthlyPrice : selectedPkg.yearlyPrice;
-                const monthlyEquivalent = formData.billingCycle === 'yearly' ? selectedPkg.yearlyPrice / 12 : selectedPkg.monthlyPrice;
-                const savings = formData.billingCycle === 'yearly' ? (selectedPkg.monthlyPrice * 12) - selectedPkg.yearlyPrice : 0;
-                
-                return (
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-blue-900">{selectedPkg.name}</span>
-                      <div className="text-right">
-                        <div className="text-xl font-bold text-blue-600">
-                          {currentPrice.toLocaleString()}₺
-                        </div>
-                        <div className="text-sm text-blue-700">
-                          {formData.billingCycle === 'yearly' ? '/yıl' : '/ay'}
-                        </div>
-                        {formData.billingCycle === 'yearly' && (
-                          <div className="text-xs text-green-600">
-                            Aylık {monthlyEquivalent.toFixed(0)}₺'ye denk geliyor
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {savings > 0 && (
-                      <div className="bg-green-100 p-2 rounded text-center">
-                        <div className="text-green-800 font-semibold">
-                          🎉 {savings.toLocaleString()}₺ Tasarruf!
-                        </div>
-                        <div className="text-green-700 text-xs">
-                          Aylık ödemeye göre yıllık %{Math.round((savings / (selectedPkg.monthlyPrice * 12)) * 100)} indirim
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div className="border-t border-blue-200 pt-3">
-                      <div className="text-sm text-blue-800 font-medium mb-2">Paket Avantajları:</div>
-                      <ul className="text-xs text-blue-700 space-y-1">
-                        {selectedPkg.features.slice(0, 4).map((feature, index) => (
-                          <li key={index} className="flex items-start">
-                            <span className="text-green-600 mr-1">✓</span>
-                            {feature}
-                          </li>
-                        ))}
-                        {selectedPkg.features.length > 4 && (
-                          <li className="text-blue-600 font-medium">
-                            +{selectedPkg.features.length - 4} özellik daha...
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-          )}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                {isLoginMode ? 'Giriş yapılıyor...' : 'Kayıt olunuyor...'}
+            {!isLoginMode && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Şifre Tekrar
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Şifrenizi tekrar giriniz"
+                    required
+                  />
+                </div>
               </div>
-            ) : (
-              isLoginMode ? 'Giriş Yap' : 'Kayıt Ol'
             )}
-          </button>
-        </form>
-      )}
 
-      {activeTab === 'student' && (
-        <div className="mt-4 text-center">
-          <button
-            onClick={() => setIsLoginMode(!isLoginMode)}
-            className="text-blue-600 hover:text-blue-700 text-sm"
-          >
-            {isLoginMode ? 'Hesabınız yok mu? Kayıt olun' : 'Zaten hesabınız var mı? Giriş yapın'}
-          </button>
-        </div>
-      )}
+            {!isLoginMode && formData.packageType && formData.billingCycle && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-semibold text-blue-800 mb-3">Seçilen Paket Detayları</h4>
+                {(() => {
+                  const selectedPkg = packages.find(pkg => pkg.id === formData.packageType);
+                  if (!selectedPkg) return null;
+                  
+                  const currentPrice = formData.billingCycle === 'monthly' ? selectedPkg.monthlyPrice : selectedPkg.yearlyPrice;
+                  const monthlyEquivalent = formData.billingCycle === 'yearly' ? selectedPkg.yearlyPrice / 12 : selectedPkg.monthlyPrice;
+                  const savings = formData.billingCycle === 'yearly' ? (selectedPkg.monthlyPrice * 12) - selectedPkg.yearlyPrice : 0;
+                  
+                  return (
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium text-blue-900">{selectedPkg.name}</span>
+                        <div className="text-right">
+                          <div className="text-xl font-bold text-blue-600">
+                            {currentPrice.toLocaleString()}₺
+                          </div>
+                          <div className="text-sm text-blue-700">
+                            {formData.billingCycle === 'yearly' ? '/yıl' : '/ay'}
+                          </div>
+                          {formData.billingCycle === 'yearly' && (
+                            <div className="text-xs text-green-600">
+                              Aylık {monthlyEquivalent.toFixed(0)}₺'ye denk geliyor
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {savings > 0 && (
+                        <div className="bg-green-100 p-2 rounded text-center">
+                          <div className="text-green-800 font-semibold">
+                            🎉 {savings.toLocaleString()}₺ Tasarruf!
+                          </div>
+                          <div className="text-green-700 text-xs">
+                            Aylık ödemeye göre yıllık %{Math.round((savings / (selectedPkg.monthlyPrice * 12)) * 100)} indirim
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="border-t border-blue-200 pt-3">
+                        <div className="text-sm text-blue-800 font-medium mb-2">Paket Avantajları:</div>
+                        <ul className="text-xs text-blue-700 space-y-1">
+                          {selectedPkg.features.slice(0, 4).map((feature, index) => (
+                            <li key={index} className="flex items-start">
+                              <span className="text-green-600 mr-1">✓</span>
+                              {feature}
+                            </li>
+                          ))}
+                          {selectedPkg.features.length > 4 && (
+                            <li className="text-blue-600 font-medium">
+                              +{selectedPkg.features.length - 4} özellik daha...
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  {isLoginMode ? 'Giriş yapılıyor...' : 'Kayıt olunuyor...'}
+                </div>
+              ) : (
+                isLoginMode ? 'Giriş Yap' : 'Kayıt Ol'
+              )}
+            </button>
+          </form>
+        )}
 
-      {isLoginMode && (
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-          <p className="text-blue-800 text-sm font-medium mb-2">Demo Hesapları:</p>
-          <div className="text-xs text-blue-700 space-y-1">
-            <p>Öğrenci: student@demo.com / 123456</p>
+        {activeTab === 'student' && (
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => setIsLoginMode(!isLoginMode)}
+              className="text-blue-600 hover:text-blue-700 text-sm"
+            >
+              {isLoginMode ? 'Hesabınız yok mu? Kayıt olun' : 'Zaten hesabınız var mı? Giriş yapın'}
+            </button>
           </div>
-        </div>
-      )}
+        )}
+
+        {isLoginMode && (
+          <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+            <p className="text-blue-800 text-sm font-medium mb-2">Demo Hesapları:</p>
+            <div className="text-xs text-blue-700 space-y-1">
+              <p>Öğrenci: student@demo.com / 123456</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
 }
