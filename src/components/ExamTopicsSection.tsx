@@ -1,403 +1,775 @@
-import React, { useState } from 'react';
-import { TrendingUp, BookOpen, BarChart3, Lock, Crown, Star, Search } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Search, BarChart3, BookOpen, TrendingUp, Filter, Lock, Crown } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface ExamTopicsSectionProps {
   user?: any;
-  hasClassViewerSession?: boolean;
-  onUpgrade: () => void;
+  onUpgrade?: () => void;
 }
 
-// TYT-AYT Çıkmış Konular Veritabanı
-const examTopics = {
-  TYT_Matematik: {
-    2018: ['Fonksiyonlar', 'Trigonometri', 'Logaritma', 'Diziler', 'Limit'],
-    2019: ['Türev', 'İntegral', 'Analitik Geometri', 'Olasılık', 'İstatistik'],
-    2020: ['Fonksiyonlar', 'Polinomlar', 'Üstel Fonksiyonlar', 'Trigonometri', 'Limit'],
-    2021: ['Türev', 'İntegral', 'Diziler', 'Seriler', 'Analitik Geometri'],
-    2022: ['Logaritma', 'Üstel Fonksiyonlar', 'Trigonometri', 'Olasılık', 'İstatistik'],
-    2023: ['Fonksiyonlar', 'Türev', 'İntegral', 'Limit', 'Süreklilik'],
-    2024: ['Polinomlar', 'Diziler', 'Analitik Geometri', 'Trigonometri', 'Olasılık'],
-    2025: ['Türev', 'İntegral', 'Logaritma', 'Üstel Fonksiyonlar', 'İstatistik']
+// Gerçek sınav verileri
+const examData = {
+  "TYT_Biyoloji": {
+    "konular": [
+      {"konu": "Biyoloji ve Canlıların Ortak Özellikleri", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Canlıların Yapısında Bulunan Temel Bileşikler", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 0}},
+      {"konu": "Hücre", "yillar": {"2018": 2, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Canlıların Çeşitliliği ve Sınıflandırılması", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Canlı Âlemleri ve Özellikleri", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 0, "2022": 1, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "Mitoz ve Eşeysiz Üreme", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Mayoz ve Eşeyli Üreme", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Kalıtım ve Biyolojik Çeşitlilik", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Ekosistem Ekolojisi", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 1, "2022": 0, "2023": 1, "2024": 1, "2025": 0}},
+      {"konu": "Doğal Kaynaklar ve Biyolojik Çeşitliliğin Korunması", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 1}}
+    ],
+    "toplamSoru": {"2018": 6, "2019": 6, "2020": 6, "2021": 6, "2022": 6, "2023": 6, "2024": 6, "2025": 6}
   },
-  TYT_Turkce: {
-    2018: ['Anlam Bilgisi', 'Cümle Bilgisi', 'Paragraf', 'Anlatım Bozuklukları', 'Yazım Kuralları'],
-    2019: ['Sözcük Türleri', 'Cümle Ögeleri', 'Paragraf', 'Noktalama', 'Anlatım Teknikleri'],
-    2020: ['Anlam Bilgisi', 'Fiil Çekimi', 'Paragraf', 'Yazım Kuralları', 'Anlatım Bozuklukları'],
-    2021: ['Sözcük Türleri', 'Cümle Bilgisi', 'Paragraf', 'Noktalama', 'Anlatım Teknikleri'],
-    2022: ['Anlam Bilgisi', 'Fiil Çekimi', 'Paragraf', 'Yazım Kuralları', 'Anlatım Bozuklukları'],
-    2023: ['Sözcük Türleri', 'Cümle Ögeleri', 'Paragraf', 'Noktalama', 'Anlatım Teknikleri'],
-    2024: ['Anlam Bilgisi', 'Cümle Bilgisi', 'Paragraf', 'Yazım Kuralları', 'Anlatım Bozuklukları'],
-    2025: ['Sözcük Türleri', 'Fiil Çekimi', 'Paragraf', 'Noktalama', 'Anlatım Teknikleri']
+  "AYT_Matematik": {
+    "konular": [
+      {"konu": "Temel Kavramlar", "yillar": {"2018": 3, "2019": 5, "2020": 7, "2021": 3, "2022": 4, "2023": 6, "2024": 3, "2025": 6}},
+      {"konu": "Önermeler ve Bileşik Önermeler, Niceleyiciler, Tanım, Aksiyom, Teorem ve İspat Yöntemleri", "yillar": {"2018": 2, "2019": 1, "2020": 0, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Kümelerde Temel Kavramlar, Kümelerde İşlemler", "yillar": {"2018": 0, "2019": 2, "2020": 2, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Fonksiyon Kavramı ve Gösterimi, İki Fonksiyonun Bileşkesi ve Bir Fonksiyonun Tersi", "yillar": {"2018": 1, "2019": 1, "2020": 2, "2021": 0, "2022": 1, "2023": 2, "2024": 0, "2025": 1}},
+      {"konu": "Fonksiyonlar ile İlgili Uygulamalar, Fonksiyon Dönüşümleri", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 2, "2022": 1, "2023": 0, "2024": 3, "2025": 1}},
+      {"konu": "İkinci Dereceden Fonksiyon ve Grafikleri", "yillar": {"2018": 1, "2019": 2, "2020": 1, "2021": 0, "2022": 0, "2023": 1, "2024": 1, "2025": 0}},
+      {"konu": "Polinom Kavramı ve Polinomlarda İşlemler, Polinomların Çapanlara Ayrılması", "yillar": {"2018": 1, "2019": 2, "2020": 2, "2021": 1, "2022": 1, "2023": 3, "2024": 0, "2025": 1}},
+      {"konu": "İkinci Dereceden Denklemler, Karmaşık Sayılar, Denklem ve Eşitsizlik Sistemleri", "yillar": {"2018": 2, "2019": 0, "2020": 1, "2021": 3, "2022": 2, "2023": 3, "2024": 3, "2025": 1}},
+      {"konu": "Permütasyon, Kombinasyon", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Binom", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Olasılık", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Yönlü Açılar, Trigonometrik Fonksiyonlar", "yillar": {"2018": 1, "2019": 3, "2020": 3, "2021": 1, "2022": 2, "2023": 1, "2024": 2, "2025": 2}},
+      {"konu": "Kosinüs Teoremi, Sinüs Teoremi, Ters Trigonometrik Fonksiyonlar", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Toplam-Fark ve İki Kat Açı Formüller", "yillar": {"2018": 1, "2019": 0, "2020": 1, "2021": 2, "2022": 2, "2023": 3, "2024": 1, "2025": 2}},
+      {"konu": "Trigonometrik Denklemler", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 1, "2024": 2, "2025": 0}},
+      {"konu": "Üstel Fonksiyon, Logaritma Fonksiyonu", "yillar": {"2018": 2, "2019": 3, "2020": 4, "2021": 1, "2022": 2, "2023": 4, "2024": 1, "2025": 2}},
+      {"konu": "Gerçek Sayı Dizileri", "yillar": {"2018": 1, "2019": 1, "2020": 2, "2021": 1, "2022": 1, "2023": 2, "2024": 1, "2025": 1}},
+      {"konu": "Limit ve Süreklilik", "yillar": {"2018": 2, "2019": 2, "2020": 0, "2021": 2, "2022": 2, "2023": 0, "2024": 2, "2025": 2}},
+      {"konu": "Anlık Değişim Oranı ve Türev, Türevin Uygulamaları", "yillar": {"2018": 3, "2019": 4, "2020": 0, "2021": 4, "2022": 4, "2023": 0, "2024": 3, "2025": 3}},
+      {"konu": "Belirsiz İntegral, Belirli İntegral ve Uygulamaları", "yillar": {"2018": 3, "2019": 4, "2020": 0, "2021": 4, "2022": 4, "2023": 0, "2024": 3, "2025": 3}}
+    ],
+    "toplamSoru": {"2018": 26, "2019": 32, "2020": 28, "2021": 31, "2022": 31, "2023": 31, "2024": 30, "2025": 31}
   },
-  AYT_Matematik: {
-    2018: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık'],
-    2019: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık'],
-    2020: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık'],
-    2021: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık'],
-    2022: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık'],
-    2023: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık'],
-    2024: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık'],
-    2025: ['Temel Kavramlar', 'Üstel Fonksiyon, Logaritma Fonksiyonu', 'Yönlü Açılar, Trigonometrik Fonksiyonlar', 'Analitik Geometri', 'İntegral', 'Türev', 'Limit ve Süreklilik', 'Diziler', 'Olasılık']
+  "AYT_Edebiyat": {
+    "konular": [
+      {"konu": "Sözcükte Anlam", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 0, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Cümlede Anlam", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Paragrafta Anlam", "yillar": {"2018": 2, "2019": 1, "2020": 4, "2021": 4, "2022": 4, "2023": 4, "2024": 4, "2025": 4}},
+      {"konu": "Şiir Bilgisi", "yillar": {"2018": 2, "2019": 3, "2020": 2, "2021": 2, "2022": 2, "2023": 2, "2024": 1, "2025": 3}},
+      {"konu": "Söz Sanatları", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 2, "2023": 2, "2024": 1, "2025": 1}},
+      {"konu": "Nesir Bilgisi", "yillar": {"2018": 2, "2019": 3, "2020": 1, "2021": 2, "2022": 1, "2023": 2, "2024": 1, "2025": 2}},
+      {"konu": "İslamiyet Öncesi Türk Edebiyatı / Geçiş Dönemi Türk Edebiyatı", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Halk Edebiyatı", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 0, "2023": 2, "2024": 2, "2025": 0}},
+      {"konu": "Divan Edebiyatı", "yillar": {"2018": 4, "2019": 2, "2020": 5, "2021": 4, "2022": 4, "2023": 3, "2024": 4, "2025": 3}},
+      {"konu": "Tanzimat Dönemi Türk Edebiyatı", "yillar": {"2018": 2, "2019": 2, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Servet-i Fünun Dönemi Türk Edebiyatı / Fecr-i Ati Dönemi Türk Edebiyatı", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 0, "2022": 1, "2023": 2, "2024": 2, "2025": 1}},
+      {"konu": "Milli Edebiyat Dönemi Türk Edebiyatı", "yillar": {"2018": 1, "2019": 0, "2020": 1, "2021": 1, "2022": 1, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Cumhuriyet Dönemi Türk Edebiyatı", "yillar": {"2018": 5, "2019": 5, "2020": 2, "2021": 3, "2022": 3, "2023": 2, "2024": 3, "2025": 2}},
+      {"konu": "Geleneksel Türk Tiyatrosu", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 1, "2022": 1, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Masal/Fabl/Destan/Halk Hikayesi", "yillar": {"2018": 1, "2019": 2, "2020": 1, "2021": 1, "2022": 1, "2023": 0, "2024": 1, "2025": 1}},
+      {"konu": "Edebi Akımlar", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}}
+    ],
+    "toplamSoru": {"2018": 24, "2019": 24, "2020": 24, "2021": 24, "2022": 24, "2023": 24, "2024": 24, "2025": 24}
   },
-  AYT_Fizik: {
-    2018: ['Elektrik ve Manyetizma', 'Optik', 'Modern Fizik', 'Dalgalar', 'Termodinamik'],
-    2019: ['Mekanik', 'Elektrik', 'Optik', 'Atom Fiziği', 'Dalgalar'],
-    2020: ['Kuvvet ve Hareket', 'Elektrik ve Manyetizma', 'Optik', 'Modern Fizik', 'Dalgalar'],
-    2021: ['Mekanik', 'Elektrik', 'Optik', 'Termodinamik', 'Atom Fiziği'],
-    2022: ['Kuvvet ve Hareket', 'Elektrik ve Manyetizma', 'Optik', 'Modern Fizik', 'Dalgalar'],
-    2023: ['Mekanik', 'Elektrik', 'Optik', 'Termodinamik', 'Atom Fiziği'],
-    2024: ['Kuvvet ve Hareket', 'Elektrik ve Manyetizma', 'Optik', 'Modern Fizik', 'Dalgalar'],
-    2025: ['Mekanik', 'Elektrik', 'Optik', 'Termodinamik', 'Atom Fiziği']
+  "AYT_Geometri": {
+    "konular": [
+      {"konu": "Üçgen, Çokgen, Dörtgen, Özel Dörtgenler", "yillar": {"2018": 2, "2019": 2, "2020": 4, "2021": 0, "2022": 1, "2023": 3, "2024": 1, "2025": 1}},
+      {"konu": "Çember ve Daire", "yillar": {"2018": 0, "2019": 1, "2020": 2, "2021": 3, "2022": 2, "2023": 2, "2024": 2, "2025": 2}},
+      {"konu": "Doğrunun Analitik İncelenmesi", "yillar": {"2018": 2, "2019": 1, "2020": 2, "2021": 3, "2022": 2, "2023": 2, "2024": 3, "2025": 2}},
+      {"konu": "Çemberin Analitik İncelenmesi", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 1, "2022": 1, "2023": 0, "2024": 1, "2025": 2}},
+      {"konu": "Dönüşümler", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Katı Cisimler", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 2, "2023": 1, "2024": 1, "2025": 1}}
+    ],
+    "toplamSoru": {"2018": 7, "2019": 7, "2020": 10, "2021": 9, "2022": 9, "2023": 9, "2024": 9, "2025": 9}
   },
-  AYT_Kimya: {
-    2018: ['Organik Kimya', 'Asit-Baz', 'Elektrokimya', 'Kimyasal Denge', 'Termokimya'],
-    2019: ['Atom Yapısı', 'Periyodik Sistem', 'Kimyasal Bağlar', 'Organik Kimya', 'Elektrokimya'],
-    2020: ['Mol Kavramı', 'Asit-Baz', 'Organik Kimya', 'Kimyasal Denge', 'Elektrokimya'],
-    2021: ['Atom Yapısı', 'Periyodik Sistem', 'Kimyasal Bağlar', 'Organik Kimya', 'Termokimya'],
-    2022: ['Mol Kavramı', 'Asit-Baz', 'Organik Kimya', 'Kimyasal Denge', 'Elektrokimya'],
-    2023: ['Atom Yapısı', 'Periyodik Sistem', 'Kimyasal Bağlar', 'Organik Kimya', 'Termokimya'],
-    2024: ['Mol Kavramı', 'Asit-Baz', 'Organik Kimya', 'Kimyasal Denge', 'Elektrokimya'],
-    2025: ['Atom Yapısı', 'Periyodik Sistem', 'Kimyasal Bağlar', 'Organik Kimya', 'Termokimya']
+  "AYT_Fizik": {
+    "konular": [
+      {"konu": "Vektörler", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Bağıl Hareket", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Newton'ın Hareket Yasaları", "yillar": {"2018": 1, "2019": 0, "2020": 2, "2021": 0, "2022": 2, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "Bir Boyutta Sabit İvmeli Hareket", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "İki Boyutta Hareket", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 2, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Enerji ve Hareket", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "İtme ve Çizgisel Momentum", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 0, "2022": 1, "2023": 1, "2024": 1, "2025": 0}},
+      {"konu": "Tork", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Denge ve Denge Şartları", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Basit Makineler", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Elektriksel Kuvvet ve Elektrik Alan", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Elektriksel Potansiyel", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 1, "2025": 1}},
+      {"konu": "Düzgün Elektrik Alan ve Sığa", "yillar": {"2018": 1, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Manyetizma ve Elektromanyetik İndüklenme", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Alternatif Akım", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 0, "2022": 0, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Transformatörler", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 1, "2022": 1, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Düzgün Çembersel Hareket", "yillar": {"2018": 1, "2019": 1, "2020": 2, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Dönerek Öteleme Hareketi", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Açısal Momentum", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Kütle Çekim Kuvveti", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Kepler Kanunları", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "Basit Harmonik Hareket", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Dalgalarda Kırınım, Girişim ve Doppler Olayı", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Elektromanyetik Dalgalar", "yillar": {"2018": 2, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Büyük Patlama ve Evrenin Oluşumu", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Radyoaktivite", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Özel Görelilik", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Fotoelektrik Olayı", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Compton Saçılması ve De Broglie Dalga Boyu", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Görüntüleme Teknolojileri", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Süper İletkenler", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Laser Işınları", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}}
+    ],
+    "toplamSoru": {"2018": 14, "2019": 14, "2020": 14, "2021": 14, "2022": 14, "2023": 14, "2024": 14, "2025": 14}
   },
-  AYT_Biyoloji: {
-    2018: ['Hücre Bölünmesi', 'Kalıtım', 'Ekoloji', 'Sinir Sistemi', 'Dolaşım Sistemi'],
-    2019: ['Hücre Yapısı', 'Fotosentez', 'Solunum', 'Kalıtım', 'Ekoloji'],
-    2020: ['Hücre Bölünmesi', 'Protein Sentezi', 'Kalıtım', 'Sinir Sistemi', 'Ekoloji'],
-    2021: ['Hücre Yapısı', 'Fotosentez', 'Solunum', 'Kalıtım', 'Dolaşım Sistemi'],
-    2022: ['Hücre Bölünmesi', 'Protein Sentezi', 'Kalıtım', 'Sinir Sistemi', 'Ekoloji'],
-    2023: ['Hücre Yapısı', 'Fotosentez', 'Solunum', 'Kalıtım', 'Dolaşım Sistemi'],
-    2024: ['Hücre Bölünmesi', 'Protein Sentezi', 'Kalıtım', 'Sinir Sistemi', 'Ekoloji'],
-    2025: ['Hücre Yapısı', 'Fotosentez', 'Solunum', 'Kalıtım', 'Dolaşım Sistemi']
+  "AYT_Kimya": {
+    "konular": [
+      {"konu": "Atomun Kuantum Modeli", "yillar": {"2018": 0, "2019": 1, "2020": 2, "2021": 0, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Periyodik Özellikler", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Yükseltgenme Basamakları", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Gazların Özellikleri ve Gaz Yasaları", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "İdeal Gaz Yasası", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Gazlarda Kinetik Teori", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 1, "2025": 0}},
+      {"konu": "Gaz Karışımları", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Derişim Birimleri", "yillar": {"2018": 1, "2019": 0, "2020": 1, "2021": 1, "2022": 1, "2023": 2, "2024": 1, "2025": 1}},
+      {"konu": "Koligatif Özellikler", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 0, "2022": 1, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Çözünürlük", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Tepkimelerde Isı Değişimi", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Oluşum Entalpisi", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Tepkime Isılarının Toplanabilirliği", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 1, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Tepkime Hızları", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 0, "2022": 1, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Tepkime Hızını Etkileyen Faktörler", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "Kimyasal Denge", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Dengeyi Etkileyen Faktörler", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 0, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "Sulu Çözelti Dengeleri", "yillar": {"2018": 1, "2019": 2, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "İndirgenme – Yükseltgenme Tepkimelerinde Elektrik Akımı", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Elektrotlar ve Elektrokimyasal Hücreler", "yillar": {"2018": 1, "2019": 0, "2020": 1, "2021": 1, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Elektrot Potansiyelleri", "yillar": {"2018": 1, "2019": 0, "2020": 1, "2021": 0, "2022": 1, "2023": 2, "2024": 1, "2025": 1}},
+      {"konu": "Elektroliz", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 1, "2022": 0, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Korozyon", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Basit Formül ve Molekül Formülü", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Doğada Karbon", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Hibritleşme – Molekül Geometrisi", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 0, "2023": 0, "2024": 1, "2025": 2}},
+      {"konu": "Hidrokarbonlar", "yillar": {"2018": 1, "2019": 2, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 1, "2025": 1}},
+      {"konu": "Fonksiyonel Gruplar", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Alkoller – Eterler", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Karbonil Bileşikleri", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Karboksilik Asitler", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Esterler", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}}
+    ],
+    "toplamSoru": {"2018": 13, "2019": 13, "2020": 13, "2021": 13, "2022": 13, "2023": 13, "2024": 13, "2025": 13}
+  },
+  "AYT_Biyoloji": {
+    "konular": [
+      {"konu": "Denetleyici ve Düzenleyici Sistem, Duyu Organları", "yillar": {"2018": 2, "2019": 1, "2020": 2, "2021": 1, "2022": 1, "2023": 3, "2024": 1, "2025": 1}},
+      {"konu": "Destek ve Hareket Sistemi", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 1, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Sindirim Sistemi", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 0, "2022": 0, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Dolaşım Sistemleri", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Solunum Sistemi", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 0}},
+      {"konu": "Üriner Sistem", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 0, "2022": 0, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Üreme Sistemi ve Embriyonik Gelişim", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Komünite Ekolojisi", "yillar": {"2018": 1, "2019": 0, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Popülasyon Ekolojisi", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 0}},
+      {"konu": "Nükleik Asitlerin Keşfi ve Önemi", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Genetik Şifre ve Protein Sentezi", "yillar": {"2018": 1, "2019": 1, "2020": 2, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Canlılık ve Enerji", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Fotosentez", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 0, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "Kemosentez", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Hücresel Solunum", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Bitkilerin Yapısı", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Bitkilerde Madde Taşınması", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 1, "2022": 1, "2023": 0, "2024": 1, "2025": 1}},
+      {"konu": "Bitkilerde Eşeyli Üreme", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Canlılar ve Çevre", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 1}}
+    ],
+    "toplamSoru": {"2018": 13, "2019": 13, "2020": 13, "2021": 13, "2022": 13, "2023": 13, "2024": 13, "2025": 13}
+  },
+  "AYT_Tarih1": {
+    "konular": [
+      {"konu": "İnsanlığın Hafızası Tarih", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "İlk Çağ'da Başlıca Medeniyet Havzaları", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "Kanunlar Doğuyor", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Coğrafya ile Oluşan Yaşam Tarzı", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Boylardan Devlete", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 0, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "İslamiyet Yayılıyor", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 0, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Abbasi Devleti ve Türkler", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 1, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "İslamiyet'in Türk Devlet ve Toplum Yapısına Etkisi", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Büyük Selçuklu Devleti (1040- 1157)", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Büyük Selçuklu Devleti'nde Yönetim ve Toplum Yapısı", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Anadolu'nun İlk Türk Siyasi Teşekkülleri", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Hilal ve Haç Mücadelesi", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Devletleşme Sürecinde Osmanlı-Bizans İlişkileri", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 1}},
+      {"konu": "Osmanlı Devleti'nin Rumeli'deki İskân ve İstimâlet Politikası", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Osmanlı Devleti'nde Tımar Sistemi", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Devşirme Sistemi ve Yeniçeri Ocağı", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "İstanbul'un Fethi ve Fethin Sonuçları", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Tek Hanedan Anlayışı ve Gelenekler Işığında Devlet İdarecisi", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Osmanlı Devleti'nde İsyanlar ve Düzeni Koruma Çabaları", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Osmanlı Devleti'nde Modern Orduya Geçiş", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Osmanlı Devleti'ne Yönelik Tehditler", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Osmanlı Devleti'nde Demokratikleşme Hareketleri", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "Osmanlı Devleti'nde Sanayileşme Çabaları", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Mustafa Kemal'in Lider Olarak Yetişmesinde Etkili Koşullar", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "I. Dünya Savaşı Sürecinde Osmanlı Devleti", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 0, "2022": 0, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "I. Dünya Savaşı'nın Sonuçları", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Millî Mücadele'ye Hazırlık Dönemi", "yillar": {"2018": 1, "2019": 0, "2020": 1, "2021": 1, "2022": 2, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Doğu ve Güney Cepheleri ile Bu Cephelerde Öne Çıkan Şahsiyetler", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Batı Cephesi ve Bu Cephede Öne Çıkan Şahsiyetler", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Millî Mücadele'nin Sona Ermesi ve Lozan Barış Antlaşması", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Atatürk İlkeleri", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Siyasi Alandaki Gelişmeler", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Toplumsal Alandaki İnkılaplar", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Atatürk Dönemi Türk Dış Politikası", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "II. Dünya Savaşı Sürecinde Türkiye", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}}
+    ],
+    "toplamSoru": {"2018": 10, "2019": 10, "2020": 10, "2021": 10, "2022": 10, "2023": 10, "2024": 10, "2025": 10}
+  },
+  "AYT_Tarih2": {
+    "konular": [
+      {"konu": "İnsanlığın Hafızası Tarih", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 0}},
+      {"konu": "Zamanın Taksimi", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "İnsanlığın İlk İzleri", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Coğrafya ile Oluşan Yaşam Tarzı", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Boylardan Devlete", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Kavimler Göçü", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 0, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "İslamiyet'in Türk Devlet ve Toplum Yapısına Etkisi", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Büyük Selçuklu Devleti (1040- 1157)", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Büyük Selçuklu Devleti'nde Yönetim ve Toplum Yapısı", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Anadolu'nun İlk Türk Siyasi Teşekküller", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Osmanlı Devleti'nin Rumeli'deki İskân ve İstimâlet Politikası", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Anadolu'da Türk Siyasi Birliğini Sağlama Çabaları", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 1, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Osmanlı Devleti'nde Tımar Sistemi", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Devşirme Sistemi ve Yeniçeri Ocağı", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Osmanlı Devleti'nde Yönetici Sınıf (Askerî Sınıf)", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "İstanbul'un Fethi ve Fethin Sonuçları", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 1, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Türk İslam Dünyasında Birliği Sağlama Çabaları", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Dünyanın Muhteşem Gücü Osmanlı", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Saray ve Şehir Kültürü", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Osmanlı Devleti'nde Millet Sistemi", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Osmanlı'da Devletin Toprak Üzerindeki Mülkiyeti ve Çifthane Sistemi", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Uzun Savaşlardan Diplomasiye", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Avrupa'da Değişim Çağı", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 1, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "İhtilaller Çağı", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Osmanlı Devleti'nde Modern Orduya Geçiş", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Osmanlı Devleti'ne Yönelik Tehditler", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 2}},
+      {"konu": "Osmanlı Devleti'nde Demokratikleşme Hareketleri", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Mustafa Kemal'in Lider Olarak Yetişmesinde Etkili Koşullar", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "20. Yüzyıl Başlarında Osmanlı Devleti", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "I. Dünya Savaşı Sürecinde Osmanlı Devleti", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "I. Dünya Savaşı'nın Sonuçları", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Millî Mücadele'ye Hazırlık Dönemi", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 0, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Büyük Millet Meclisinin Açılması (23 Nisan 1920)", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Batı Cephesi ve Bu Cephede Öne Çıkan Şahsiyetler", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 0, "2022": 2, "2023": 2, "2024": 1, "2025": 1}},
+      {"konu": "Atatürk İlkeleri", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Siyasi Alandaki Gelişmeler", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Hukuk Alanındaki Gelişmeler", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Toplumsal Alandaki Inkılaplar", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Ekonomi Alanındaki Gelişmeler", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Sağlık Alanındaki Gelişmeler", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "II. Dünya Savaşı", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "II. Dünya Savaşı Sürecinde Türkiye", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "II. Dünya Savaşı Sonrası Oluşan Güç Dengeleri ve Türkiye", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "1990 Sonrasında Türkiye", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}}
+    ],
+    "toplamSoru": {"2018": 11, "2019": 11, "2020": 11, "2021": 11, "2022": 11, "2023": 11, "2024": 11, "2025": 10}
+  },
+  "AYT_Cografya1": {
+    "konular": [
+      {"konu": "Ekosistemlerin Özellikleri ve İşleyişi", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "Ekstrem Doğa Olayları", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 1, "2022": 1, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Küresel İklim Değişikliği ve Doğa Olaylarının Geleceği", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Nüfus Politikaları ve Projeksiyonları", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Şehirler ve Kırsal Yerleşmeler", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "Dünyada Doğal Kaynak ve Ekonomi", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Türkiye'de Tarım, Sanayi, Maden ve Enerji Kaynakları", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "Ekonomi, Şehirleşme ve Göç", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "İşlevsel Bölge ve Kalkınma Projeleri", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Hizmet Sektörünün Ekonomideki Yeri ve Ulaşım", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Türkiye'de ve Dünyada Ticaret", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Türkiye'de Turizm", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Kültür Bölgeleri ve Türk Kültürü", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 1, "2025": 1}},
+      {"konu": "Küreselleşen Dünya", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Uluslararası Örgütler", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Ülkeler Arası Etkileşim", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Jeopolitik Konum", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Çevre Sorunları ve Geri Dönüşüm", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 0, "2023": 1, "2024": 2, "2025": 0}},
+      {"konu": "Çevre Sorunlarının Çözümüne Yönelik Yaklaşımlar", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}}
+    ],
+    "toplamSoru": {"2018": 6, "2019": 6, "2020": 6, "2021": 6, "2022": 6, "2023": 6, "2024": 6, "2025": 6}
+  },
+  "AYT_Cografya2": {
+    "konular": [
+      {"konu": "Ekosistemlerin Özellikleri ve İşleyişi", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 2, "2025": 1}},
+      {"konu": "Ekstrem Doğa Olayları", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Küresel İklim Değişikliği ve Doğa Olaylarının Geleceği", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 0, "2022": 1, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Nüfus Politikaları ve Projeksiyonları", "yillar": {"2018": 0, "2019": 1, "2020": 1, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "Şehirler ve Kırsal Yerleşmeler", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 2, "2025": 0}},
+      {"konu": "Dünyada Doğal Kaynak ve Ekonomi", "yillar": {"2018": 0, "2019": 0, "2020": 3, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Türkiye'de Tarım, Sanayi, Maden ve Enerji Kaynakları", "yillar": {"2018": 1, "2019": 0, "2020": 1, "2021": 2, "2022": 0, "2023": 2, "2024": 1, "2025": 0}},
+      {"konu": "Ekonomi, Şehirleşme ve Göç", "yillar": {"2018": 1, "2019": 0, "2020": 1, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 0}},
+      {"konu": "İşlevsel Bölge ve Kalkınma Projeleri", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 1, "2022": 1, "2023": 0, "2024": 1, "2025": 1}},
+      {"konu": "Hizmet Sektörünün Ekonomideki Yeri ve Ulaşım", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Türkiye'de Turizm", "yillar": {"2018": 1, "2019": 2, "2020": 1, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "Kültür Bölgeleri ve Türk Kültürü", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 1, "2023": 1, "2024": 0, "2025": 1}},
+      {"konu": "Küreselleşen Dünya", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 1, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Uluslararası Örgütler", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Ülkeler Arası Etkileşim", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Jeopolitik Konum", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Çevre Sorunları ve Geri Dönüşüm", "yillar": {"2018": 1, "2019": 1, "2020": 1, "2021": 2, "2022": 1, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Çevre Sorunlarının Çözümüne Yönelik Yaklaşımlar", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 2}}
+    ],
+    "toplamSoru": {"2018": 11, "2019": 11, "2020": 11, "2021": 11, "2022": 12, "2023": 11, "2024": 10, "2025": 11}
+  },
+  "AYT_Felsefe": {
+    "konular": [
+      {"konu": "Felsefi Düşüncenin Ortaya Çıkışı ve Özellikleri", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 2, "2023": 1, "2024": 1, "2025": 1}},
+      {"konu": "Düşünme ve Dil İlişkisi", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Bilgi Felsefesinin Konusu ve Bilginin İmkânı Problemi", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Bilginin Sınırları, Ölçütü- Doğruluk ve Gerçeklik Bilginin Değeri ve Güvenirliği", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Bilimin Değeri-Bilim Felsefe İlişkisi-Bilim ve Hayat İlişkisi", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Ahlak Felsefesinin Konusu ve Temel Kavramları", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Ahlak Felsefesinde Özgürlük ve Sorumluluk", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Ahlak Felsefesinde İyilik ve Mutluluk İlişkisi", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Din Felsefesinin Konusu ve Soruları", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Siyaset Felsefesinin Konusu ve Problemleri", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Sanat Felsefesinin Konusu ve Problemleri", "yillar": {"2018": 1, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 1}},
+      {"konu": "Felsefi Metin Analizi", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Sofistler ile Sokrates'in Bilgi ve Değer Anlayışları", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "Platon ve Aristoteles'in Varlık, Bilgi ve Değer Anlayışı", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "İslam Felsefesinin Özellikleri, İnanç Akıl İlişkisi ve Filozofların Görüşleri", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "15-17. Yüzyıl Felsefesinde Öne Çıkan Görüşler", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 1, "2022": 1, "2023": 0, "2024": 0, "2025": 1}},
+      {"konu": "18-19. Yüzyıl Felsefesinde Öne Çıkan Problemler ve Görüşler", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "20. Yüzyıl Felsefesinde Bazı Ana Akımlar", "yillar": {"2018": 1, "2019": 0, "2020": 2, "2021": 2, "2022": 1, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "20. Yüzyıl Filozoflarının Görüşleri", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 1}}
+    ],
+    "toplamSoru": {"2018": 5, "2019": 5, "2020": 6, "2021": 6, "2022": 5, "2023": 4, "2024": 5, "2025": 5}
+  },
+  "AYT_DinKulturu": {
+    "konular": [
+      {"konu": "Din ve Ekonomi", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Tutum ve Davranışlarda Ölçülü Olmak", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "İslam Düşüncesindeki Fıkhi Yorumlar", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Varoluşun ve Hayatın Anlamı", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Hz. Muhammed'in Şahsiyeti", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Hz. Muhammed'in Peygamberlik Yönü", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Hz. Muhammed'e Bağlılık ve İtaat", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Dosdoğru Yol: Sıratımüstakim", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "İnançla İlgili Felsefi Yaklaşımlar", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 1, "2023": 0, "2024": 1, "2025": 0}},
+      {"konu": "Yahudilik", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Hristiyanlık", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "İslam Medeniyetinde Bilim ve Düşüncenin Gelişimi", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "İslam Medeniyetinde Öne Çıkan Eğitim Kurumları", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Müslümanların Bilim Alanında Yaptığı Öncü ve Özgün Çalışmalar", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 1, "2022": 1, "2023": 1, "2024": 0, "2025": 0}},
+      {"konu": "Türklerin Müslüman Olmaları", "yillar": {"2018": 0, "2019": 0, "2020": 1, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Tasavvufi Düşüncenin Oluşumu", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Kültürümüzde Etkin Olan Tasavvufi Yorumlar", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "İktisadi Hayatla İlgili Meseleler", "yillar": {"2018": 0, "2019": 0, "2020": 0, "2021": 0, "2022": 1, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Hinduizm", "yillar": {"2018": 0, "2019": 1, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}},
+      {"konu": "Budizm", "yillar": {"2018": 1, "2019": 0, "2020": 0, "2021": 0, "2022": 0, "2023": 0, "2024": 0, "2025": 0}}
+    ],
+    "toplamSoru": {"2018": 5, "2019": 6, "2020": 5, "2021": 6, "2022": 7, "2023": 5, "2024": 5, "2025": 0}
+  },
+  "YDT_Ingilizce": {
+    "konular": [
+      {"konu": "Vocabulary", "yillar": {"2018": 5, "2019": 5, "2020": 5, "2021": 5, "2022": 5, "2023": 5, "2024": 5, "2025": 5}},
+      {"konu": "Grammar", "yillar": {"2018": 10, "2019": 10, "2020": 10, "2021": 10, "2022": 10, "2023": 10, "2024": 10, "2025": 10}},
+      {"konu": "Cloze Test", "yillar": {"2018": 5, "2019": 5, "2020": 5, "2021": 5, "2022": 5, "2023": 5, "2024": 5, "2025": 5}},
+      {"konu": "Sentence Completion", "yillar": {"2018": 8, "2019": 8, "2020": 8, "2021": 8, "2022": 8, "2023": 8, "2024": 8, "2025": 8}},
+      {"konu": "Paragraph Comprehension", "yillar": {"2018": 15, "2019": 15, "2020": 15, "2021": 15, "2022": 15, "2023": 15, "2024": 15, "2025": 15}},
+      {"konu": "Dialogue Completion", "yillar": {"2018": 5, "2019": 5, "2020": 5, "2021": 5, "2022": 5, "2023": 5, "2024": 5, "2025": 5}},
+      {"konu": "Restatement", "yillar": {"2018": 5, "2019": 5, "2020": 5, "2021": 5, "2022": 5, "2023": 5, "2024": 5, "2025": 5}},
+      {"konu": "Situation", "yillar": {"2018": 5, "2019": 5, "2020": 5, "2021": 5, "2022": 5, "2023": 5, "2024": 5, "2025": 5}},
+      {"konu": "Paragraph Completion", "yillar": {"2018": 5, "2019": 5, "2020": 5, "2021": 5, "2022": 5, "2023": 5, "2024": 5, "2025": 5}},
+      {"konu": "Translation (Eng. – Tur.)", "yillar": {"2018": 6, "2019": 6, "2020": 6, "2021": 6, "2022": 6, "2023": 6, "2024": 6, "2025": 6}},
+      {"konu": "Translation (Tur. – Eng.)", "yillar": {"2018": 6, "2019": 6, "2020": 6, "2021": 6, "2022": 6, "2023": 6, "2024": 6, "2025": 6}},
+      {"konu": "Irrelevant Sentence", "yillar": {"2018": 5, "2019": 5, "2020": 5, "2021": 5, "2022": 5, "2023": 5, "2024": 5, "2025": 5}}
+    ],
+    "toplamSoru": {"2018": 80, "2019": 80, "2020": 80, "2021": 80, "2022": 80, "2023": 80, "2024": 80, "2025": 80}
   }
 };
 
-// Premium erişim kontrolü
-const hasPremiumAccess = (user: any, hasClassViewerSession: boolean = false) => {
-  // Profesyonel paket sahipleri tam erişim
-  if (user?.profile?.package_type === 'professional') return true;
-  
-  // Check if user is viewing via class code
-  if (hasClassViewerSession) return true;
-  if (user?.isParentLogin && user.connectedStudents) {
-    return user.connectedStudents?.some((student: any) =>
-      student.profiles?.package_type === 'professional'
-    );
-  }
-  
-  return false;
-};
-
+const years = ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
 const freeYears = ['2018', '2019', '2020']; // Ücretsiz kullanıcılar için
 
-function ExamTopicsSection({ user, hasClassViewerSession = false, onUpgrade }: ExamTopicsSectionProps) {
+export default function ExamTopicsSection({ user, onUpgrade }: ExamTopicsSectionProps) {
   const [selectedSubject, setSelectedSubject] = useState('AYT_Matematik');
+  const [selectedYears, setSelectedYears] = useState(freeYears);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
 
-  const isPremium = hasPremiumAccess(user, hasClassViewerSession);
-  const availableYears = isPremium ? Object.keys(examTopics[selectedSubject as keyof typeof examTopics]) : freeYears;
+  const subjects = Object.keys(examData);
 
-  // Konu istatistikleri hesaplama - sadece erişilebilir yıllar için
-  const calculateTopicStats = () => {
-    const topicCounts: Record<string, { count: number; years: string[] }> = {};
-    const subjectData = examTopics[selectedSubject as keyof typeof examTopics];
+  // Check if user has premium access
+  const hasPremiumAccess = () => {
+    // Premium access for:
+    // 1. Professional package users
+    // 2. Students in classes
+    // Check if user is viewing via class code
+    if (hasClassViewerSession) return true;
     
-    availableYears.forEach(year => {
-      const topics = subjectData[year as keyof typeof subjectData] || [];
-      topics.forEach(topic => {
-        if (!topicCounts[topic]) {
-          topicCounts[topic] = { count: 0, years: [] };
-        }
-        topicCounts[topic].count += 1;
-        topicCounts[topic].years.push(year);
-      });
-    });
-
-    return Object.entries(topicCounts)
-      .map(([topic, data]) => ({ topic, count: data.count, years: data.years }))
-      .sort((a, b) => b.count - a.count);
+    // Check if user is viewing via class code (passed as prop)
+    if (hasClassViewerSession) return true;
+    if (user.isParentLogin && user.connectedStudents) {
+      return user.connectedStudents?.some((student: any) =>
+        student.profiles?.package_type === 'professional'
+      );
+    }
+    
+    return false;
   };
 
-  const topicStats = calculateTopicStats();
-  const filteredStats = topicStats.filter(stat => 
-    stat.topic.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const isPremium = hasPremiumAccess();
+  const availableYears = isPremium ? years : freeYears;
 
-  const subjects = [
-    { key: 'TYT_Matematik', name: 'TYT Matematik', color: 'bg-blue-500' },
-    { key: 'TYT_Turkce', name: 'TYT Türkçe', color: 'bg-green-500' },
-    { key: 'AYT_Matematik', name: 'AYT Matematik', color: 'bg-purple-500' },
-    { key: 'AYT_Fizik', name: 'AYT Fizik', color: 'bg-red-500' },
-    { key: 'AYT_Kimya', name: 'AYT Kimya', color: 'bg-yellow-500' },
-    { key: 'AYT_Biyoloji', name: 'AYT Biyoloji', color: 'bg-indigo-500' }
-  ];
+  const filteredTopics = useMemo(() => {
+    const subjectData = examData[selectedSubject as keyof typeof examData];
+    if (!subjectData) return [];
 
-  const totalTopics = filteredStats.length;
-  const totalQuestions = filteredStats.reduce((sum, stat) => sum + stat.count, 0);
-  const selectedYearsCount = availableYears.length;
+    return subjectData.konular
+      .filter((item: any) => 
+        item.konu.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .map((item: any) => ({
+        topic: item.konu,
+        yearData: item.yillar,
+        total: selectedYears.reduce((sum, year) => sum + (item.yillar[year] || 0), 0)
+      }))
+      .sort((a, b) => b.total - a.total);
+  }, [selectedSubject, searchTerm, selectedYears]);
+
+  const chartData = useMemo(() => {
+    if (!selectedTopic) return [];
+    
+    const subjectData = examData[selectedSubject as keyof typeof examData];
+    const topicData = subjectData?.konular.find((item: any) => item.konu === selectedTopic);
+    
+    if (!topicData) return [];
+
+    return selectedYears.map(year => ({
+      year,
+      questions: topicData.yillar[year] || 0
+    }));
+  }, [selectedTopic, selectedSubject, selectedYears]);
+
+  const handleYearToggle = (year: string) => {
+    if (!isPremium && !freeYears.includes(year)) {
+      // Show upgrade modal
+      if (onUpgrade) {
+        onUpgrade();
+      } else {
+        alert('Bu özellik premium kullanıcılar için ayrılmıştır. Lütfen paketinizi yükseltin.');
+      }
+      return;
+    }
+
+    setSelectedYears(prev => 
+      prev.includes(year) 
+        ? prev.filter(y => y !== year)
+        : [...prev, year].sort()
+    );
+  };
+
+  const getTotalQuestions = () => {
+    return filteredTopics.reduce((sum, topic) => sum + topic.total, 0);
+  };
+
+  const getSubjectDisplayName = (subject: string) => {
+    const names: Record<string, string> = {
+      'TYT_Biyoloji': 'TYT Biyoloji',
+      'AYT_Matematik': 'AYT Matematik',
+      'AYT_Edebiyat': 'AYT Edebiyat',
+      'AYT_Geometri': 'AYT Geometri',
+      'AYT_Fizik': 'AYT Fizik',
+      'AYT_Kimya': 'AYT Kimya',
+      'AYT_Biyoloji': 'AYT Biyoloji',
+      'AYT_Tarih1': 'AYT Tarih-1',
+      'AYT_Tarih2': 'AYT Tarih-2',
+      'AYT_Cografya1': 'AYT Coğrafya-1',
+      'AYT_Cografya2': 'AYT Coğrafya-2',
+      'AYT_Felsefe': 'AYT Felsefe',
+      'AYT_DinKulturu': 'AYT Din Kültürü',
+      'YDT_Ingilizce': 'YDT İngilizce'
+    };
+    return names[subject] || subject;
+  };
 
   return (
-    <div id="exam-topics" className="py-16 bg-gradient-to-br from-indigo-50 to-purple-50">
+    <div id="exam-topics" className="py-16 bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             TYT-AYT Çıkmış Konular Analizi
           </h2>
-          <p className="text-gray-600 max-w-3xl mx-auto mb-6">
-            2018-2025 yılları arasında TYT ve AYT sınavlarında hangi konulardan kaç soru çıktığını detaylı olarak
-            inceleyin. Sınav stratejinizi bu verilere göre planlayın.
+          <p className="text-gray-600 max-w-3xl mx-auto">
+            2018-2025 yılları arasında TYT ve AYT sınavlarında hangi konulardan kaç soru çıktığını 
+            detaylı olarak inceleyin. Sınav stratejinizi bu verilere göre planlayın.
           </p>
+          
+          {!isPremium && (
+            <div className="mt-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4 max-w-2xl mx-auto">
+              <div className="flex items-center justify-center space-x-2 text-amber-800">
+                <Lock className="h-5 w-5" />
+                <span className="font-medium">Ücretsiz Önizleme</span>
+              </div>
+              <p className="text-amber-700 text-sm mt-2">
+                Şu anda sadece 2018-2020 yılları görüntüleniyor. Tüm yılları (2018-2025) görmek için premium pakete geçin.
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Premium Upgrade Banner */}
-        {!isPremium && (
-          <div className="mb-8 bg-gradient-to-r from-orange-100 to-yellow-100 border border-orange-200 rounded-xl p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Lock className="h-8 w-8 mr-4 text-orange-600" />
-                <div>
-                  <h3 className="text-xl font-bold text-orange-800 mb-1">Ücretsiz Önizleme</h3>
-                  <p className="text-orange-700">
-                    Şu anda sadece 2018-2020 yılları görüntüleniyor. Tüm yılları (2018-2025) görmek için premium pakete geçin.
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={onUpgrade}
-                className="bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors whitespace-nowrap"
-              >
-                Premium'a Geç
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Main Interface */}
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          {/* Controls Row */}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          {/* Controls */}
           <div className="grid md:grid-cols-3 gap-6 mb-8">
-            {/* Ders Seçimi */}
+            {/* Subject Selection */}
             <div>
-              <label className="flex items-center text-sm font-medium text-gray-700 mb-3">
-                <BookOpen className="h-4 w-4 mr-2" />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <BookOpen className="inline h-4 w-4 mr-1" />
                 Ders Seçimi
               </label>
               <select
                 value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+                onChange={(e) => {
+                  setSelectedSubject(e.target.value);
+                  setSelectedTopic(null);
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 {subjects.map(subject => (
-                  <option key={subject.key} value={subject.key}>{subject.name}</option>
+                  <option key={subject} value={subject}>
+                    {getSubjectDisplayName(subject)}
+                  </option>
                 ))}
               </select>
             </div>
 
-            {/* Konu Ara */}
+            {/* Search */}
             <div>
-              <label className="flex items-center text-sm font-medium text-gray-700 mb-3">
-                <Search className="h-4 w-4 mr-2" />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Search className="inline h-4 w-4 mr-1" />
                 Konu Ara
               </label>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Konu adı yazın..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Konu adı yazın..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
             </div>
 
-            {/* Yıl Filtresi */}
+            {/* Year Filter */}
             <div>
-              <label className="flex items-center text-sm font-medium text-gray-700 mb-3">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Yıl Filtresi 🔒
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Filter className="inline h-4 w-4 mr-1" />
+                Yıl Filtresi
+                {!isPremium && (
+                  <Crown className="inline h-4 w-4 ml-1 text-amber-500" />
+                )}
               </label>
               <div className="flex flex-wrap gap-2">
-                {['2018', '2019', '2020'].map(year => (
-                  <button
-                    key={year}
-                    className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium"
-                  >
-                    {year}
-                  </button>
-                ))}
-                {['2021', '2022', '2023', '2024', '2025'].map(year => (
-                  <button
-                    key={year}
-                    disabled
-                    className="px-3 py-2 bg-gray-200 text-gray-400 rounded-lg text-sm font-medium cursor-not-allowed relative"
-                  >
-                    {year}
-                    <Lock className="h-3 w-3 absolute -top-1 -right-1 text-orange-500" />
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-orange-600 mt-2">
-                2021-2025 yılları premium kullanıcılar için
-              </p>
-            </div>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-blue-50 rounded-lg p-6 text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">{totalTopics}</div>
-              <div className="text-blue-800 font-medium">Toplam Konu</div>
-            </div>
-            <div className="bg-green-50 rounded-lg p-6 text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">{totalQuestions}</div>
-              <div className="text-green-800 font-medium">Toplam Soru</div>
-            </div>
-            <div className="bg-purple-50 rounded-lg p-6 text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">{selectedYearsCount}</div>
-              <div className="text-purple-800 font-medium">Seçili Yıl</div>
-            </div>
-          </div>
-
-          {/* Results */}
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Konu Listesi */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <TrendingUp className="h-5 w-5 mr-2 text-indigo-600" />
-                {subjects.find(s => s.key === selectedSubject)?.name} Konuları
-              </h3>
-              
-              {filteredStats.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <BarChart3 className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <p>Seçilen kriterlere uygun konu bulunamadı.</p>
-                </div>
-              ) : (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {filteredStats.map((stat, index) => (
-                    <div
-                      key={stat.topic}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                {years.map(year => {
+                  const isAvailable = isPremium || freeYears.includes(year);
+                  const isSelected = selectedYears.includes(year);
+                  
+                  return (
+                    <button
+                      key={year}
+                      onClick={() => handleYearToggle(year)}
+                      disabled={!isAvailable}
+                      className={`px-3 py-1 rounded-full text-xs font-medium transition-colors relative ${
+                        isSelected && isAvailable
+                          ? 'bg-blue-600 text-white'
+                          : isAvailable
+                          ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      }`}
                     >
-                      <div className="flex items-center flex-1">
-                        <div className="flex items-center justify-center w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full text-sm font-bold mr-4">
-                          {index + 1}
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900">{stat.topic}</h4>
-                          <div className="flex items-center mt-1">
-                            <span className="text-sm text-gray-600 mr-4">
-                              Toplam Soru: {stat.count}
-                            </span>
-                            <div className="flex items-center space-x-1">
-                              {stat.years.map(year => (
-                                <span key={year} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                  {year}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right ml-4">
-                        <div className="text-lg font-bold text-indigo-600">{stat.count}</div>
-                        <div className="text-xs text-gray-500">
-                          Yıllık Dağılım: {stat.years.join(', ')}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                      {year}
+                      {!isAvailable && (
+                        <Lock className="absolute -top-1 -right-1 h-3 w-3 text-amber-500" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              {!isPremium && (
+                <p className="text-xs text-amber-600 mt-2">
+                  2021-2025 yılları premium kullanıcılar için
+                </p>
               )}
             </div>
+          </div>
 
-            {/* Grafik Alanı */}
+          {/* Stats */}
+          <div className="grid md:grid-cols-3 gap-4 mb-8">
+            <div className="bg-blue-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-blue-600">{filteredTopics.length}</div>
+              <div className="text-blue-800 text-sm">Toplam Konu</div>
+            </div>
+            <div className="bg-green-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-green-600">{getTotalQuestions()}</div>
+              <div className="text-green-800 text-sm">Toplam Soru</div>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-purple-600">{selectedYears.length}</div>
+              <div className="text-purple-800 text-sm">Seçili Yıl</div>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Topics Table */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <TrendingUp className="h-5 w-5 mr-2 text-blue-600" />
+                {getSubjectDisplayName(selectedSubject)} Konuları
+              </h3>
+              
+              <div className="overflow-hidden rounded-lg border border-gray-200">
+                <div className="max-h-96 overflow-y-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 sticky top-0">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Konu
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Toplam Soru
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Yıllık Dağılım
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredTopics.map(({ topic, yearData, total }) => (
+                        <tr
+                          key={topic}
+                          onClick={() => setSelectedTopic(topic)}
+                          className={`cursor-pointer hover:bg-blue-50 transition-colors ${
+                            selectedTopic === topic ? 'bg-blue-100' : ''
+                          }`}
+                        >
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                            {topic}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {total}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-wrap gap-1 justify-center">
+                              {selectedYears.map(year => {
+                                const count = yearData[year] || 0;
+                                return (
+                                  <span
+                                    key={year}
+                                    className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
+                                      count > 0
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-gray-100 text-gray-500'
+                                    }`}
+                                  >
+                                    {year.slice(-2)}:{count}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Chart */}
             <div>
               <h3 className="text-lg font-semibold mb-4 flex items-center">
                 <BarChart3 className="h-5 w-5 mr-2 text-green-600" />
-                Konu Seçim
+                {selectedTopic ? `${selectedTopic} - Yıllık Dağılım` : 'Konu Seçin'}
               </h3>
               
-              {filteredStats.length === 0 ? (
-                <div className="bg-gray-50 rounded-lg p-12 text-center">
-                  <BarChart3 className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <p className="text-gray-500">Grafik görmek için bir konu seçin</p>
-                </div>
-              ) : (
-                <div className="bg-gray-50 rounded-lg p-8 text-center">
-                  <div className="mb-6">
-                    <BarChart3 className="h-24 w-24 mx-auto text-gray-300 mb-4" />
-                    <p className="text-gray-600 text-lg font-medium">
-                      {filteredStats.length} konu analiz edildi
-                    </p>
-                    <p className="text-gray-500 text-sm">
-                      {availableYears.join(', ')} yılları baz alınarak
-                    </p>
-                  </div>
-                  
-                  {/* En çok çıkan konular */}
-                  <div className="text-left">
-                    <h4 className="font-semibold text-gray-800 mb-3">En Çok Çıkan Konular:</h4>
-                    <div className="space-y-2">
-                      {filteredStats.slice(0, 5).map((stat, index) => (
-                        <div key={stat.topic} className="flex items-center justify-between bg-white p-3 rounded-lg">
-                          <div className="flex items-center">
-                            <span className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center mr-3 ${
-                              index === 0 ? 'bg-yellow-100 text-yellow-800' :
-                              index === 1 ? 'bg-gray-100 text-gray-800' :
-                              index === 2 ? 'bg-orange-100 text-orange-800' :
-                              'bg-blue-100 text-blue-800'
-                            }`}>
-                              {index + 1}
-                            </span>
-                            <span className="text-sm font-medium">{stat.topic}</span>
-                          </div>
-                          <span className="text-sm font-bold text-indigo-600">{stat.count} soru</span>
-                        </div>
-                      ))}
+              <div className="bg-gray-50 rounded-lg p-4 h-80">
+                {selectedTopic && chartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="year" />
+                      <YAxis />
+                      <Tooltip 
+                        formatter={(value) => [`${value} soru`, 'Soru Sayısı']}
+                        labelFormatter={(label) => `Yıl: ${label}`}
+                      />
+                      <Bar dataKey="questions" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-500">
+                    <div className="text-center">
+                      <BarChart3 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <p>Grafik görmek için bir konu seçin</p>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
+          </div>
+
+          {/* Premium Upgrade CTA */}
+          {!isPremium && (
+            <div className="mt-8 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6">
+              <div className="text-center">
+                <Crown className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                <h4 className="text-xl font-bold text-amber-900 mb-2">Premium Özellikler</h4>
+                <p className="text-amber-800 mb-4">
+                  Tüm yılları (2018-2025) görüntülemek ve detaylı analiz yapmak için premium pakete geçin.
+                </p>
+                <div className="grid md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-white rounded-lg p-4 border border-amber-200">
+                    <h5 className="font-semibold text-amber-900 mb-2">Ücretsiz</h5>
+                    <ul className="text-sm text-amber-700 space-y-1">
+                      <li>• 2018-2020 yılları</li>
+                      <li>• Temel konu analizi</li>
+                      <li>• Sınırlı grafik görünümü</li>
+                    </ul>
+                  </div>
+                  <div className="bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg p-4 border border-amber-300">
+                    <h5 className="font-semibold text-amber-900 mb-2 flex items-center">
+                      <Crown className="h-4 w-4 mr-1" />
+                      Premium
+                    </h5>
+                    <ul className="text-sm text-amber-800 space-y-1">
+                      <li>• 2018-2025 tüm yıllar</li>
+                      <li>• Detaylı trend analizi</li>
+                      <li>• Gelişmiş filtreleme</li>
+                      <li>• AI destekli öneriler</li>
+                    </ul>
+                  </div>
+                </div>
+                <button
+                  onClick={onUpgrade}
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg"
+                >
+                  Premium'a Geç
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Additional Info */}
+          <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+            <h4 className="font-semibold text-blue-900 mb-2">💡 Nasıl Kullanılır?</h4>
+            <ul className="text-blue-800 text-sm space-y-1">
+              <li>• <strong>Ders seçin:</strong> Analiz etmek istediğiniz dersi seçin</li>
+              <li>• <strong>Yıl filtreleyin:</strong> Hangi yılları dahil etmek istediğinizi seçin {!isPremium && '(Premium: Tüm yıllar)'}</li>
+              <li>• <strong>Konu arayın:</strong> Belirli bir konuyu bulmak için arama kutusunu kullanın</li>
+              <li>• <strong>Detay görün:</strong> Tablodaki bir konuya tıklayarak yıllık dağılım grafiğini görün</li>
+            </ul>
           </div>
         </div>
-
-        {/* AI Önerileri - Sadece Premium */}
-        {isPremium && filteredStats.length > 0 && (
-          <div className="mt-8 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
-            <div className="flex items-center mb-4">
-              <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-2 rounded-full mr-3">
-                <TrendingUp className="h-5 w-5 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">AI Çalışma Önerileri</h3>
-            </div>
-            <div className="space-y-3">
-              <div className="bg-white p-4 rounded-lg border border-yellow-200">
-                <h4 className="font-semibold text-yellow-800 mb-2">🎯 Öncelikli Konular</h4>
-                <p className="text-yellow-700 text-sm">
-                  <strong>{filteredStats.slice(0, 3).map(s => s.topic).join(', ')}</strong> konularına 
-                  odaklanın. Bu konular son {availableYears.length} yılda en sık çıkan konulardır.
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-lg border border-yellow-200">
-                <h4 className="font-semibold text-yellow-800 mb-2">📊 Çalışma Stratejisi</h4>
-                <p className="text-yellow-700 text-sm">
-                  Yüksek çıkma oranına sahip konulara günlük çalışma sürenizin %60'ını ayırın. 
-                  Düşük çıkma oranlı konular için haftalık tekrar yapın.
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-lg border border-yellow-200">
-                <h4 className="font-semibold text-yellow-800 mb-2">⚡ Hızlı İpucu</h4>
-                <p className="text-yellow-700 text-sm">
-                  {filteredStats[0]?.topic} konusu {filteredStats[0]?.count} kez çıkmış. 
-                  Bu konuda günde en az 30 dakika çalışmanızı öneriyoruz.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
 }
-
-export default ExamTopicsSection;
