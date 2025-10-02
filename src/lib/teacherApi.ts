@@ -317,17 +317,19 @@ export const getClassExams = async (classId: string) => {
     .from('class_exams')
     .select(`
       *,
-      class_exam_results(
+      class_exam_results (
         *,
-        students(
-          *,
-          profiles(*)
+        students:student_id (
+          profiles (
+            full_name
+          )
         )
       )
     `)
     .eq('class_id', classId)
-    .order('exam_date', { ascending: false });
+    .order('created_at', { ascending: false });
 
+  if (error) throw error;
   return { data, error };
 };
 
