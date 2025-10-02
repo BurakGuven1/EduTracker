@@ -106,6 +106,7 @@ export const useStudentData = (userId: string | undefined) => {
   return {
     studentData,
     examResults,
+    memoizedData,
     homeworks,
     aiRecommendations,
     studentClasses,
