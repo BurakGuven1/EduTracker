@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Plus,FileText, BookOpen, Bell, Trophy, Users, ArrowLeft, CreditCard as Edit, Trash2, X, Upload, Download, BarChart3 } from 'lucide-react';
+import { Plus, FileText, BookOpen, Bell, Trophy, Users, ArrowLeft, CreditCard as Edit, Trash2, X, BarChart3, Save } from 'lucide-react';
 import { 
   addClassAssignment, 
   addClassAnnouncement, 
@@ -22,6 +22,17 @@ interface ClassManagementPanelProps {
   onRefresh: () => void;
 }
 
+interface StudentResult {
+  id?: string;
+  student_name: string;
+  score: number;
+  correct_answers: number;
+  wrong_answers: number;
+  empty_answers: number;
+  note: string;
+  ranking: number;
+}
+
 export default function ClassManagementPanel({ classData, onBack, onRefresh }: ClassManagementPanelProps) {
   const [activeTab, setActiveTab] = useState<'assignments' | 'announcements' | 'exams'>('assignments');
   const [showForm, setShowForm] = useState(false);
@@ -38,9 +49,10 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [editLoading, setEditLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [uploadLoading, setUploadLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedResult, setSelectedResult] = useState<any>(null);
+  
+  // Student results state
+  const [studentResults, setStudentResults] = useState<StudentResult[]>([]);
+  const [savingResults, setSavingResults] = useState(false);
 
   // Load fresh data when component mounts
   useEffect(() => {
@@ -105,8 +117,59 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
     setShowDeleteModal(true);
   };
 
-  const handleResults = (exam: any) => {
+  const handleResults = async (exam: any) => {
     setSelectedItem(exam);
+    
+    // Mevcut sonuçları yükle
+    try {
+      const { data: existingResults, error } = await supabase
+        .from('class_exam_results')
+        .select('*')
+        .eq('class_exam_id', exam.id)
+        .order('ranking', { ascending: true });
+
+      if (error) throw error;
+
+      if (existingResults && existingResults.length > 0) {
+        // Mevcut sonuçları yükle
+        setStudentResults(existingResults.map((result: any) => ({
+          id: result.id,
+          student_name: result.student_name || '',
+          score: result.score || 0,
+          correct_answers: result.correct_answers || 0,
+          wrong_answers: result.wrong_answers || 0,
+          empty_answers: result.empty_answers || 0,
+          note: result.student_note || '',
+          ranking: result.ranking || 0
+        })));
+      } else {
+        // Boş formlar oluştur (10 öğrenci için)
+        const emptyResults: StudentResult[] = Array.from({ length: 10 }, (_, index) => ({
+          student_name: '',
+          score: 0,
+          correct_answers: 0,
+          wrong_answers: 0,
+          empty_answers: 0,
+          note: '',
+          ranking: index + 1
+        }));
+        setStudentResults(emptyResults);
+      }
+    } catch (error) {
+      console.error('Sonuçları yükleme hatası:', error);
+      // Hata durumunda boş formlar oluştur
+      const emptyResults: StudentResult[] = Array.from({ length: 10 }, (_, index) => ({
+        student_name: '',
+        score: 0,
+        correct_answers: 0,
+        wrong_answers: 0,
+        empty_answers: 0,
+        note: '',
+        ranking: index + 1
+      }));
+      setStudentResults(emptyResults);
+    }
+    
     setShowResultsModal(true);
   };
 
@@ -161,83 +224,101 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
     }
   };
 
-const handleFileUpload = async () => {
-  if (!selectedFile || !selectedItem) return;
+  // Öğrenci sonuçlarını kaydet
+  const handleSaveResults = async () => {
+    if (!selectedItem) return;
 
-  setUploadLoading(true);
-  try {
-    const fileExt = selectedFile.name.split('.').pop();
-    const fileName = `${selectedItem.id}_${Date.now()}.${fileExt}`;
-    const filePath = `exam-results/${fileName}`;
+    setSavingResults(true);
+    try {
+      // Boş kayıtları filtrele
+      const validResults = studentResults.filter(result => 
+        result.student_name.trim() !== '' && result.score > 0
+      );
 
-    // 1. Dosyayı storage'a yükle
-    const { error: uploadError } = await supabase.storage
-      .from('exam-results')
-      .upload(filePath, selectedFile);
+      if (validResults.length === 0) {
+        alert('Lütfen en az bir öğrenci sonucu girin!');
+        return;
+      }
 
-    if (uploadError) throw uploadError;
+      // Önce mevcut sonuçları temizle
+      const { error: deleteError } = await supabase
+        .from('class_exam_results')
+        .delete()
+        .eq('class_exam_id', selectedItem.id);
 
-    // 2. Public URL al
-    const { data: urlData } = supabase.storage
-      .from('exam-results')
-      .getPublicUrl(filePath);
+      if (deleteError) throw deleteError;
 
-    // 3. Database'e kaydet - TABLO YAPISINA UYGUN ŞEKİLDE
-    const { error: dbError } = await supabase
-      .from('class_exam_results')
-      .upsert({
-        class_exam_id: selectedItem.id, // Burada exam_id yerine class_exam_id kullan
-        student_id: null, // Tüm sınıf için genel sonuç
-        result_file_url: urlData.publicUrl,
-        result_file_name: selectedFile.name,
-        uploaded_at: new Date().toISOString(),
+      // Yeni sonuçları ekle
+      const resultsToInsert = validResults.map(result => ({
+        class_exam_id: selectedItem.id,
+        student_name: result.student_name,
+        score: result.score,
+        correct_answers: result.correct_answers,
+        wrong_answers: result.wrong_answers,
+        empty_answers: result.empty_answers,
+        student_note: result.note,
+        ranking: result.ranking,
+        uploaded_at: new Date().toISOString()
+      }));
+
+      const { error: insertError } = await supabase
+        .from('class_exam_results')
+        .insert(resultsToInsert);
+
+      if (insertError) throw insertError;
+
+      alert('Öğrenci sonuçları başarıyla kaydedildi!');
+      setShowResultsModal(false);
+      onRefresh();
+    } catch (error: any) {
+      console.error('Sonuçları kaydetme hatası:', error);
+      alert('Sonuçları kaydederken hata oluştu: ' + error.message);
+    } finally {
+      setSavingResults(false);
+    }
+  };
+
+  // Öğrenci sonucu güncelle
+  const handleStudentResultChange = (index: number, field: keyof StudentResult, value: any) => {
+    const updatedResults = [...studentResults];
+    updatedResults[index] = {
+      ...updatedResults[index],
+      [field]: value
+    };
+    setStudentResults(updatedResults);
+  };
+
+  // Yeni öğrenci satırı ekle
+  const addStudentRow = () => {
+    setStudentResults(prev => [
+      ...prev,
+      {
+        student_name: '',
         score: 0,
         correct_answers: 0,
         wrong_answers: 0,
         empty_answers: 0,
-        ranking: 0
-      }, {
-        onConflict: 'class_exam_id,student_id' // Conflict kuralını da güncelle
-      });
+        note: '',
+        ranking: prev.length + 1
+      }
+    ]);
+  };
 
-    if (dbError) throw dbError;
-
-    alert('Dosya başarıyla yüklendi!');
-    setSelectedFile(null);
-    setShowResultsModal(false);
-    onRefresh();
-  } catch (error: any) {
-    console.error('Dosya yükleme hatası:', error);
-    alert('Dosya yüklenirken hata oluştu: ' + error.message);
-  } finally {
-    setUploadLoading(false);
-  }
-};
-
-  // Dosya silme fonksiyonu
-const handleFileDelete = async (resultId: string) => {
-  if (!confirm('Bu dosyayı silmek istediğinizden emin misiniz?')) return;
-
-  try {
-    // 1. Database'den sil
-    const { error: dbError } = await supabase
-      .from('class_exam_results')
-      .delete()
-      .eq('id', resultId);
-
-    if (dbError) throw dbError;
-
-    const { error: storageError } = await supabase.storage
-    .from('exam-results')
-    .remove([filePath]);
-
-    alert('Dosya başarıyla silindi!');
-    onRefresh();
-  } catch (error: any) {
-    console.error('Dosya silme hatası:', error);
-    alert('Dosya silinirken hata oluştu: ' + error.message);
-  }
-};
+  // Öğrenci satırı sil
+  const removeStudentRow = (index: number) => {
+    if (studentResults.length <= 1) {
+      alert('En az bir öğrenci sonucu olmalıdır!');
+      return;
+    }
+    
+    const updatedResults = studentResults.filter((_, i) => i !== index);
+    // Ranking'leri güncelle
+    const rankedResults = updatedResults.map((result, idx) => ({
+      ...result,
+      ranking: idx + 1
+    }));
+    setStudentResults(rankedResults);
+  };
 
   const handleSubmitAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -724,199 +805,210 @@ const handleFileDelete = async (resultId: string) => {
           </div>
         )}
 
-{/* Results Modal */}
-{showResultsModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold">
-          {selectedItem?.exam_name} - Sonuçlar ve Dosya Yükleme
-        </h3>
-        <button onClick={() => setShowResultsModal(false)}>
-          <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-        </button>
-      </div>
+        {/* Results Modal */}
+        {showResultsModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-6xl w-full p-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-semibold">
+                  {selectedItem?.exam_name} - Öğrenci Sonuçları
+                </h3>
+                <button onClick={() => setShowResultsModal(false)}>
+                  <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                </button>
+              </div>
 
+              {/* Öğrenci Sonuçları Formu */}
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-semibold flex items-center">
+                    <BarChart3 className="h-5 w-5 mr-2 text-green-600" />
+                    Öğrenci Sonuçlarını Girin
+                  </h4>
+                  <button
+                    onClick={addStudentRow}
+                    className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 flex items-center space-x-1"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Öğrenci Ekle</span>
+                  </button>
+                </div>
 
-      <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded">
-        <h4 className="font-semibold text-yellow-800">Debug Info:</h4>
-        <p className="text-sm text-yellow-700">
-          Sınav ID: {selectedItem?.id}<br/>
-          Toplam Sonuç: {selectedItem?.class_exam_results?.length || 0}<br/>
-          Dosya URL'leri: {selectedItem?.class_exam_results?.map((r: any) => r.result_file_url).filter(Boolean).join(', ') || 'YOK'}
-        </p>
-      </div>
-      {/* Mevcut Dosyalar */}
-      {selectedItem?.class_exam_results && selectedItem.class_exam_results.length > 0 && (
-        <div className="mb-6">
-          <h4 className="font-semibold mb-4 flex items-center">
-            <FileText className="h-5 w-5 mr-2 text-green-600" />
-            Yüklenmiş Dosyalar
-          </h4>
-          <div className="space-y-3">
-            {selectedItem.class_exam_results
-              .filter((result: any) => result.result_file_url) // Sadece dosyası olanları göster
-              .map((result: any) => (
-                <div key={result.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border">
-                  <div className="flex items-center space-x-3">
-                    <FileText className="h-5 w-5 text-blue-600" />
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {result.result_file_name}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(result.uploaded_at).toLocaleDateString('tr-TR')}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <a
-                      href={result.result_file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-                    >
-                      Görüntüle
-                    </a>
-                    <button
-                      onClick={() => handleFileDelete(result.id)}
-                      className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
-                    >
-                      Sil
-                    </button>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="border border-gray-300 px-3 py-2 text-left">Sıra</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Öğrenci Ad Soyad *</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Puan *</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Doğru</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Yanlış</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Boş</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Not</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">İşlem</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {studentResults.map((result, index) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="border border-gray-300 px-3 py-2">
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+                              {result.ranking}
+                            </span>
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2">
+                            <input
+                              type="text"
+                              value={result.student_name}
+                              onChange={(e) => handleStudentResultChange(index, 'student_name', e.target.value)}
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                              placeholder="Ad Soyad"
+                            />
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2">
+                            <input
+                              type="number"
+                              step="0.1"
+                              min="0"
+                              max="100"
+                              value={result.score}
+                              onChange={(e) => handleStudentResultChange(index, 'score', parseFloat(e.target.value) || 0)}
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                              placeholder="0.0"
+                            />
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2">
+                            <input
+                              type="number"
+                              min="0"
+                              value={result.correct_answers}
+                              onChange={(e) => handleStudentResultChange(index, 'correct_answers', parseInt(e.target.value) || 0)}
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                              placeholder="0"
+                            />
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2">
+                            <input
+                              type="number"
+                              min="0"
+                              value={result.wrong_answers}
+                              onChange={(e) => handleStudentResultChange(index, 'wrong_answers', parseInt(e.target.value) || 0)}
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                              placeholder="0"
+                            />
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2">
+                            <input
+                              type="number"
+                              min="0"
+                              value={result.empty_answers}
+                              onChange={(e) => handleStudentResultChange(index, 'empty_answers', parseInt(e.target.value) || 0)}
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                              placeholder="0"
+                            />
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2">
+                            <input
+                              type="text"
+                              value={result.note}
+                              onChange={(e) => handleStudentResultChange(index, 'note', e.target.value)}
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                              placeholder="Açıklama"
+                            />
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2 text-center">
+                            <button
+                              onClick={() => removeStudentRow(index)}
+                              className="text-red-600 hover:text-red-800 text-sm"
+                              disabled={studentResults.length <= 1}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-4 flex justify-between items-center">
+                  <p className="text-sm text-gray-600">
+                    * İşaretli alanlar zorunludur. En az bir öğrenci sonucu girmelisiniz.
+                  </p>
+                  <button
+                    onClick={handleSaveResults}
+                    disabled={savingResults}
+                    className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
+                  >
+                    <Save className="h-4 w-4" />
+                    <span>{savingResults ? 'Kaydediliyor...' : 'Sonuçları Kaydet'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Mevcut Sonuçların Görüntülendiği Tablo */}
+              {selectedItem?.class_exam_results && selectedItem.class_exam_results.length > 0 && (
+                <div>
+                  <h4 className="font-semibold mb-4 flex items-center">
+                    <FileText className="h-5 w-5 mr-2 text-green-600" />
+                    Kayıtlı Öğrenci Sonuçları
+                  </h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse border border-gray-300">
+                      <thead>
+                        <tr className="bg-gray-50">
+                          <th className="border border-gray-300 px-4 py-2 text-left">Sıra</th>
+                          <th className="border border-gray-300 px-4 py-2 text-left">Öğrenci</th>
+                          <th className="border border-gray-300 px-4 py-2 text-left">Puan</th>
+                          <th className="border border-gray-300 px-4 py-2 text-left">Doğru</th>
+                          <th className="border border-gray-300 px-4 py-2 text-left">Yanlış</th>
+                          <th className="border border-gray-300 px-4 py-2 text-left">Boş</th>
+                          <th className="border border-gray-300 px-4 py-2 text-left">Not</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedItem.class_exam_results
+                          .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))
+                          .map((result: any, index: number) => (
+                            <tr key={result.id} className="hover:bg-gray-50">
+                              <td className="border border-gray-300 px-4 py-2">
+                                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                                  index === 0 ? 'bg-yellow-100 text-yellow-800' :
+                                  index === 1 ? 'bg-gray-100 text-gray-800' :
+                                  index === 2 ? 'bg-orange-100 text-orange-800' :
+                                  'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {index + 1}
+                                </span>
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2 font-medium">
+                                {result.student_name || 'Genel Sınav Sonucu'}
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2 font-semibold text-blue-600">
+                                {result.score ? result.score.toFixed(1) : '0'}
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2 text-green-600">
+                                {result.correct_answers || 0}
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2 text-red-600">
+                                {result.wrong_answers || 0}
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2 text-gray-600">
+                                {result.empty_answers || 0}
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2 text-gray-600">
+                                {result.student_note || '-'}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-              ))}
-          </div>
-        </div>
-      )}
-
-      {/* Yeni Dosya Yükleme */}
-      <div className="mb-8 p-4 border-2 border-dashed border-gray-300 rounded-lg">
-        <h4 className="font-semibold mb-4 flex items-center">
-          <Upload className="h-5 w-5 mr-2 text-blue-600" />
-          Yeni Sınav Sonucu Dosyası Yükle
-        </h4>
-        <div className="space-y-4">
-          <div>
-            <input
-              type="file"
-              accept=".png,.jpg,.jpeg,.pdf,.docx,.xlsx"
-              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Desteklenen formatlar: PNG, JPG, PDF, DOCX, XLSX (Max: 10MB)
-            </p>
-          </div>
-          {selectedFile && (
-            <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <FileText className="h-5 w-5 text-blue-600" />
-                <span className="text-sm text-blue-800">{selectedFile.name}</span>
-                <span className="text-xs text-blue-600">
-                  ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                </span>
-              </div>
-              <button
-                onClick={handleFileUpload}
-                disabled={uploadLoading}
-                className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 disabled:opacity-50"
-              >
-                {uploadLoading ? 'Yükleniyor...' : 'Yükle'}
-              </button>
+              )}
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* Öğrenci Sonuçları Tablosu */}
-      <div>
-        <h4 className="font-semibold mb-4 flex items-center">
-          <BarChart3 className="h-5 w-5 mr-2 text-green-600" />
-          Öğrenci Sonuçları
-        </h4>
-        {selectedItem?.class_exam_results && selectedItem.class_exam_results.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="border border-gray-300 px-4 py-2 text-left">Sıra</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Öğrenci</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Puan</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Doğru</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Yanlış</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Boş</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Dosya</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedItem.class_exam_results
-                  .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))
-                  .map((result: any, index: number) => (
-                    <tr key={result.id} className="hover:bg-gray-50">
-                      <td className="border border-gray-300 px-4 py-2">
-                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                          index === 0 ? 'bg-yellow-100 text-yellow-800' :
-                          index === 1 ? 'bg-gray-100 text-gray-800' :
-                          index === 2 ? 'bg-orange-100 text-orange-800' :
-                          'bg-blue-100 text-blue-800'
-                        }`}>
-                          {index + 1}
-                        </span>
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2 font-medium">
-                        {result.students?.profiles?.full_name || 'Genel Sınav Sonucu'}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2 font-semibold text-blue-600">
-                        {result.score ? result.score.toFixed(1) : '0'}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2 text-green-600">
-                        {result.correct_answers || 0}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2 text-red-600">
-                        {result.wrong_answers || 0}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2 text-gray-600">
-                        {result.empty_answers || 0}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        {result.result_file_url ? (
-                          <div className="flex space-x-2">
-                            <a
-                              href={result.result_file_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-800 text-xs"
-                            >
-                              Görüntüle
-                            </a>
-                            <button
-                              onClick={() => handleFileDelete(result.id)}
-                              className="text-red-600 hover:text-red-800 text-xs"
-                            >
-                              Sil
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-gray-400 text-xs">Dosya yok</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center py-8 text-gray-500">
-            <BarChart3 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p>Henüz sınav sonucu girilmemiş</p>
           </div>
         )}
-      </div>
-    </div>
-  </div>
-)}
 
         {/* Add Forms */}
         {showForm && activeTab === 'assignments' && (
