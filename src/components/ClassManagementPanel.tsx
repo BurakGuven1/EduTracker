@@ -718,116 +718,190 @@ const handleFileDelete = async (resultId: string) => {
           </div>
         )}
 
-        {/* Results Modal */}
-        {showResultsModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold">
-                  {selectedItem?.exam_name} - Sonuçlar ve Dosya Yükleme
-                </h3>
-                <button onClick={() => setShowResultsModal(false)}>
-                  <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                </button>
-              </div>
+{/* Results Modal */}
+{showResultsModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-lg font-semibold">
+          {selectedItem?.exam_name} - Sonuçlar ve Dosya Yükleme
+        </h3>
+        <button onClick={() => setShowResultsModal(false)}>
+          <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+        </button>
+      </div>
 
-              {/* File Upload Section */}
-              <div className="mb-8 p-4 border-2 border-dashed border-gray-300 rounded-lg">
-                <h4 className="font-semibold mb-4 flex items-center">
-                  <Upload className="h-5 w-5 mr-2 text-blue-600" />
-                  Sınav Sonucu Dosyası Yükle
-                </h4>
-                <div className="space-y-4">
-                  <div>
-                    <input
-                      type="file"
-                      accept=".png,.jpg,.jpeg,.pdf,.docx,.xlsx"
-                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Desteklenen formatlar: PNG, JPG, PDF, DOCX, XLSX
-                    </p>
-                  </div>
-                  {selectedFile && (
-                    <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
-                      <span className="text-sm text-blue-800">{selectedFile.name}</span>
-                      <button
-                        onClick={handleFileUpload}
-                        disabled={uploadLoading}
-                        className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 disabled:opacity-50"
-                      >
-                        {uploadLoading ? 'Yükleniyor...' : 'Yükle'}
-                      </button>
+      {/* Mevcut Dosyalar */}
+      {selectedItem?.class_exam_results && selectedItem.class_exam_results.length > 0 && (
+        <div className="mb-6">
+          <h4 className="font-semibold mb-4 flex items-center">
+            <FileText className="h-5 w-5 mr-2 text-green-600" />
+            Yüklenmiş Dosyalar
+          </h4>
+          <div className="space-y-3">
+            {selectedItem.class_exam_results
+              .filter((result: any) => result.result_file_url) // Sadece dosyası olanları göster
+              .map((result: any) => (
+                <div key={result.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border">
+                  <div className="flex items-center space-x-3">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <div className="font-medium text-gray-900">
+                        {result.result_file_name}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {new Date(result.uploaded_at).toLocaleDateString('tr-TR')}
+                      </div>
                     </div>
-                  )}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <a
+                      href={result.result_file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                    >
+                      Görüntüle
+                    </a>
+                    <button
+                      onClick={() => handleFileDelete(result.id)}
+                      className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+                    >
+                      Sil
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ))}
+          </div>
+        </div>
+      )}
 
-              {/* Exam Results Table */}
-              <div>
-                <h4 className="font-semibold mb-4 flex items-center">
-                  <BarChart3 className="h-5 w-5 mr-2 text-green-600" />
-                  Öğrenci Sonuçları
-                </h4>
-                {selectedItem?.class_exam_results && selectedItem.class_exam_results.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm border-collapse border border-gray-300">
-                      <thead>
-                        <tr className="bg-gray-50">
-                          <th className="border border-gray-300 px-4 py-2 text-left">Sıra</th>
-                          <th className="border border-gray-300 px-4 py-2 text-left">Öğrenci</th>
-                          <th className="border border-gray-300 px-4 py-2 text-left">Puan</th>
-                          <th className="border border-gray-300 px-4 py-2 text-left">Doğru</th>
-                          <th className="border border-gray-300 px-4 py-2 text-left">Yanlış</th>
-                          <th className="border border-gray-300 px-4 py-2 text-left">Boş</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedItem.class_exam_results
-                          .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))
-                          .map((result: any, index: number) => (
-                            <tr key={result.id} className="hover:bg-gray-50">
-                              <td className="border border-gray-300 px-4 py-2">
-                                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                                  index === 0 ? 'bg-yellow-100 text-yellow-800' :
-                                  index === 1 ? 'bg-gray-100 text-gray-800' :
-                                  index === 2 ? 'bg-orange-100 text-orange-800' :
-                                  'bg-blue-100 text-blue-800'
-                                }`}>
-                                  {index + 1}
-                                </span>
-                              </td>
-                              <td className="border border-gray-300 px-4 py-2 font-medium">
-                                {result.students?.profiles?.full_name || 'Bilinmeyen'}
-                              </td>
-                              <td className="border border-gray-300 px-4 py-2 font-semibold text-blue-600">
-                                {result.score ? result.score.toFixed(1) : '0'}
-                              </td>
-                              <td className="border border-gray-300 px-4 py-2 text-green-600">
-                                {result.correct_answers || 0}
-                              </td>
-                              <td className="border border-gray-300 px-4 py-2 text-red-600">
-                                {result.wrong_answers || 0}
-                              </td>
-                              <td className="border border-gray-300 px-4 py-2 text-gray-600">
-                                {result.empty_answers || 0}
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <BarChart3 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>Henüz sınav sonucu girilmemiş</p>
-                  </div>
-                )}
+      {/* Yeni Dosya Yükleme */}
+      <div className="mb-8 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+        <h4 className="font-semibold mb-4 flex items-center">
+          <Upload className="h-5 w-5 mr-2 text-blue-600" />
+          Yeni Sınav Sonucu Dosyası Yükle
+        </h4>
+        <div className="space-y-4">
+          <div>
+            <input
+              type="file"
+              accept=".png,.jpg,.jpeg,.pdf,.docx,.xlsx"
+              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Desteklenen formatlar: PNG, JPG, PDF, DOCX, XLSX (Max: 10MB)
+            </p>
+          </div>
+          {selectedFile && (
+            <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <FileText className="h-5 w-5 text-blue-600" />
+                <span className="text-sm text-blue-800">{selectedFile.name}</span>
+                <span className="text-xs text-blue-600">
+                  ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                </span>
               </div>
+              <button
+                onClick={handleFileUpload}
+                disabled={uploadLoading}
+                className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+              >
+                {uploadLoading ? 'Yükleniyor...' : 'Yükle'}
+              </button>
             </div>
+          )}
+        </div>
+      </div>
+
+      {/* Öğrenci Sonuçları Tablosu */}
+      <div>
+        <h4 className="font-semibold mb-4 flex items-center">
+          <BarChart3 className="h-5 w-5 mr-2 text-green-600" />
+          Öğrenci Sonuçları
+        </h4>
+        {selectedItem?.class_exam_results && selectedItem.class_exam_results.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="border border-gray-300 px-4 py-2 text-left">Sıra</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">Öğrenci</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">Puan</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">Doğru</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">Yanlış</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">Boş</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">Dosya</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedItem.class_exam_results
+                  .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))
+                  .map((result: any, index: number) => (
+                    <tr key={result.id} className="hover:bg-gray-50">
+                      <td className="border border-gray-300 px-4 py-2">
+                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                          index === 0 ? 'bg-yellow-100 text-yellow-800' :
+                          index === 1 ? 'bg-gray-100 text-gray-800' :
+                          index === 2 ? 'bg-orange-100 text-orange-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {index + 1}
+                        </span>
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2 font-medium">
+                        {result.students?.profiles?.full_name || 'Genel Sınav Sonucu'}
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2 font-semibold text-blue-600">
+                        {result.score ? result.score.toFixed(1) : '0'}
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2 text-green-600">
+                        {result.correct_answers || 0}
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2 text-red-600">
+                        {result.wrong_answers || 0}
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2 text-gray-600">
+                        {result.empty_answers || 0}
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        {result.result_file_url ? (
+                          <div className="flex space-x-2">
+                            <a
+                              href={result.result_file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 text-xs"
+                            >
+                              Görüntüle
+                            </a>
+                            <button
+                              onClick={() => handleFileDelete(result.id)}
+                              className="text-red-600 hover:text-red-800 text-xs"
+                            >
+                              Sil
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-xs">Dosya yok</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <BarChart3 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p>Henüz sınav sonucu girilmemiş</p>
           </div>
         )}
+      </div>
+    </div>
+  </div>
+)}
 
         {/* Add Forms */}
         {showForm && activeTab === 'assignments' && (
