@@ -169,30 +169,34 @@ const handleFileUpload = async () => {
     const fileName = `${selectedItem.id}_${Date.now()}.${fileExt}`;
     const filePath = `exam-results/${fileName}`;
 
+    // 1. Dosyayı storage'a yükle
     const { error: uploadError } = await supabase.storage
       .from('exam-results')
       .upload(filePath, selectedFile);
 
     if (uploadError) throw uploadError;
 
+    // 2. Public URL al
     const { data: urlData } = supabase.storage
       .from('exam-results')
       .getPublicUrl(filePath);
 
+    // 3. Database'e kaydet - TABLO YAPISINA UYGUN ŞEKİLDE
     const { error: dbError } = await supabase
       .from('class_exam_results')
       .upsert({
-        exam_id: selectedItem.id,
-        student_id: null, // Tüm sınıf için
+        class_exam_id: selectedItem.id, // Burada exam_id yerine class_exam_id kullan
+        student_id: null, // Tüm sınıf için genel sonuç
         result_file_url: urlData.publicUrl,
         result_file_name: selectedFile.name,
         uploaded_at: new Date().toISOString(),
         score: 0,
         correct_answers: 0,
         wrong_answers: 0,
-        empty_answers: 0
+        empty_answers: 0,
+        ranking: 0
       }, {
-        onConflict: 'exam_id,student_id'
+        onConflict: 'class_exam_id,student_id' // Conflict kuralını da güncelle
       });
 
     if (dbError) throw dbError;
@@ -200,7 +204,7 @@ const handleFileUpload = async () => {
     alert('Dosya başarıyla yüklendi!');
     setSelectedFile(null);
     setShowResultsModal(false);
-    onRefresh(); // Listeyi yenile
+    onRefresh();
   } catch (error: any) {
     console.error('Dosya yükleme hatası:', error);
     alert('Dosya yüklenirken hata oluştu: ' + error.message);
