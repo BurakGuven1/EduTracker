@@ -56,6 +56,7 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
         getClassExams(classData.id)
       ]);
 
+      console.log('Exams data:', examsRes.data);
       setAssignments(assignmentsRes.data || []);
       setAnnouncements(announcementsRes.data || []);
       setExams(examsRes.data || []);
