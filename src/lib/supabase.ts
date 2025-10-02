@@ -32,19 +32,9 @@ export const signOut = async () => {
 };
 
 export const getCurrentUser = async () => {
-  try {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) {
-      console.warn('getCurrentUser error:', error);
-      return null;
-    }
-    return user;
-  } catch (error) {
-    console.warn('getCurrentUser exception:', error);
-    return null;
-  }
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
 };
-
 
 // Database helpers
 export const createProfile = async (profileData: any) => {

@@ -4,7 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Scatter, ScatterChart } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
 import { useStudentData } from '../hooks/useStudentData';
-import { signOut, getCurrentUser } from '../lib/supabase';
+import ExamForm from './ExamForm';
 import HomeworkForm from './HomeworkForm';
 import ExamTopicsSection from './ExamTopicsSection';
 import AIInsights from './AIInsights';
@@ -207,25 +207,10 @@ export default function StudentDashboard() {
   }, [studentData]);
 
   const handleLogout = async () => {
-    // First, clear the local user state immediately
-    clearUser();
-    
-    // Then attempt Supabase logout only for authenticated users
-    try {
-      // Check if we have a valid Supabase session
-      const currentUser = await getCurrentUser();
-      
-      // Only attempt signOut if we have a real Supabase user (not temporary parent)
-      if (currentUser && !user?.isParentLogin) {
-        await signOut();
-      }
-    } catch (error) {
-      // Log the error but don't prevent logout
-      console.warn('Supabase logout warning (non-critical):', error);
+    const { error } = await signOut();
+    if (error) {
+      console.error('Logout error:', error);
     }
-    
-    // Always redirect to home page regardless of Supabase logout result
-    window.location.href = '/';
     // Auth hook will handle the state change automatically
   };
 
