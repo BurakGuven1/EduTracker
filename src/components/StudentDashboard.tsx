@@ -9,7 +9,6 @@ import HomeworkForm from './HomeworkForm';
 import ExamTopicsSection from './ExamTopicsSection';
 import AIInsights from './AIInsights';
 import { getStudentInviteCode, signOut, deleteExamResult, updateHomework, deleteHomework, addStudySession, getWeeklyStudyGoal, createWeeklyStudyGoal, updateWeeklyStudyGoal, getWeeklyStudySessions } from '../lib/supabase';
-import { useAuth } from '../hooks/useAuth';
 
 export default function StudentDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'exams' | 'homeworks' | 'analysis'>('overview');
