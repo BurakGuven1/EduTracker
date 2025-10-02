@@ -318,7 +318,17 @@ export const getClassExams = async (classId: string) => {
     .select(`
       *,
       class_exam_results (
-        *,
+        id,
+        class_exam_id,
+        student_id,
+        score,
+        correct_answers,
+        wrong_answers,
+        empty_answers,
+        ranking,
+        result_file_url,
+        result_file_name,
+        uploaded_at,
         students:student_id (
           profiles (
             full_name
