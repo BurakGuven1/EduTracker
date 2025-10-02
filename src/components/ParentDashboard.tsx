@@ -15,15 +15,28 @@ export default function ParentDashboard() {
   const { parentData, children, loading: dataLoading, refetch } = useParentData(user?.id);
 
   const handleLogout = async () => {
-    // For temp parent, just clear the user
+    // First, clear the local user state immediately
+    clearUser();
+    
+    // Handle different logout scenarios
     if (user?.isParentLogin) {
-      clearUser();
+      // For temporary parent login, just clear local storage
+      localStorage.removeItem('tempParentUser');
     } else {
-      const { error } = await signOut();
-      if (error) {
-        console.error('Logout error:', error);
+      // For regular authenticated users, attempt Supabase logout
+      try {
+        const currentUser = await getCurrentUser();
+        if (currentUser) {
+          await signOut();
+        }
+      } catch (error) {
+        // Log the error but don't prevent logout
+        console.warn('Supabase logout warning (non-critical):', error);
       }
     }
+    
+    // Always redirect to home page
+    window.location.href = '/';
   };
 
   const handleAddChild = async (e: React.FormEvent) => {
