@@ -532,7 +532,6 @@ const chartData = filteredExamResults
              
               <div className="text-center py-8 text-gray-500">
                 <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                 console.log('ödev var mı');
                 <p>Henüz ödev eklenmemiş</p>
               </div>
             ) : (
