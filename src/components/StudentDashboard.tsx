@@ -402,8 +402,8 @@ const chartData = filteredExamResults
             <BookOpen className="h-8 w-8 text-blue-600" />
           </div>
         </div>
-
-        {classExamResults.length > 0 && (
+        
+{classExamResults.length > 0 && (
       <div className="bg-white rounded-lg p-6 shadow-sm">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold flex items-center">
