@@ -395,56 +395,99 @@ const renderOverview = () => {
   
   return (
     <div className="space-y-6">
-      <div className="grid md:grid-cols-4 gap-6">
-        {/* Mevcut istatistik kartları aynen kalacak */}
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+      {/* İSTATİSTİK KARTLARI - 5 KART OLACAK */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4"> {/* 5 kolon yaptık */}
+        
+        {/* 1. Kart: Bu Ay Deneme */}
+        <div className="bg-white rounded-lg p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Bu Ay Deneme</p>
               <p className="text-2xl font-bold text-gray-900">{stats.totalExams}</p>
             </div>
-            <BookOpen className="h-8 w-8 text-blue-600" />
+            <BookOpen className="h-6 w-6 text-blue-600" />
           </div>
         </div>
         
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+        {/* 2. Kart: Ortalama Puan */}
+        <div className="bg-white rounded-lg p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Ortalama Puan</p>
-              <p className="text-xl font-bold text-green-600">
+              <p className="text-lg font-bold text-green-600">
                 {stats.averageScore > 0 ? stats.averageScore.toFixed(1) : '0'}
               </p>
               <p className="text-xs text-gray-500">/ 500</p>
             </div>
-            <Award className="h-8 w-8 text-green-600" />
+            <Award className="h-6 w-6 text-green-600" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+        {/* 3. Kart: Bekleyen Ödev */}
+        <div className="bg-white rounded-lg p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Bekleyen Ödev</p>
               <p className="text-2xl font-bold text-orange-600">{stats.pendingHomeworks}</p>
             </div>
-            <Clock className="h-8 w-8 text-orange-600" />
+            <Clock className="h-6 w-6 text-orange-600" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+        {/* 4. Kart: Son Gelişim */}
+        <div className="bg-white rounded-lg p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Son Gelişim</p>
-              <p className={`text-2xl font-bold ${stats.improvementPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-lg font-bold ${stats.improvementPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {stats.improvementPercent > 0 ? '+' : ''}{stats.improvementPercent.toFixed(1)}%
               </p>
               <p className="text-xs text-gray-500">son denemenize göre</p>
             </div>
-            <TrendingUp className="h-8 w-8 text-purple-600" />
+            <TrendingUp className="h-6 w-6 text-purple-600" />
           </div>
         </div>
+
+        {/* 5. Kart: HAFTALIK ÇALIŞMA KARTI - BURAYA EKLENECEK */}
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <p className="text-gray-600 text-sm">Haftalık Çalışma</p>
+              <p className="text-lg font-bold text-blue-600">{weeklyStudyHours.toFixed(1)} saat</p>
+              <p className="text-blue-600 text-xs">
+                {weeklyGoal ? `Hedef: ${weeklyGoal.weekly_hours_target} saat (${Math.round((weeklyStudyHours / weeklyGoal.weekly_hours_target) * 100)}%)` : 'Hedef belirsiz'}
+              </p>
+            </div>
+            <Clock className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="flex space-x-1">
+            <button
+              onClick={() => setShowStudyForm(true)}
+              className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 flex-1"
+            >
+              Çalışma Ekle
+            </button>
+            {!weeklyGoal ? (
+              <button
+                onClick={() => setShowGoalForm(true)}
+                className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200 flex-1"
+              >
+                Hedef Belirle
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowGoalForm(true)}
+                className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded hover:bg-yellow-200 flex-1"
+              >
+                Güncelle
+              </button>
+            )}
+          </div>
+        </div>
+
       </div>
 
-      {/* YENİ: Sınıf Sınav Sonuçları - Sadece varsa göster */}
+      {/* Sınıf Sınav Sonuçları - Sadece varsa göster */}
       {hasClassResults && (
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="flex justify-between items-center mb-4">
@@ -517,7 +560,9 @@ const renderOverview = () => {
         </div>
       )}
 
+      {/* Grafik ve Ödevler */}
       <div className="grid md:grid-cols-2 gap-6">
+        {/* Deneme İlerlemesi Grafiği */}
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Deneme İlerlemesi</h3>
@@ -563,6 +608,7 @@ const renderOverview = () => {
           )}
         </div>
 
+        {/* Yaklaşan Ödevler */}
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Yaklaşan Ödevler</h3>
           <div className="space-y-3">
