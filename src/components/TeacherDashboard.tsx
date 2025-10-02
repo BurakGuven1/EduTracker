@@ -265,156 +265,157 @@ export default function TeacherDashboard() {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {classes.map((cls) => {
-                const details = classDetails[cls.id];
-                const assignments = details?.class_assignments || [];
-                const announcements = details?.class_announcements || [];
-                const exams = details?.class_exams || [];
-                
-                return (
-                  <div key={cls.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h4 className="font-semibold text-lg">{cls.class_name}</h4>
-                        {cls.description && (
-                          <p className="text-gray-600 text-sm mt-1">{cls.description}</p>
-                        )}
-                      </div>
-                      
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(cls.status)}`}>
-                        {getStatusText(cls.status)}
+              {classes.map((cls) => (
+                (() => {
+                  const details = classDetails[cls.id];
+                  const assignments = details?.class_assignments || [];
+                  const announcements = details?.class_announcements || [];
+                  const exams = details?.class_exams || [];
+                  
+                  return (
+                <div key={cls.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h4 className="font-semibold text-lg">{cls.class_name}</h4>
+                      {cls.description && (
+                        <p className="text-gray-600 text-sm mt-1">{cls.description}</p>
+                      )}
+                    </div>
+                    
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(cls.status)}`}>
+                      {getStatusText(cls.status)}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between text-sm">
+                      <span>Öğrenci:</span>
+                      <span className="font-medium">{cls.current_students || 0}/{cls.student_capacity}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Paket:</span>
+                      <span className="font-medium">
+                        {PACKAGE_OPTIONS.find(p => p.type === cls.package_type)?.name}
                       </span>
                     </div>
-
-                    <div className="space-y-2 mb-4">
-                      <div className="flex justify-between text-sm">
-                        <span>Öğrenci:</span>
-                        <span className="font-medium">{cls.current_students || 0}/{cls.student_capacity}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Paket:</span>
-                        <span className="font-medium">
-                          {PACKAGE_OPTIONS.find(p => p.type === cls.package_type)?.name}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Aylık Tutar:</span>
-                        <span className="font-medium text-green-600">
-                          {calculateClassPrice(cls.current_students || 0, cls.package_type).monthlyPrice.toLocaleString()}₺
-                        </span>
-                      </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Aylık Tutar:</span>
+                      <span className="font-medium text-green-600">
+                        {calculateClassPrice(cls.current_students || 0, cls.package_type).monthlyPrice.toLocaleString()}₺
+                      </span>
                     </div>
+                  </div>
 
-                    {/* Class Content Summary */}
-                    <div className="border-t pt-3 mb-3">
-                      <div className="grid grid-cols-3 gap-2 text-xs">
-                        <div className="text-center">
-                          <div className="font-semibold text-blue-600">{assignments.length}</div>
-                          <div className="text-gray-600">Ödev</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-semibold text-purple-600">{announcements.length}</div>
-                          <div className="text-gray-600">Duyuru</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-semibold text-orange-600">{exams.length}</div>
-                          <div className="text-gray-600">Sınav</div>
-                        </div>
+                  {/* Class Content Summary */}
+                  <div className="border-t pt-3 mb-3">
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="font-semibold text-blue-600">{assignments.length}</div>
+                        <div className="text-gray-600">Ödev</div>
                       </div>
-                    </div>
-
-                    {/* Class Content Details */}
-                    {(assignments.length > 0 || announcements.length > 0 || exams.length > 0) && (
-                      <div className="border-t pt-3 mb-3 max-h-40 overflow-y-auto">
-                        <div className="text-xs text-gray-600 mb-2">İçerikler:</div>
-                        <div className="space-y-1">
-                          {assignments.slice(0, 3).map((assignment: any) => (
-                            <div key={assignment.id} className="text-xs bg-blue-50 p-2 rounded flex justify-between items-center">
-                              <div>
-                                <div className="font-medium text-blue-800">📝 {assignment.title}</div>
-                                <div className="text-blue-600">{assignment.subject} - {new Date(assignment.due_date).toLocaleDateString('tr-TR')}</div>
-                              </div>
-                            </div>
-                          ))}
-                          {announcements.slice(0, 2).map((announcement: any) => (
-                            <div key={announcement.id} className="text-xs bg-purple-50 p-2 rounded">
-                              <div className="font-medium text-purple-800">📢 {announcement.title}</div>
-                              <div className="text-purple-600">{announcement.content.substring(0, 40)}...</div>
-                            </div>
-                          ))}
-                          {exams.slice(0, 2).map((exam: any) => (
-                            <div key={exam.id} className="text-xs bg-orange-50 p-2 rounded">
-                              <div className="font-medium text-orange-800">🏆 {exam.exam_name}</div>
-                              <div className="text-orange-600">{exam.exam_type} - {new Date(exam.exam_date).toLocaleDateString('tr-TR')}</div>
-                            </div>
-                          ))}
-                        </div>
+                      <div className="text-center">
+                        <div className="font-semibold text-purple-600">{announcements.length}</div>
+                        <div className="text-gray-600">Duyuru</div>
                       </div>
-                    )}
-
-                    {/* Recent Activity */}
-                    {(assignments.length > 0 || announcements.length > 0 || exams.length > 0) && (
-                      <div className="border-t pt-3 mb-3">
-                        <div className="text-xs text-gray-600 mb-2">Son Aktiviteler:</div>
-                        <div className="space-y-1">
-                          {assignments.slice(0, 2).map((assignment: any) => (
-                            <div key={assignment.id} className="text-xs bg-blue-50 p-2 rounded">
-                              <div className="font-medium text-blue-800">📝 {assignment.title}</div>
-                              <div className="text-blue-600">Son teslim: {new Date(assignment.due_date).toLocaleDateString('tr-TR')}</div>
-                            </div>
-                          ))}
-                          {announcements.slice(0, 1).map((announcement: any) => (
-                            <div key={announcement.id} className="text-xs bg-purple-50 p-2 rounded">
-                              <div className="font-medium text-purple-800">📢 {announcement.title}</div>
-                              <div className="text-purple-600">{announcement.content.substring(0, 50)}...</div>
-                            </div>
-                          ))}
-                          {exams.slice(0, 1).map((exam: any) => (
-                            <div key={exam.id} className="text-xs bg-orange-50 p-2 rounded">
-                              <div className="font-medium text-orange-800">🏆 {exam.exam_name}</div>
-                              <div className="text-orange-600">{new Date(exam.exam_date).toLocaleDateString('tr-TR')}</div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="border-t pt-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-600">Davet Kodu:</span>
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => setShowInviteCode(showInviteCode === cls.id ? null : cls.id)}
-                            className="text-blue-600 hover:text-blue-700"
-                          >
-                            {showInviteCode === cls.id ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                          <button
-                            onClick={() => copyInviteCode(cls.invite_code)}
-                            className="text-green-600 hover:text-green-700"
-                          >
-                            <Copy className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                      {showInviteCode === cls.id && (
-                        <div className="mb-3 p-2 bg-gray-100 rounded font-mono text-sm text-center">
-                          {cls.invite_code}
-                        </div>
-                      )}
-                      <div className="border-t pt-4 mt-4">
-                        <button
-                          onClick={() => handleManageClass(cls)}
-                          className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2"
-                        >
-                          <Edit className="h-4 w-4" />
-                          <span>Sınıfı Yönet</span>
-                        </button>
+                      <div className="text-center">
+                        <div className="font-semibold text-orange-600">{exams.length}</div>
+                        <div className="text-gray-600">Sınav</div>
                       </div>
                     </div>
                   </div>
-                );
-              })}
+
+                  {/* Class Content Details */}
+                  {(assignments.length > 0 || announcements.length > 0 || exams.length > 0) && (
+                    <div className="border-t pt-3 mb-3 max-h-40 overflow-y-auto">
+                      <div className="text-xs text-gray-600 mb-2">İçerikler:</div>
+                      <div className="space-y-1">
+                        {assignments.slice(0, 3).map((assignment: any) => (
+                          <div key={assignment.id} className="text-xs bg-blue-50 p-2 rounded flex justify-between items-center">
+                            <div>
+                              <div className="font-medium text-blue-800">📝 {assignment.title}</div>
+                              <div className="text-blue-600">{assignment.subject} - {new Date(assignment.due_date).toLocaleDateString('tr-TR')}</div>
+                            </div>
+                          </div>
+                        ))}
+                        {announcements.slice(0, 2).map((announcement: any) => (
+                          <div key={announcement.id} className="text-xs bg-purple-50 p-2 rounded">
+                            <div className="font-medium text-purple-800">📢 {announcement.title}</div>
+                            <div className="text-purple-600">{announcement.content.substring(0, 40)}...</div>
+                          </div>
+                        ))}
+                        {exams.slice(0, 2).map((exam: any) => (
+                          <div key={exam.id} className="text-xs bg-orange-50 p-2 rounded">
+                            <div className="font-medium text-orange-800">🏆 {exam.exam_name}</div>
+                            <div className="text-orange-600">{exam.exam_type} - {new Date(exam.exam_date).toLocaleDateString('tr-TR')}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* Recent Activity */}
+                  {(assignments.length > 0 || announcements.length > 0 || exams.length > 0) && (
+                    <div className="border-t pt-3 mb-3">
+                      <div className="text-xs text-gray-600 mb-2">Son Aktiviteler:</div>
+                      <div className="space-y-1">
+                        {assignments.slice(0, 2).map((assignment: any) => (
+                          <div key={assignment.id} className="text-xs bg-blue-50 p-2 rounded">
+                            <div className="font-medium text-blue-800">📝 {assignment.title}</div>
+                            <div className="text-blue-600">Son teslim: {new Date(assignment.due_date).toLocaleDateString('tr-TR')}</div>
+                          </div>
+                        ))}
+                        {announcements.slice(0, 1).map((announcement: any) => (
+                          <div key={announcement.id} className="text-xs bg-purple-50 p-2 rounded">
+                            <div className="font-medium text-purple-800">📢 {announcement.title}</div>
+                            <div className="text-purple-600">{announcement.content.substring(0, 50)}...</div>
+                          </div>
+                        ))}
+                        {exams.slice(0, 1).map((exam: any) => (
+                          <div key={exam.id} className="text-xs bg-orange-50 p-2 rounded">
+                            <div className="font-medium text-orange-800">🏆 {exam.exam_name}</div>
+                            <div className="text-orange-600">{new Date(exam.exam_date).toLocaleDateString('tr-TR')}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="border-t pt-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-gray-600">Davet Kodu:</span>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => setShowInviteCode(showInviteCode === cls.id ? null : cls.id)}
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          {showInviteCode === cls.id ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                        <button
+                          onClick={() => copyInviteCode(cls.invite_code)}
+                          className="text-green-600 hover:text-green-700"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                    {showInviteCode === cls.id && (
+                      <div className="mb-3 p-2 bg-gray-100 rounded font-mono text-sm text-center">
+                        {cls.invite_code}
+                      </div>
+                    )}
+                    <div className="border-t pt-4 mt-4">
+                      <button
+                        onClick={() => handleManageClass(cls)}
+                        className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2"
+                      >
+                        <Edit className="h-4 w-4" />
+                        <span>Sınıfı Yönet</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                  );
+                })()
+              ))}
             </div>
           )}
         </div>
