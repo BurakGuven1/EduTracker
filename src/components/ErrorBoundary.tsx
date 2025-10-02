@@ -126,7 +126,7 @@ class ErrorBoundary extends Component<Props, State> {
                 href="mailto:destek@edutracker.com" 
                 className="text-blue-600 hover:text-blue-700 font-semibold"
               >
-                destek@basariyolu.com
+                destek@edutracker.com
               </a>
             </div>
           </div>

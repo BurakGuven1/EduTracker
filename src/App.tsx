@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState } from 'react';
+import ErrorBoundary from './components/ErrorBoundary';
 import { useAuth } from './hooks/useAuth';
 import { packages } from './data/packages';
 import Navbar from './components/Navbar';
@@ -177,7 +178,7 @@ function App() {
   );
 
   return (
-    <>
+    <ErrorBoundary>
       {(currentView === 'home' && !teacherUser) && (
         <Navbar 
           user={user} 
@@ -205,7 +206,7 @@ function App() {
           console.log('Teacher login success, setting view to dashboard');
         }}
       />
-    </>
+    </ErrorBoundary>
   );
 }
 
