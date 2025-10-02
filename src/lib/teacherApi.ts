@@ -320,20 +320,14 @@ export const getClassExams = async (classId: string) => {
       class_exam_results (
         id,
         class_exam_id,
-        student_id,
+        student_name,
         score,
         correct_answers,
         wrong_answers,
         empty_answers,
+        student_note,
         ranking,
-        result_file_url,
-        result_file_name,
-        uploaded_at,
-        students:student_id (
-          profiles (
-            full_name
-          )
-        )
+        uploaded_at
       )
     `)
     .eq('class_id', classId)
