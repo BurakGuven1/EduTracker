@@ -22,6 +22,21 @@ export const useStudentData = (userId: string | undefined) => {
   const [classExamResults, setClassExamResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+   const memoizedData = useMemo(() => {
+    return {
+      studentData,
+      examResults,
+      homeworks,
+      aiRecommendations,
+      studentClasses,
+      classAssignments,
+      classAnnouncements,
+      classExamResults,
+      loading,
+      refetch
+    };
+  }, [studentData, examResults, homeworks, aiRecommendations, studentClasses, classAssignments, classAnnouncements, classExamResults, loading]);
+
   const fetchStudentData = async () => {
     console.log('useStudentData - userId:', userId);
     if (!userId) {
