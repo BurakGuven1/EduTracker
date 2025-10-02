@@ -8,6 +8,7 @@ import {
   getClassAnnouncementsForStudent,
   getClassExamResultsForStudent
 } from '../lib/supabase';
+import { useCallback, useMemo } from 'react';
 import { getStudentClasses } from '../lib/teacherApi';
 
 export const useStudentData = (userId: string | undefined) => {
