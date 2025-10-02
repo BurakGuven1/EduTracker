@@ -3,6 +3,7 @@ import { Users, Plus, BookOpen, Settings, LogOut, Copy, RefreshCw, Eye, EyeOff, 
 import { getTeacherClasses, createClass, getClassData } from '../lib/teacherApi';
 import { PACKAGE_OPTIONS, calculateClassPrice } from '../types/teacher';
 import ClassManagementPanel from './ClassManagementPanel';
+import { supabase } from '../lib/supabase';
 
 export default function TeacherDashboard() {
   const [teacher, setTeacher] = useState<any>(null);
