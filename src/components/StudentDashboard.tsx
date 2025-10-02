@@ -529,9 +529,10 @@ const chartData = filteredExamResults
           <h3 className="text-lg font-semibold mb-4">Yaklaşan Ödevler</h3>
           <div className="space-y-3">
             {homeworks.length === 0 ? (
-              console.log('ödev var mı');
+             
               <div className="text-center py-8 text-gray-500">
                 <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                 console.log('ödev var mı');
                 <p>Henüz ödev eklenmemiş</p>
               </div>
             ) : (
