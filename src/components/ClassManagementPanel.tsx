@@ -39,6 +39,7 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedResult, setSelectedResult] = useState<any>(null);
 
   // Load fresh data when component mounts
   useEffect(() => {
@@ -158,51 +159,79 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
     }
   };
 
-  // File upload handler
-  const handleFileUpload = async () => {
-    if (!selectedFile || !selectedItem) return;
+const handleFileUpload = async () => {
+  if (!selectedFile || !selectedItem) return;
 
-    setUploadLoading(true);
-    try {
-      // Simulate file upload - replace with actual implementation
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('exam_id', selectedItem.id);
-      
-      // Here you would call your file upload API
-      // await uploadExamResultFile(formData);
-      
-      alert('Dosya başarıyla yüklendi!');
-      setSelectedFile(null);
-      await loadClassContent();
-    } catch (error: any) {
-      alert('Dosya yükleme hatası: ' + error.message);
-    } finally {
-      setUploadLoading(false);
-    }
-  };
+  setUploadLoading(true);
+  try {
+    const fileExt = selectedFile.name.split('.').pop();
+    const fileName = `${selectedItem.id}_${Date.now()}.${fileExt}`;
+    const filePath = `exam-results/${fileName}`;
 
-  const handleSubmitAssignment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+    const { error: uploadError } = await supabase.storage
+      .from('exam-results')
+      .upload(filePath, selectedFile);
 
-    try {
-      await addClassAssignment({
-        class_id: classData.id,
-        teacher_id: classData.teacher_id,
-        ...assignmentForm
+    if (uploadError) throw uploadError;
+
+    const { data: urlData } = supabase.storage
+      .from('exam-results')
+      .getPublicUrl(filePath);
+
+    const { error: dbError } = await supabase
+      .from('class_exam_results')
+      .upsert({
+        exam_id: selectedItem.id,
+        student_id: null, // Tüm sınıf için
+        result_file_url: urlData.publicUrl,
+        result_file_name: selectedFile.name,
+        uploaded_at: new Date().toISOString(),
+        score: 0,
+        correct_answers: 0,
+        wrong_answers: 0,
+        empty_answers: 0
+      }, {
+        onConflict: 'exam_id,student_id'
       });
 
-      alert('Ödev başarıyla eklendi!');
-      setShowForm(false);
-      setAssignmentForm({ title: '', description: '', subject: '', due_date: '' });
-      await loadClassContent();
-    } catch (error: any) {
-      alert('Ödev ekleme hatası: ' + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (dbError) throw dbError;
+
+    alert('Dosya başarıyla yüklendi!');
+    setSelectedFile(null);
+    setShowResultsModal(false);
+    onRefresh(); // Listeyi yenile
+  } catch (error: any) {
+    console.error('Dosya yükleme hatası:', error);
+    alert('Dosya yüklenirken hata oluştu: ' + error.message);
+  } finally {
+    setUploadLoading(false);
+  }
+};
+
+  // Dosya silme fonksiyonu
+const handleFileDelete = async (resultId: string) => {
+  if (!confirm('Bu dosyayı silmek istediğinizden emin misiniz?')) return;
+
+  try {
+    // 1. Database'den sil
+    const { error: dbError } = await supabase
+      .from('class_exam_results')
+      .delete()
+      .eq('id', resultId);
+
+    if (dbError) throw dbError;
+
+    const { error: storageError } = await supabase.storage
+    .from('exam-results')
+    .remove([filePath]);
+
+    alert('Dosya başarıyla silindi!');
+    onRefresh(); // Listeyi yenile
+  } catch (error: any) {
+    console.error('Dosya silme hatası:', error);
+    alert('Dosya silinirken hata oluştu: ' + error.message);
+  }
+};
 
   const handleSubmitAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault();
