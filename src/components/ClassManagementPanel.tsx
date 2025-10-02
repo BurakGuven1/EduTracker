@@ -226,7 +226,7 @@ const handleFileDelete = async (resultId: string) => {
     .remove([filePath]);
 
     alert('Dosya başarıyla silindi!');
-    onRefresh(); // Listeyi yenile
+    onRefresh();
   } catch (error: any) {
     console.error('Dosya silme hatası:', error);
     alert('Dosya silinirken hata oluştu: ' + error.message);
