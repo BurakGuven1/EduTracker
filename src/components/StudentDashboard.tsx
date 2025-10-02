@@ -403,87 +403,6 @@ const chartData = filteredExamResults
           </div>
         </div>
         
-{classExamResults.length > 0 && (
-      <div className="bg-white rounded-lg p-6 shadow-sm">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold flex items-center">
-            <Trophy className="h-5 w-5 mr-2 text-orange-600" />
-            Sınıf Sınav Sonuçlarım
-          </h3>
-          <span className="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded">
-            {classExamResults.length} sınav
-          </span>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="border border-gray-300 px-3 py-2 text-left">Sınav</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Tarih</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Puan</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Doğru</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Yanlış</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Boş</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Sıralama</th>
-              </tr>
-            </thead>
-            <tbody>
-              {classExamResults
-                .sort((a: any, b: any) => new Date(b.class_exams?.exam_date).getTime() - new Date(a.class_exams?.exam_date).getTime())
-                .slice(0, 5) // Son 5 sınavı göster
-                .map((result: any, index: number) => (
-                  <tr key={result.id} className="hover:bg-gray-50">
-                    <td className="border border-gray-300 px-3 py-2 font-medium">
-                      {result.class_exams?.exam_name || 'Sınav Sonucu'}
-                    </td>
-                    <td className="border border-gray-300 px-3 py-2 text-gray-600">
-                      {result.class_exams?.exam_date 
-                        ? new Date(result.class_exams.exam_date).toLocaleDateString('tr-TR')
-                        : '-'
-                      }
-                    </td>
-                    <td className="border border-gray-300 px-3 py-2 font-semibold text-blue-600">
-                      {result.score ? result.score.toFixed(1) : '0'}
-                    </td>
-                    <td className="border border-gray-300 px-3 py-2 text-green-600">
-                      {result.correct_answers || 0}
-                    </td>
-                    <td className="border border-gray-300 px-3 py-2 text-red-600">
-                      {result.wrong_answers || 0}
-                    </td>
-                    <td className="border border-gray-300 px-3 py-2 text-gray-600">
-                      {result.empty_answers || 0}
-                    </td>
-                    <td className="border border-gray-300 px-3 py-2">
-                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                        result.ranking === 1 ? 'bg-yellow-100 text-yellow-800' :
-                        result.ranking === 2 ? 'bg-gray-100 text-gray-800' :
-                        result.ranking === 3 ? 'bg-orange-100 text-orange-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
-                        {result.ranking || '-'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-        
-        {classExamResults.length > 5 && (
-          <div className="mt-3 text-center">
-            <button 
-              onClick={() => setActiveTab('classes')}
-              className="text-blue-600 hover:text-blue-800 text-sm"
-            >
-              Tüm sınav sonuçlarını görüntüle ({classExamResults.length})
-            </button>
-          </div>
-        )}
-      </div>
-    )}
-        
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
@@ -811,149 +730,95 @@ const chartData = filteredExamResults
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'exams' && renderExams()}
         {activeTab === 'analysis' && renderAnalysis()}
-       {activeTab === 'classes' && (
-  <div className="bg-white rounded-lg p-6 shadow-sm">
-    <div className="flex justify-between items-center mb-6">
-      <h3 className="text-lg font-semibold">Sınıflarım</h3>
-      <div className="flex space-x-2">
-        <button 
-          onClick={() => setShowJoinClassModal(true)}
-          className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-700"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Sınıfa Katıl</span>
-        </button>
-        <button
-          onClick={() => setShowExamTopics(true)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center space-x-2"
-        >
-          <Target className="h-4 w-4" />
-          <span>Çıkmış Konular</span>
-        </button>
-      </div>
-    </div>
-    
-    <div className="space-y-6">
-      {studentClasses.length === 0 ? (
-        <div className="text-center py-8">
-          <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">Henüz hiçbir sınıfa katılmadınız</p>
-          <button 
-            onClick={() => setShowJoinClassModal(true)}
-            className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
-          >
-            İlk Sınıfa Katıl
-          </button>
-        </div>
-      ) : (
-        studentClasses.map((classData) => {
-          const classResults = classExamResults.filter((r: any) => 
-            r.class_exams?.class_id === classData.class_id
-          );
-          const classAssignmentsList = classAssignments.filter(a => 
-            a.class_id === classData.class_id
-          );
-          const classAnnouncementsList = classAnnouncements.filter(a => 
-            a.class_id === classData.class_id
-          );
-          
-          return (
-            <div key={classData.id} className="border rounded-lg p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h4 className="font-semibold text-xl">{classData.classes?.class_name}</h4>
-                  <p className="text-sm text-gray-600">
-                    Öğretmen: {classData.classes?.teachers?.full_name}
-                  </p>
-                  {classData.classes?.teachers?.school_name && (
-                    <p className="text-xs text-gray-500">
-                      {classData.classes.teachers.school_name}
-                    </p>
+        {activeTab === 'classes' && (
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">Sınıflarım</h3>
+              <div className="flex space-x-2">
+                <button 
+                  onClick={() => setShowJoinClassModal(true)}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-700"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Sınıfa Katıl</span>
+                </button>
+                <button
+                  onClick={() => setShowExamTopics(true)}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center space-x-2"
+                >
+                  <Target className="h-4 w-4" />
+                  <span>Çıkmış Konular</span>
+                </button>
+              </div>
+            </div>
+            <div className="space-y-4">
+              {studentClasses.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">Henüz hiçbir sınıfa katılmadınız</p>
+                  {classAnnouncements.length > 0 && (
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                      <p className="text-blue-800 text-sm font-medium">Sınıf Duyuruları</p>
+                      <div className="mt-2 space-y-2">
+                        {classAnnouncements.slice(0, 3).map((announcement) => (
+                          <div key={announcement.id} className="text-left p-2 bg-white rounded border">
+                            <p className="font-medium text-sm">{announcement.title}</p>
+                            <p className="text-xs text-gray-600">{announcement.content}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
+                  <button 
+                    onClick={() => setShowJoinClassModal(true)}
+                    className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                  >
+                    İlk Sınıfa Katıl
+                  </button>
                 </div>
-                <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
-                  Aktif
-                </span>
-              </div>
-              
-              <div className="text-sm text-gray-600 mb-4">
-                <p>Katılım Tarihi: {new Date(classData.joined_at).toLocaleDateString('tr-TR')}</p>
-              </div>
-
-              {/* Sınıf İstatistikleri */}
-              <div className="grid grid-cols-4 gap-4 mb-6">
-                <div className="text-center p-3 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">{classResults.length}</div>
-                  <div className="text-xs text-blue-800">Sınav</div>
-                </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{classAssignmentsList.length}</div>
-                  <div className="text-xs text-green-800">Ödev</div>
-                </div>
-                <div className="text-center p-3 bg-purple-50 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">{classAnnouncementsList.length}</div>
-                  <div className="text-xs text-purple-800">Duyuru</div>
-                </div>
-                <div className="text-center p-3 bg-orange-50 rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">
-                    {classResults.length > 0 
-                      ? (classResults.reduce((sum: number, r: any) => sum + (r.score || 0), 0) / classResults.length).toFixed(1)
-                      : '0'
-                    }
-                  </div>
-                  <div className="text-xs text-orange-800">Ortalama</div>
-                </div>
-              </div>
-
-              {/* Sınıf Sınav Sonuçları */}
-              {classResults.length > 0 && (
-                <div className="mb-6">
-                  <h5 className="font-semibold mb-3 flex items-center">
-                    <Trophy className="h-4 w-4 mr-2 text-orange-600" />
-                    Sınav Sonuçlarım
-                  </h5>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm border-collapse border border-gray-300">
-                      <thead>
-                        <tr className="bg-gray-50">
-                          <th className="border border-gray-300 px-3 py-2 text-left">Sınav</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Tarih</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Puan</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Sıralama</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {classResults
-                          .sort((a: any, b: any) => new Date(b.class_exams?.exam_date).getTime() - new Date(a.class_exams?.exam_date).getTime())
+              ) : (
+                studentClasses.map((classData) => (
+                  <div key={classData.id} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="font-semibold">{classData.classes?.class_name}</h4>
+                        <p className="text-sm text-gray-600">
+                          Öğretmen: {classData.classes?.teachers?.full_name}
+                        </p>
+                        {classData.classes?.teachers?.school_name && (
+                          <p className="text-xs text-gray-500">
+                            {classData.classes.teachers.school_name}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
+                        Aktif
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600 mb-4">
+                      <p>Katılım Tarihi: {new Date(classData.joined_at).toLocaleDateString('tr-TR')}</p>
+                    </div>
+                    
+                    {/* Show class assignments for this class */}
+                    {classAssignments.filter(a => a.class_id === classData.class_id).length > 0 && (
+                      <div className="mt-3 p-2 bg-blue-50 rounded">
+                        <p className="text-blue-800 text-sm font-medium mb-2">📝 Sınıf Ödevleri:</p>
+                        {classAssignments
+                          .filter(a => a.class_id === classData.class_id)
                           .slice(0, 3)
-                          .map((result: any) => (
-                            <tr key={result.id} className="hover:bg-gray-50">
-                              <td className="border border-gray-300 px-3 py-2 font-medium">
-                                {result.class_exams?.exam_name}
-                              </td>
-                              <td className="border border-gray-300 px-3 py-2 text-gray-600">
-                                {new Date(result.class_exams?.exam_date).toLocaleDateString('tr-TR')}
-                              </td>
-                              <td className="border border-gray-300 px-3 py-2 font-semibold text-blue-600">
-                                {result.score?.toFixed(1)}
-                              </td>
-                              <td className="border border-gray-300 px-3 py-2">
-                                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                                  result.ranking === 1 ? 'bg-yellow-100 text-yellow-800' :
-                                  result.ranking === 2 ? 'bg-gray-100 text-gray-800' :
-                                  result.ranking === 3 ? 'bg-orange-100 text-orange-800' :
-                                  'bg-blue-100 text-blue-800'
-                                }`}>
-                                  {result.ranking}
-                                </span>
-                              </td>
-                            </tr>
+                          .map((assignment) => (
+                            <div key={assignment.id} className="text-sm text-blue-700 mb-1 p-2 bg-white rounded border-l-2 border-blue-400">
+                              <div className="font-medium">{assignment.title}</div>
+                              <div className="text-xs text-blue-600">
+                                {assignment.subject} • Son teslim: {new Date(assignment.due_date).toLocaleDateString('tr-TR')}
+                              </div>
+                              {assignment.description && (
+                                <div className="text-xs text-blue-500 mt-1">{assignment.description}</div>
+                              )}
+                            </div>
                           ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
+                      </div>
+                    )}
 
                     {/* Show class announcements */}
                     {classAnnouncements.filter(a => a.class_id === classData.class_id).length > 0 && (
