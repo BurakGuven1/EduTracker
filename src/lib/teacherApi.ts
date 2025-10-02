@@ -332,20 +332,28 @@ export const getClassExams = async (classId: string) => {
 };
 
 // Teacher Class Management
-export const addClassAssignment = async (assignmentData: {
-  class_id: string;
-  teacher_id: string;
-  title: string;
-  description?: string;
-  subject: string;
-  due_date: string;
-}) => {
+export const getClassExams = async (classId: string) => {
   const { data, error } = await supabase
-    .from('class_assignments')
-    .insert([assignmentData])
-    .select()
-    .single();
+    .from('class_exams')
+    .select(`
+      *,
+      class_exam_results (
+        id,
+        class_exam_id,
+        student_name,
+        score,
+        correct_answers,
+        wrong_answers,
+        empty_answers,
+        student_note,
+        ranking,
+        uploaded_at
+      )
+    `)
+    .eq('class_id', classId)
+    .order('created_at', { ascending: false });
 
+  if (error) throw error;
   return { data, error };
 };
 
