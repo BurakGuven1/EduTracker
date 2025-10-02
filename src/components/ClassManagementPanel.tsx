@@ -737,6 +737,15 @@ const handleFileDelete = async (resultId: string) => {
         </button>
       </div>
 
+
+      <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded">
+        <h4 className="font-semibold text-yellow-800">Debug Info:</h4>
+        <p className="text-sm text-yellow-700">
+          Sınav ID: {selectedItem?.id}<br/>
+          Toplam Sonuç: {selectedItem?.class_exam_results?.length || 0}<br/>
+          Dosya URL'leri: {selectedItem?.class_exam_results?.map((r: any) => r.result_file_url).filter(Boolean).join(', ') || 'YOK'}
+        </p>
+      </div>
       {/* Mevcut Dosyalar */}
       {selectedItem?.class_exam_results && selectedItem.class_exam_results.length > 0 && (
         <div className="mb-6">
