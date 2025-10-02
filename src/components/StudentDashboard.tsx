@@ -207,12 +207,20 @@ function StudentDashboard() {
   }, [studentData]);
 
   const handleLogout = async () => {
-    const { error } = await signOut();
-    if (error) {
-      console.error('Logout error:', error);
-    }
-    // Auth hook will handle the state change automatically
-  };
+  try {
+    // Local storage'ı temizle
+    localStorage.removeItem('supabase.auth.token');
+    localStorage.removeItem('teacherSession');
+    localStorage.removeItem('studentSession');
+    
+    // Sayfayı yenile
+    window.location.href = '/';
+  } catch (error) {
+    console.error('Logout error:', error);
+    // Hata olsa bile sayfayı yönlendir
+    window.location.href = '/';
+  }
+};
 
   const handleShowInviteCode = async () => {
     if (studentData) {
