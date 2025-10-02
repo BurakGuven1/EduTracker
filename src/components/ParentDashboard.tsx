@@ -18,11 +18,18 @@ export default function ParentDashboard() {
     // For temp parent, just clear the user
     if (user?.isParentLogin) {
       clearUser();
-    } else {
-      const { error } = await signOut();
-      if (error) {
-        console.error('Logout error:', error);
-      }
+      return;
+    }
+
+    // For regular users, always clear local state regardless of API success
+    try {
+      await signOut();
+    } catch (error) {
+      console.warn('Supabase logout failed, but continuing with local cleanup:', error);
+    } finally {
+      // Always clear user state and redirect, regardless of API call result
+      clearUser();
+      window.location.href = '/';
     }
   };
 

@@ -9,6 +9,7 @@ import HomeworkForm from './HomeworkForm';
 import ExamTopicsSection from './ExamTopicsSection';
 import AIInsights from './AIInsights';
 import { getStudentInviteCode, signOut, deleteExamResult, updateHomework, deleteHomework, addStudySession, getWeeklyStudyGoal, createWeeklyStudyGoal, updateWeeklyStudyGoal, getWeeklyStudySessions } from '../lib/supabase';
+import { useAuth } from '../hooks/useAuth';
 
 export default function StudentDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'exams' | 'homeworks' | 'analysis'>('overview');
@@ -39,6 +40,7 @@ export default function StudentDashboard() {
   const [chartFilter, setChartFilter] = useState<'all' | 'TYT' | 'AYT' | 'LGS'>('all');
   const [weeklyGoal, setWeeklyGoal] = useState<any>(null);
   const [showGoalForm, setShowGoalForm] = useState(false);
+  const { user, clearUser } = useAuth();
   const [goalFormData, setGoalFormData] = useState({
     weekly_hours_target: '25'
   });
@@ -207,9 +209,21 @@ export default function StudentDashboard() {
   }, [studentData]);
 
   const handleLogout = async () => {
-    const { error } = await signOut();
-    if (error) {
-      console.error('Logout error:', error);
+    // For temporary parent logins, just clear user state
+    if (user?.isParentLogin) {
+      clearUser();
+      return;
+    }
+
+    // For regular users, always clear local state regardless of API success
+    try {
+      await signOut();
+    } catch (error) {
+      console.warn('Supabase logout failed, but continuing with local cleanup:', error);
+    } finally {
+      // Always clear user state and redirect, regardless of API call result
+      clearUser();
+      window.location.href = '/';
     }
     // Auth hook will handle the state change automatically
   };
