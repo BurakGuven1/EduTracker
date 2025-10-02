@@ -10,7 +10,7 @@ import ExamTopicsSection from './ExamTopicsSection';
 import AIInsights from './AIInsights';
 import { getStudentInviteCode, signOut, deleteExamResult, updateHomework, deleteHomework, addStudySession, getWeeklyStudyGoal, createWeeklyStudyGoal, updateWeeklyStudyGoal, getWeeklyStudySessions } from '../lib/supabase';
 
-export default function StudentDashboard() {
+function StudentDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'exams' | 'homeworks' | 'analysis'>('overview');
   const [showExamForm, setShowExamForm] = useState(false);
   const [showHomeworkForm, setShowHomeworkForm] = useState(false);
@@ -39,7 +39,6 @@ export default function StudentDashboard() {
   const [chartFilter, setChartFilter] = useState<'all' | 'TYT' | 'AYT' | 'LGS'>('all');
   const [weeklyGoal, setWeeklyGoal] = useState<any>(null);
   const [showGoalForm, setShowGoalForm] = useState(false);
-  const { user, clearUser } = useAuth();
   const [goalFormData, setGoalFormData] = useState({
     weekly_hours_target: '25'
   });
@@ -208,21 +207,9 @@ export default function StudentDashboard() {
   }, [studentData]);
 
   const handleLogout = async () => {
-    // For temporary parent logins, just clear user state
-    if (user?.isParentLogin) {
-      clearUser();
-      return;
-    }
-
-    // For regular users, always clear local state regardless of API success
-    try {
-      await signOut();
-    } catch (error) {
-      console.warn('Supabase logout failed, but continuing with local cleanup:', error);
-    } finally {
-      // Always clear user state and redirect, regardless of API call result
-      clearUser();
-      window.location.href = '/';
+    const { error } = await signOut();
+    if (error) {
+      console.error('Logout error:', error);
     }
     // Auth hook will handle the state change automatically
   };
@@ -403,167 +390,254 @@ const chartData = filteredExamResults
     };
   });
 
-  const renderOverview = () => (
+const renderOverview = () => {
+  const hasClassResults = classExamResults && classExamResults.length > 0;
+  
+  return (
     <div className="space-y-6">
-      <div className="grid md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+      {/* İSTATİSTİK KARTLARI - 5 KART OLACAK */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4"> {/* 5 kolon yaptık */}
+        
+        {/* 1. Kart: Bu Ay Deneme */}
+        <div className="bg-white rounded-lg p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Bu Ay Deneme</p>
               <p className="text-2xl font-bold text-gray-900">{stats.totalExams}</p>
             </div>
-            <BookOpen className="h-8 w-8 text-blue-600" />
+            <BookOpen className="h-6 w-6 text-blue-600" />
           </div>
         </div>
         
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+        {/* 2. Kart: Ortalama Puan */}
+        <div className="bg-white rounded-lg p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Ortalama Puan</p>
-              <p className="text-xl font-bold text-green-600">
+              <p className="text-lg font-bold text-green-600">
                 {stats.averageScore > 0 ? stats.averageScore.toFixed(1) : '0'}
               </p>
               <p className="text-xs text-gray-500">/ 500</p>
             </div>
-            <Award className="h-8 w-8 text-green-600" />
+            <Award className="h-6 w-6 text-green-600" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+        {/* 3. Kart: Bekleyen Ödev */}
+        <div className="bg-white rounded-lg p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Bekleyen Ödev</p>
               <p className="text-2xl font-bold text-orange-600">{stats.pendingHomeworks}</p>
             </div>
-            <Clock className="h-8 w-8 text-orange-600" />
+            <Clock className="h-6 w-6 text-orange-600" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+        {/* 4. Kart: Son Gelişim */}
+        <div className="bg-white rounded-lg p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Son Gelişim</p>
-              <p className={`text-2xl font-bold ${stats.improvementPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-lg font-bold ${stats.improvementPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {stats.improvementPercent > 0 ? '+' : ''}{stats.improvementPercent.toFixed(1)}%
               </p>
               <p className="text-xs text-gray-500">son denemenize göre</p>
             </div>
-            <TrendingUp className="h-8 w-8 text-purple-600" />
+            <TrendingUp className="h-6 w-6 text-purple-600" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="flex items-center justify-between">
+        {/* 5. Kart: HAFTALIK ÇALIŞMA KARTI - BURAYA EKLENECEK */}
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
             <div>
               <p className="text-gray-600 text-sm">Haftalık Çalışma</p>
-              <p className="text-2xl font-bold text-blue-600">{weeklyStudyHours.toFixed(1)} saat</p>
-              <p className="text-blue-600 text-sm">
-                {weeklyGoal ? `Hedef: ${weeklyGoal.weekly_hours_target} saat (${Math.round((weeklyStudyHours / weeklyGoal.weekly_hours_target) * 100)}%)` : 'Bu hafta'}
+              <p className="text-lg font-bold text-blue-600">{weeklyStudyHours.toFixed(1)} saat</p>
+              <p className="text-blue-600 text-xs">
+                {weeklyGoal ? `Hedef: ${weeklyGoal.weekly_hours_target} saat (${Math.round((weeklyStudyHours / weeklyGoal.weekly_hours_target) * 100)}%)` : 'Hedef belirsiz'}
               </p>
             </div>
-            <Clock className="h-8 w-8 text-blue-600" />
+            <Clock className="h-6 w-6 text-blue-600" />
           </div>
-          <div className="flex space-x-2 mt-2">
-          <button
-            onClick={() => setShowStudyForm(true)}
-            className="mt-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
-          >
-            Çalışma Ekle
-          </button>
-          {!weeklyGoal && (
+          <div className="flex space-x-1">
             <button
-              onClick={() => setShowGoalForm(true)}
-              className="mt-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200"
+              onClick={() => setShowStudyForm(true)}
+              className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 flex-1"
             >
-              Hedef Belirle
+              Çalışma Ekle
             </button>
-          )}
-          {weeklyGoal && (
-            <button
-              onClick={() => setShowGoalForm(true)}
-              className="mt-2 text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded hover:bg-yellow-200"
-            >
-              Hedef Güncelle
-            </button>
-          )}
+            {!weeklyGoal ? (
+              <button
+                onClick={() => setShowGoalForm(true)}
+                className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200 flex-1"
+              >
+                Hedef Belirle
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowGoalForm(true)}
+                className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded hover:bg-yellow-200 flex-1"
+              >
+                Güncelle
+              </button>
+            )}
           </div>
         </div>
+
       </div>
 
+      {/* Sınıf Sınav Sonuçları - Sadece varsa göster */}
+      {hasClassResults && (
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold flex items-center">
+              <Trophy className="h-5 w-5 mr-2 text-orange-600" />
+              Son Sınıf Sınavlarım
+            </h3>
+            <span className="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded">
+              {classExamResults.length} sınav
+            </span>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-3 py-2 text-left">Sınav</th>
+                  <th className="px-3 py-2 text-left">Tarih</th>
+                  <th className="px-3 py-2 text-left">Puan</th>
+                  <th className="px-3 py-2 text-left">Sıralama</th>
+                </tr>
+              </thead>
+              <tbody>
+                {classExamResults
+                  .sort((a: any, b: any) => new Date(b.class_exams?.exam_date || 0).getTime() - new Date(a.class_exams?.exam_date || 0).getTime())
+                  .slice(0, 3) // Son 3 sınavı göster
+                  .map((result: any) => (
+                    <tr key={result.id} className="border-b hover:bg-gray-50">
+                      <td className="px-3 py-3 font-medium">
+                        <div className="flex flex-col">
+                          <span>{result.class_exams?.exam_name || 'Sınav Sonucu'}</span>
+                          <span className="text-xs text-gray-500">{result.class_exams?.exam_type}</span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 text-gray-600">
+                        {result.class_exams?.exam_date 
+                          ? new Date(result.class_exams.exam_date).toLocaleDateString('tr-TR')
+                          : '-'
+                        }
+                      </td>
+                      <td className="px-3 py-3 font-semibold text-blue-600">
+                        {result.score ? result.score.toFixed(1) : '0'}
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
+                          result.ranking === 1 ? 'bg-yellow-100 text-yellow-800' :
+                          result.ranking === 2 ? 'bg-gray-100 text-gray-800' :
+                          result.ranking === 3 ? 'bg-orange-100 text-orange-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {result.ranking || '-'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {classExamResults.length > 3 && (
+            <div className="mt-4 text-center">
+              <button 
+                onClick={() => setActiveTab('classes')}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                Tüm sınav sonuçlarını görüntüle ({classExamResults.length})
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Grafik ve Ödevler */}
       <div className="grid md:grid-cols-2 gap-6">
-  <div className="bg-white rounded-lg p-6 shadow-sm">
-    <div className="flex justify-between items-center mb-4">
-      <h3 className="text-lg font-semibold">Deneme İlerlemesi</h3>
-      <select
-        value={chartFilter}
-        onChange={(e) => setChartFilter(e.target.value as any)}
-        className="px-3 py-1 border border-gray-300 rounded text-sm"
-      >
-        <option value="all">Tümü</option>
-        <option value="TYT">TYT</option>
-        <option value="AYT">AYT</option>
-        <option value="LGS">LGS</option>
-      </select>
-    </div>
-  {chartData.length > 0 ? (
-    <ResponsiveContainer width="100%" height={250}>
-      <LineChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" />
-        {/* Artık "date" anahtarını veride bulacağı için bu satır doğru çalışacak */}
-        <XAxis dataKey="date" fontSize={12} /> 
-        <YAxis domain={[100, 500]} />
-        <Tooltip 
-          formatter={(value, name, props) => [
-            `${value} puan`,
-            `${props.payload.examName} (${props.payload.examType})`
-          ]}
-        />
-        <Line 
-          type="monotone" 
-          dataKey="puan" 
-          stroke="#3B82F6" 
-          strokeWidth={3} 
-          name="Puan"
-          // Bu noktalar artık veri olduğu için görünecek
-          dot={{ fill: '#3B82F6', strokeWidth: 2, r: 5 }}
-          activeDot={{ r: 7, stroke: '#3B82F6', strokeWidth: 2 }}
-        />
-      </LineChart>
-    </ResponsiveContainer>
-  ) : (
-      <div className="text-center py-16 text-gray-500">
-        <TrendingUp className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-        <p>{chartFilter === 'all' ? 'Grafik için deneme sonucu gerekli' : `${chartFilter} denemesi bulunmuyor`}</p>
-      </div>
-    )}
-  </div>
+        {/* Deneme İlerlemesi Grafiği */}
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Deneme İlerlemesi</h3>
+            <select
+              value={chartFilter}
+              onChange={(e) => setChartFilter(e.target.value as any)}
+              className="px-3 py-1 border border-gray-300 rounded text-sm"
+            >
+              <option value="all">Tümü</option>
+              <option value="TYT">TYT</option>
+              <option value="AYT">AYT</option>
+              <option value="LGS">LGS</option>
+            </select>
+          </div>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" fontSize={12} />
+                <YAxis domain={[100, 500]} />
+                <Tooltip 
+                  formatter={(value, name, props) => [
+                    `${value} puan`,
+                    `${props.payload.examName} (${props.payload.examType})`
+                  ]}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="puan" 
+                  stroke="#3B82F6" 
+                  strokeWidth={3} 
+                  name="Puan"
+                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 5 }}
+                  activeDot={{ r: 7, stroke: '#3B82F6', strokeWidth: 2 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-center py-16 text-gray-500">
+              <TrendingUp className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p>{chartFilter === 'all' ? 'Grafik için deneme sonucu gerekli' : `${chartFilter} denemesi bulunmuyor`}</p>
+            </div>
+          )}
+        </div>
 
+        {/* Yaklaşan Ödevler */}
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Yaklaşan Ödevler</h3>
           <div className="space-y-3">
-            {homeworks.length === 0 ? (
+            {homeworks.length === 0 && classAssignments.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p>Henüz ödev eklenmemiş</p>
               </div>
             ) : (
-              [...homeworks, ...classAssignments].slice(0, 4).map((homework, index) => (
-              <div key={homework.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  {homework.completed ? (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 text-orange-500" />
-                  )}
-                  <div>
-                    <p className="text-sm font-medium">{homework.title}</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(homework.due_date).toLocaleDateString('tr-TR')}
-                      {homework.subject && ` • ${homework.subject}`}
-                    </p>
+              [...homeworks, ...classAssignments]
+                .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+                .slice(0, 4)
+                .map((homework) => (
+                <div key={homework.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    {homework.completed ? (
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-5 w-5 text-orange-500" />
+                    )}
+                    <div>
+                      <p className="text-sm font-medium">{homework.title}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(homework.due_date).toLocaleDateString('tr-TR')}
+                        {homework.subject && ` • ${homework.subject}`}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
               ))
             )}
           </div>
@@ -571,6 +645,7 @@ const chartData = filteredExamResults
       </div>
     </div>
   );
+};
 
   const renderExams = () => (
     <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -744,282 +819,193 @@ const chartData = filteredExamResults
         {activeTab === 'exams' && renderExams()}
         {activeTab === 'analysis' && renderAnalysis()}
         {activeTab === 'classes' && (
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold">Sınıflarım</h3>
-              <div className="flex space-x-2">
-                <button 
-                  onClick={() => setShowJoinClassModal(true)}
-                  className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-700"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Sınıfa Katıl</span>
-                </button>
-                <button
-                  onClick={() => setShowExamTopics(true)}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center space-x-2"
-                >
-                  <Target className="h-4 w-4" />
-                  <span>Çıkmış Konular</span>
-                </button>
+  <div className="bg-white rounded-lg p-6 shadow-sm">
+    <div className="flex justify-between items-center mb-6">
+      <h3 className="text-lg font-semibold">Sınıflarım</h3>
+      <div className="flex space-x-2">
+        <button 
+          onClick={() => setShowJoinClassModal(true)}
+          className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-700"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Sınıfa Katıl</span>
+        </button>
+        <button
+          onClick={() => setShowExamTopics(true)}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center space-x-2"
+        >
+          <Target className="h-4 w-4" />
+          <span>Çıkmış Konular</span>
+        </button>
+      </div>
+    </div>
+    
+    <div className="space-y-6">
+      {studentClasses.length === 0 ? (
+        <div className="text-center py-8">
+          <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600">Henüz hiçbir sınıfa katılmadınız</p>
+          <button 
+            onClick={() => setShowJoinClassModal(true)}
+            className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+          >
+            İlk Sınıfa Katıl
+          </button>
+        </div>
+      ) : (
+        studentClasses.map((classData) => {
+          const classResults = classExamResults.filter((r: any) => 
+            r.class_exams?.class_id === classData.class_id
+          );
+          const classAssignmentsList = classAssignments.filter(a => 
+            a.class_id === classData.class_id
+          );
+          const classAnnouncementsList = classAnnouncements.filter(a => 
+            a.class_id === classData.class_id
+          );
+          
+          return (
+            <div key={classData.id} className="border rounded-lg p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h4 className="font-semibold text-xl">{classData.classes?.class_name}</h4>
+                  <p className="text-sm text-gray-600">
+                    Öğretmen: {classData.classes?.teachers?.full_name}
+                  </p>
+                  {classData.classes?.teachers?.school_name && (
+                    <p className="text-xs text-gray-500">
+                      {classData.classes.teachers.school_name}
+                    </p>
+                  )}
+                </div>
+                <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
+                  Aktif
+                </span>
               </div>
-            </div>
-            <div className="space-y-4">
-              {studentClasses.length === 0 ? (
-                <div className="text-center py-8">
-                  <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Henüz hiçbir sınıfa katılmadınız</p>
-                  {classAnnouncements.length > 0 && (
-                    <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                      <p className="text-blue-800 text-sm font-medium">Sınıf Duyuruları</p>
-                      <div className="mt-2 space-y-2">
-                        {classAnnouncements.slice(0, 3).map((announcement) => (
-                          <div key={announcement.id} className="text-left p-2 bg-white rounded border">
-                            <p className="font-medium text-sm">{announcement.title}</p>
-                            <p className="text-xs text-gray-600">{announcement.content}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  <button 
-                    onClick={() => setShowJoinClassModal(true)}
-                    className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
-                  >
-                    İlk Sınıfa Katıl
-                  </button>
+              
+              <div className="text-sm text-gray-600 mb-4">
+                <p>Katılım Tarihi: {new Date(classData.joined_at).toLocaleDateString('tr-TR')}</p>
+              </div>
+
+              {/* Sınıf İstatistikleri */}
+              <div className="grid grid-cols-4 gap-4 mb-6">
+                <div className="text-center p-3 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">{classResults.length}</div>
+                  <div className="text-xs text-blue-800">Sınav</div>
                 </div>
-              ) : (
-                studentClasses.map((classData) => (
-                  <div key={classData.id} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h4 className="font-semibold">{classData.classes?.class_name}</h4>
-                        <p className="text-sm text-gray-600">
-                          Öğretmen: {classData.classes?.teachers?.full_name}
-                        </p>
-                        {classData.classes?.teachers?.school_name && (
-                          <p className="text-xs text-gray-500">
-                            {classData.classes.teachers.school_name}
-                          </p>
-                        )}
-                      </div>
-                      <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
-                        Aktif
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-600 mb-4">
-                      <p>Katılım Tarihi: {new Date(classData.joined_at).toLocaleDateString('tr-TR')}</p>
-                    </div>
-                    
-                    {/* Show class assignments for this class */}
-                    {classAssignments.filter(a => a.class_id === classData.class_id).length > 0 && (
-                      <div className="mt-3 p-2 bg-blue-50 rounded">
-                        <p className="text-blue-800 text-sm font-medium mb-2">📝 Sınıf Ödevleri:</p>
-                        {classAssignments
-                          .filter(a => a.class_id === classData.class_id)
-                          .slice(0, 3)
-                          .map((assignment) => (
-                            <div key={assignment.id} className="text-sm text-blue-700 mb-1 p-2 bg-white rounded border-l-2 border-blue-400">
-                              <div className="font-medium">{assignment.title}</div>
-                              <div className="text-xs text-blue-600">
-                                {assignment.subject} • Son teslim: {new Date(assignment.due_date).toLocaleDateString('tr-TR')}
-                              </div>
-                              {assignment.description && (
-                                <div className="text-xs text-blue-500 mt-1">{assignment.description}</div>
-                              )}
-                            </div>
-                          ))}
-                      </div>
-                    )}
+                <div className="text-center p-3 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">{classAssignmentsList.length}</div>
+                  <div className="text-xs text-green-800">Ödev</div>
+                </div>
+                <div className="text-center p-3 bg-purple-50 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600">{classAnnouncementsList.length}</div>
+                  <div className="text-xs text-purple-800">Duyuru</div>
+                </div>
+                <div className="text-center p-3 bg-orange-50 rounded-lg">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {classResults.length > 0 
+                      ? (classResults.reduce((sum: number, r: any) => sum + (r.score || 0), 0) / classResults.length).toFixed(1)
+                      : '0'
+                    }
+                  </div>
+                  <div className="text-xs text-orange-800">Ortalama</div>
+                </div>
+              </div>
 
-                    {/* Show class announcements */}
-                    {classAnnouncements.filter(a => a.class_id === classData.class_id).length > 0 && (
-                      <div className="mt-3 p-2 bg-purple-50 rounded">
-                        <p className="text-purple-800 text-sm font-medium mb-2">📢 Sınıf Duyuruları:</p>
-                        {classAnnouncements
-                          .filter(a => a.class_id === classData.class_id)
-                          .slice(0, 3)
-                          .map((announcement) => (
-                            <div key={announcement.id} className="text-sm text-purple-700 mb-1 p-2 bg-white rounded border-l-2 border-purple-400">
-                              <div className="font-medium">{announcement.title}</div>
-                              <div className="text-xs text-purple-600 mt-1">{announcement.content}</div>
-                              <div className="text-xs text-purple-500 mt-1">
-                                {new Date(announcement.created_at).toLocaleDateString('tr-TR')}
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-                    )}
-
-                    {/* Show class exam results */}
-                    {classExamResults.filter(r => r.class_exams?.class_id === classData.class_id).length > 0 && (
-                      <div className="mt-3 p-2 bg-orange-50 rounded">
-                        <p className="text-orange-800 text-sm font-medium mb-2">🏆 Son Sınav Sonuçlarım:</p>
-                        {classExamResults
-                          .filter(r => r.class_exams?.class_id === classData.class_id)
-                          .slice(0, 3)
-                          .map((result) => (
-                            <div key={result.id} className="text-sm text-orange-700 mb-1 p-2 bg-white rounded border-l-2 border-orange-400">
-                              <div className="font-medium">{result.class_exams?.exam_name}</div>
-                              <div className="text-xs text-orange-600">
-                                Puan: {result.score?.toFixed(1) || 'N/A'} • 
-                                Doğru: {result.correct_answers || 0} • 
-                                Yanlış: {result.wrong_answers || 0} • 
-                                Boş: {result.empty_answers || 0}
-                              </div>
-                              <div className="text-xs text-orange-500 mt-1">
+              {/* Sınıf Sınav Sonuçları - Detaylı Tablo */}
+              {classResults.length > 0 && (
+                <div className="mb-6">
+                  <h5 className="font-semibold mb-3 flex items-center">
+                    <Trophy className="h-4 w-4 mr-2 text-orange-600" />
+                    Sınav Sonuçlarım
+                  </h5>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse border border-gray-300">
+                      <thead>
+                        <tr className="bg-gray-50">
+                          <th className="border border-gray-300 px-3 py-2 text-left">Sınav</th>
+                          <th className="border border-gray-300 px-3 py-2 text-left">Tarih</th>
+                          <th className="border border-gray-300 px-3 py-2 text-left">Puan</th>
+                          <th className="border border-gray-300 px-3 py-2 text-left">Doğru</th>
+                          <th className="border border-gray-300 px-3 py-2 text-left">Yanlış</th>
+                          <th className="border border-gray-300 px-3 py-2 text-left">Boş</th>
+                          <th className="border border-gray-300 px-3 py-2 text-left">Sıralama</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {classResults
+                          .sort((a: any, b: any) => new Date(b.class_exams?.exam_date || 0).getTime() - new Date(a.class_exams?.exam_date || 0).getTime())
+                          .map((result: any) => (
+                            <tr key={result.id} className="hover:bg-gray-50">
+                              <td className="border border-gray-300 px-3 py-2 font-medium">
+                                {result.class_exams?.exam_name}
+                              </td>
+                              <td className="border border-gray-300 px-3 py-2 text-gray-600">
                                 {new Date(result.class_exams?.exam_date).toLocaleDateString('tr-TR')}
-                              </div>
-                            </div>
+                              </td>
+                              <td className="border border-gray-300 px-3 py-2 font-semibold text-blue-600">
+                                {result.score?.toFixed(1)}
+                              </td>
+                              <td className="border border-gray-300 px-3 py-2 text-green-600">
+                                {result.correct_answers || 0}
+                              </td>
+                              <td className="border border-gray-300 px-3 py-2 text-red-600">
+                                {result.wrong_answers || 0}
+                              </td>
+                              <td className="border border-gray-300 px-3 py-2 text-gray-600">
+                                {result.empty_answers || 0}
+                              </td>
+                              <td className="border border-gray-300 px-3 py-2">
+                                <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
+                                  result.ranking === 1 ? 'bg-yellow-100 text-yellow-800' :
+                                  result.ranking === 2 ? 'bg-gray-100 text-gray-800' :
+                                  result.ranking === 3 ? 'bg-orange-100 text-orange-800' :
+                                  'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {result.ranking}
+                                </span>
+                              </td>
+                            </tr>
                           ))}
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-        {activeTab === 'homeworks' && (
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold">Ödev Takibi</h3>
-              <button 
-                onClick={() => setShowHomeworkForm(true)}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-700"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Yeni Ödev</span>
-              </button>
-            </div>
-            <div className="space-y-3">
-              {homeworks.length === 0 ? (
-                <div className="text-center py-8">
-                  <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Henüz ödev eklenmemiş</p>
-                  {classAssignments.length > 0 && (
-                    <div className="mt-4">
-                      <p className="text-gray-700 font-medium mb-2">Sınıf Ödevleri:</p>
-                      {classAssignments.slice(0, 3).map((assignment) => (
-                        <div key={assignment.id} className="p-3 bg-blue-50 rounded-lg mb-2">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-medium text-blue-900">{assignment.title}</p>
-                              <p className="text-sm text-blue-700">{assignment.subject}</p>
-                              {assignment.description && (
-                                <p className="text-xs text-blue-600 mt-1">{assignment.description}</p>
-                              )}
-                            </div>
-                            <span className="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded">
-                              {new Date(assignment.due_date).toLocaleDateString('tr-TR')}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <button 
-                    onClick={() => setShowHomeworkForm(true)}
-                    className="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-                  >
-                    İlk Ödevi Ekle
-                  </button>
-                </div>
-              ) : (
-                [...homeworks, ...classAssignments.map(a => ({...a, isClassAssignment: true}))].map((homework) => (
-                <div key={homework.id} className="flex items-center justify-between p-4 border rounded-lg relative">
-                  <div className="flex items-center space-x-3">
-                    {!homework.isClassAssignment && (
-                      <button
-                        onClick={() => handleToggleHomework(homework)}
-                        className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                          homework.completed 
-                            ? 'bg-green-500 border-green-500 text-white' 
-                            : 'border-gray-300 hover:border-green-400'
-                        }`}
-                      >
-                        {homework.completed && <CheckCircle className="h-3 w-3" />}
-                      </button>
-                    )}
-                    {homework.isClassAssignment && (
-                      <div className="w-5 h-5 rounded border-2 border-blue-300 bg-blue-100 flex items-center justify-center">
-                        <BookOpen className="h-3 w-3 text-blue-600" />
-                      </div>
-                    )}
-                    <div className={homework.completed ? 'opacity-60' : ''}>
-                      <p className={`font-medium ${homework.completed ? 'line-through' : ''}`}>
-                        {homework.title}
-                        {homework.isClassAssignment && (
-                          <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                            Sınıf Ödevi
-                          </span>
-                        )}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Son teslim: {new Date(homework.due_date).toLocaleDateString('tr-TR')}
-                        {homework.subject && ` • ${homework.subject}`}
-                      </p>
-                      {homework.description && (
-                        <p className="text-xs text-gray-500 mt-1">{homework.description}</p>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      homework.isClassAssignment
-                        ? 'bg-blue-100 text-blue-800'
-                        : homework.completed 
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-orange-100 text-orange-800'
-                    }`}>
-                      {homework.isClassAssignment 
-                        ? 'Sınıf Ödevi' 
-                        : homework.completed ? 'Tamamlandı' : 'Bekliyor'
-                      }
-                    </span>
-                    
-                    {/* Homework Menu */}
-                    {!homework.isClassAssignment && (
-                      <div className="relative">
-                        <button
-                          onClick={() => setShowHomeworkMenu(showHomeworkMenu === homework.id ? null : homework.id)}
-                          className="p-1 hover:bg-gray-100 rounded"
-                        >
-                          <MoreVertical className="h-4 w-4 text-gray-500" />
-                        </button>
-                        
-                        {showHomeworkMenu === homework.id && (
-                          <div className="absolute right-0 top-8 bg-white border rounded-lg shadow-lg z-10 min-w-[120px]">
-                            <button
-                              onClick={() => {
-                                handleToggleHomework(homework);
-                                setShowHomeworkMenu(null);
-                              }}
-                              className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center space-x-2"
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                              <span>{homework.completed ? 'Geri Al' : 'Tamamla'}</span>
-                            </button>
-                            <button
-                              onClick={() => { handleDeleteHomework(homework.id); setShowHomeworkMenu(null); }}
-                              className="w-full px-3 py-2 text-left hover:bg-gray-50 text-red-600 flex items-center space-x-2"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              <span>Sil</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-                ))
+              )}
+
+              {/* Diğer içerikler mevcut haliyle kalacak */}
+              {classAssignmentsList.length > 0 && (
+                <div className="mt-3 p-2 bg-blue-50 rounded">
+                  <p className="text-blue-800 text-sm font-medium mb-2">📝 Sınıf Ödevleri:</p>
+                  {classAssignmentsList.slice(0, 3).map((assignment) => (
+                    <div key={assignment.id} className="text-sm text-blue-700 mb-1 p-2 bg-white rounded border-l-2 border-blue-400">
+                      <div className="font-medium">{assignment.title}</div>
+                      <div className="text-xs text-blue-600">
+                        {assignment.subject} • Son teslim: {new Date(assignment.due_date).toLocaleDateString('tr-TR')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {classAnnouncementsList.length > 0 && (
+                <div className="mt-3 p-2 bg-purple-50 rounded">
+                  <p className="text-purple-800 text-sm font-medium mb-2">📢 Sınıf Duyuruları:</p>
+                  {classAnnouncementsList.slice(0, 3).map((announcement) => (
+                    <div key={announcement.id} className="text-sm text-purple-700 mb-1 p-2 bg-white rounded border-l-2 border-purple-400">
+                      <div className="font-medium">{announcement.title}</div>
+                      <div className="text-xs text-purple-600 mt-1">{announcement.content}</div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
-          </div>
-        )}
+          );
+        })
+      )}
+    </div>
+  </div>
+)}
         
         {/* Forms */}
         {studentData && (
@@ -1282,3 +1268,5 @@ const chartData = filteredExamResults
     </div>
   );
 }
+
+export default React.memo(StudentDashboard);
