@@ -390,9 +390,13 @@ const chartData = filteredExamResults
     };
   });
 
-  const renderOverview = () => (
+const renderOverview = () => {
+  const hasClassResults = classExamResults && classExamResults.length > 0;
+  
+  return (
     <div className="space-y-6">
       <div className="grid md:grid-cols-4 gap-6">
+        {/* Mevcut istatistik kartları aynen kalacak */}
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
@@ -438,120 +442,156 @@ const chartData = filteredExamResults
             <TrendingUp className="h-8 w-8 text-purple-600" />
           </div>
         </div>
-
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm">Haftalık Çalışma</p>
-              <p className="text-2xl font-bold text-blue-600">{weeklyStudyHours.toFixed(1)} saat</p>
-              <p className="text-blue-600 text-sm">
-                {weeklyGoal ? `Hedef: ${weeklyGoal.weekly_hours_target} saat (${Math.round((weeklyStudyHours / weeklyGoal.weekly_hours_target) * 100)}%)` : 'Bu hafta'}
-              </p>
-            </div>
-            <Clock className="h-8 w-8 text-blue-600" />
-          </div>
-          <div className="flex space-x-2 mt-2">
-          <button
-            onClick={() => setShowStudyForm(true)}
-            className="mt-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
-          >
-            Çalışma Ekle
-          </button>
-          {!weeklyGoal && (
-            <button
-              onClick={() => setShowGoalForm(true)}
-              className="mt-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200"
-            >
-              Hedef Belirle
-            </button>
-          )}
-          {weeklyGoal && (
-            <button
-              onClick={() => setShowGoalForm(true)}
-              className="mt-2 text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded hover:bg-yellow-200"
-            >
-              Hedef Güncelle
-            </button>
-          )}
-          </div>
-        </div>
       </div>
+
+      {/* YENİ: Sınıf Sınav Sonuçları - Sadece varsa göster */}
+      {hasClassResults && (
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold flex items-center">
+              <Trophy className="h-5 w-5 mr-2 text-orange-600" />
+              Son Sınıf Sınavlarım
+            </h3>
+            <span className="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded">
+              {classExamResults.length} sınav
+            </span>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-3 py-2 text-left">Sınav</th>
+                  <th className="px-3 py-2 text-left">Tarih</th>
+                  <th className="px-3 py-2 text-left">Puan</th>
+                  <th className="px-3 py-2 text-left">Sıralama</th>
+                </tr>
+              </thead>
+              <tbody>
+                {classExamResults
+                  .sort((a: any, b: any) => new Date(b.class_exams?.exam_date || 0).getTime() - new Date(a.class_exams?.exam_date || 0).getTime())
+                  .slice(0, 3) // Son 3 sınavı göster
+                  .map((result: any) => (
+                    <tr key={result.id} className="border-b hover:bg-gray-50">
+                      <td className="px-3 py-3 font-medium">
+                        <div className="flex flex-col">
+                          <span>{result.class_exams?.exam_name || 'Sınav Sonucu'}</span>
+                          <span className="text-xs text-gray-500">{result.class_exams?.exam_type}</span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 text-gray-600">
+                        {result.class_exams?.exam_date 
+                          ? new Date(result.class_exams.exam_date).toLocaleDateString('tr-TR')
+                          : '-'
+                        }
+                      </td>
+                      <td className="px-3 py-3 font-semibold text-blue-600">
+                        {result.score ? result.score.toFixed(1) : '0'}
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
+                          result.ranking === 1 ? 'bg-yellow-100 text-yellow-800' :
+                          result.ranking === 2 ? 'bg-gray-100 text-gray-800' :
+                          result.ranking === 3 ? 'bg-orange-100 text-orange-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {result.ranking || '-'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {classExamResults.length > 3 && (
+            <div className="mt-4 text-center">
+              <button 
+                onClick={() => setActiveTab('classes')}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                Tüm sınav sonuçlarını görüntüle ({classExamResults.length})
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-6">
-  <div className="bg-white rounded-lg p-6 shadow-sm">
-    <div className="flex justify-between items-center mb-4">
-      <h3 className="text-lg font-semibold">Deneme İlerlemesi</h3>
-      <select
-        value={chartFilter}
-        onChange={(e) => setChartFilter(e.target.value as any)}
-        className="px-3 py-1 border border-gray-300 rounded text-sm"
-      >
-        <option value="all">Tümü</option>
-        <option value="TYT">TYT</option>
-        <option value="AYT">AYT</option>
-        <option value="LGS">LGS</option>
-      </select>
-    </div>
-  {chartData.length > 0 ? (
-    <ResponsiveContainer width="100%" height={250}>
-      <LineChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" />
-        {/* Artık "date" anahtarını veride bulacağı için bu satır doğru çalışacak */}
-        <XAxis dataKey="date" fontSize={12} /> 
-        <YAxis domain={[100, 500]} />
-        <Tooltip 
-          formatter={(value, name, props) => [
-            `${value} puan`,
-            `${props.payload.examName} (${props.payload.examType})`
-          ]}
-        />
-        <Line 
-          type="monotone" 
-          dataKey="puan" 
-          stroke="#3B82F6" 
-          strokeWidth={3} 
-          name="Puan"
-          // Bu noktalar artık veri olduğu için görünecek
-          dot={{ fill: '#3B82F6', strokeWidth: 2, r: 5 }}
-          activeDot={{ r: 7, stroke: '#3B82F6', strokeWidth: 2 }}
-        />
-      </LineChart>
-    </ResponsiveContainer>
-  ) : (
-      <div className="text-center py-16 text-gray-500">
-        <TrendingUp className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-        <p>{chartFilter === 'all' ? 'Grafik için deneme sonucu gerekli' : `${chartFilter} denemesi bulunmuyor`}</p>
-      </div>
-    )}
-  </div>
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Deneme İlerlemesi</h3>
+            <select
+              value={chartFilter}
+              onChange={(e) => setChartFilter(e.target.value as any)}
+              className="px-3 py-1 border border-gray-300 rounded text-sm"
+            >
+              <option value="all">Tümü</option>
+              <option value="TYT">TYT</option>
+              <option value="AYT">AYT</option>
+              <option value="LGS">LGS</option>
+            </select>
+          </div>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" fontSize={12} />
+                <YAxis domain={[100, 500]} />
+                <Tooltip 
+                  formatter={(value, name, props) => [
+                    `${value} puan`,
+                    `${props.payload.examName} (${props.payload.examType})`
+                  ]}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="puan" 
+                  stroke="#3B82F6" 
+                  strokeWidth={3} 
+                  name="Puan"
+                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 5 }}
+                  activeDot={{ r: 7, stroke: '#3B82F6', strokeWidth: 2 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-center py-16 text-gray-500">
+              <TrendingUp className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p>{chartFilter === 'all' ? 'Grafik için deneme sonucu gerekli' : `${chartFilter} denemesi bulunmuyor`}</p>
+            </div>
+          )}
+        </div>
 
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Yaklaşan Ödevler</h3>
           <div className="space-y-3">
-            {homeworks.length === 0 ? (
-             
+            {homeworks.length === 0 && classAssignments.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p>Henüz ödev eklenmemiş</p>
               </div>
             ) : (
-              [...homeworks, ...classAssignments].slice(0, 4).map((homework, index) => (
-              <div key={homework.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  {homework.completed ? (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 text-orange-500" />
-                  )}
-                  <div>
-                    <p className="text-sm font-medium">{homework.title}</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(homework.due_date).toLocaleDateString('tr-TR')}
-                      {homework.subject && ` • ${homework.subject}`}
-                    </p>
+              [...homeworks, ...classAssignments]
+                .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+                .slice(0, 4)
+                .map((homework) => (
+                <div key={homework.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    {homework.completed ? (
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-5 w-5 text-orange-500" />
+                    )}
+                    <div>
+                      <p className="text-sm font-medium">{homework.title}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(homework.due_date).toLocaleDateString('tr-TR')}
+                        {homework.subject && ` • ${homework.subject}`}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
               ))
             )}
           </div>
@@ -559,6 +599,7 @@ const chartData = filteredExamResults
       </div>
     </div>
   );
+};
 
   const renderExams = () => (
     <div className="bg-white rounded-lg p-6 shadow-sm">
