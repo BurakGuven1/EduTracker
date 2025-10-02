@@ -402,6 +402,87 @@ const chartData = filteredExamResults
             <BookOpen className="h-8 w-8 text-blue-600" />
           </div>
         </div>
+
+        {classExamResults.length > 0 && (
+      <div className="bg-white rounded-lg p-6 shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold flex items-center">
+            <Trophy className="h-5 w-5 mr-2 text-orange-600" />
+            Sınıf Sınav Sonuçlarım
+          </h3>
+          <span className="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded">
+            {classExamResults.length} sınav
+          </span>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="border border-gray-300 px-3 py-2 text-left">Sınav</th>
+                <th className="border border-gray-300 px-3 py-2 text-left">Tarih</th>
+                <th className="border border-gray-300 px-3 py-2 text-left">Puan</th>
+                <th className="border border-gray-300 px-3 py-2 text-left">Doğru</th>
+                <th className="border border-gray-300 px-3 py-2 text-left">Yanlış</th>
+                <th className="border border-gray-300 px-3 py-2 text-left">Boş</th>
+                <th className="border border-gray-300 px-3 py-2 text-left">Sıralama</th>
+              </tr>
+            </thead>
+            <tbody>
+              {classExamResults
+                .sort((a: any, b: any) => new Date(b.class_exams?.exam_date).getTime() - new Date(a.class_exams?.exam_date).getTime())
+                .slice(0, 5) // Son 5 sınavı göster
+                .map((result: any, index: number) => (
+                  <tr key={result.id} className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-3 py-2 font-medium">
+                      {result.class_exams?.exam_name || 'Sınav Sonucu'}
+                    </td>
+                    <td className="border border-gray-300 px-3 py-2 text-gray-600">
+                      {result.class_exams?.exam_date 
+                        ? new Date(result.class_exams.exam_date).toLocaleDateString('tr-TR')
+                        : '-'
+                      }
+                    </td>
+                    <td className="border border-gray-300 px-3 py-2 font-semibold text-blue-600">
+                      {result.score ? result.score.toFixed(1) : '0'}
+                    </td>
+                    <td className="border border-gray-300 px-3 py-2 text-green-600">
+                      {result.correct_answers || 0}
+                    </td>
+                    <td className="border border-gray-300 px-3 py-2 text-red-600">
+                      {result.wrong_answers || 0}
+                    </td>
+                    <td className="border border-gray-300 px-3 py-2 text-gray-600">
+                      {result.empty_answers || 0}
+                    </td>
+                    <td className="border border-gray-300 px-3 py-2">
+                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                        result.ranking === 1 ? 'bg-yellow-100 text-yellow-800' :
+                        result.ranking === 2 ? 'bg-gray-100 text-gray-800' :
+                        result.ranking === 3 ? 'bg-orange-100 text-orange-800' :
+                        'bg-blue-100 text-blue-800'
+                      }`}>
+                        {result.ranking || '-'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+        
+        {classExamResults.length > 5 && (
+          <div className="mt-3 text-center">
+            <button 
+              onClick={() => setActiveTab('classes')}
+              className="text-blue-600 hover:text-blue-800 text-sm"
+            >
+              Tüm sınav sonuçlarını görüntüle ({classExamResults.length})
+            </button>
+          </div>
+        )}
+      </div>
+    )}
         
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="flex items-center justify-between">
