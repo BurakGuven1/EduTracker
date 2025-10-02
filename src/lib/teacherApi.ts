@@ -317,26 +317,6 @@ export const getClassExams = async (classId: string) => {
     .from('class_exams')
     .select(`
       *,
-      class_exam_results(
-        *,
-        students(
-          *,
-          profiles(*)
-        )
-      )
-    `)
-    .eq('class_id', classId)
-    .order('exam_date', { ascending: false });
-
-  return { data, error };
-};
-
-// Teacher Class Management
-export const getClassExams = async (classId: string) => {
-  const { data, error } = await supabase
-    .from('class_exams')
-    .select(`
-      *,
       class_exam_results (
         id,
         class_exam_id,
@@ -354,6 +334,24 @@ export const getClassExams = async (classId: string) => {
     .order('created_at', { ascending: false });
 
   if (error) throw error;
+  return { data, error };
+};
+
+// Teacher Class Management
+export const addClassAssignment = async (assignmentData: {
+  class_id: string;
+  teacher_id: string;
+  title: string;
+  description?: string;
+  subject: string;
+  due_date: string;
+}) => {
+  const { data, error } = await supabase
+    .from('class_assignments')
+    .insert([assignmentData])
+    .select()
+    .single();
+
   return { data, error };
 };
 
