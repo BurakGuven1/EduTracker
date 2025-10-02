@@ -269,6 +269,9 @@ export default function ClassManagementPanel({ classData, onBack, onRefresh }: C
 
       alert('Öğrenci sonuçları başarıyla kaydedildi!');
       setShowResultsModal(false);
+      
+      // Sınıf verilerini yeniden yükle
+      await loadClassContent();
       onRefresh();
     } catch (error: any) {
       console.error('Sonuçları kaydetme hatası:', error);
