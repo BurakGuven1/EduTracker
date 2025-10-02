@@ -1222,3 +1222,5 @@ const renderOverview = () => {
     </div>
   );
 }
+
+export default React.memo(StudentDashboard);
