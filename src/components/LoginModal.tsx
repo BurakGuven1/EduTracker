@@ -742,46 +742,62 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
               </div>
             )}
 
-            {!isLoginMode && formData.packageType && formData.billingCycle && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-800 mb-3">Seçilen Paket Detayları</h4>
-                {(() => {
-                  const selectedPkg = packages.find(pkg => pkg.id === formData.packageType);
-                  if (!selectedPkg) return null;
-                  
-                  const currentPrice = formData.billingCycle === 'monthly' ? selectedPkg.monthlyPrice : selectedPkg.yearlyPrice;
-                  const monthlyEquivalent = formData.billingCycle === 'yearly' ? selectedPkg.yearlyPrice / 12 : selectedPkg.monthlyPrice;
-                  const savings = formData.billingCycle === 'yearly' ? (selectedPkg.monthlyPrice * 12) - selectedPkg.yearlyPrice : 0;
-                  
-                  return (
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium text-blue-900">{selectedPkg.name}</span>
-                        <div className="text-right">
-                          <div className="text-xl font-bold text-blue-600">
-                            {currentPrice.toLocaleString()}₺
-                          </div>
-                          <div className="text-sm text-blue-700">
-                            {formData.billingCycle === 'yearly' ? '/yıl' : '/ay'}
-                          </div>
-                          {formData.billingCycle === 'yearly' && (
-                            <div className="text-xs text-green-600">
-                              Aylık {monthlyEquivalent.toFixed(0)}₺'ye denk geliyor
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {savings > 0 && (
-                        <div className="bg-green-100 p-2 rounded text-center">
-                          <div className="text-green-800 font-semibold">
-                            🎉 {savings.toLocaleString().toFixed(0)}₺ Tasarruf!
-                          </div>
-                          <div className="text-green-700 text-xs">
-                            Aylık ödemeye göre yıllık %{Math.round((savings / (selectedPkg.monthlyPrice * 12)) * 100)} indirim
-                          </div>
-                        </div>
-                      )}
+{!isLoginMode && formData.packageType && formData.billingCycle && (
+  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <h4 className="font-semibold text-blue-800 mb-3">Seçilen Paket Detayları</h4>
+    {(() => {
+      const selectedPkg = packages.find(pkg => pkg.id === formData.packageType);
+      if (!selectedPkg) return null;
+      
+      const currentPrice = formData.billingCycle === 'monthly' ? selectedPkg.monthlyPrice : selectedPkg.yearlyPrice;
+      const monthlyEquivalent = formData.billingCycle === 'yearly' ? selectedPkg.yearlyPrice / 12 : selectedPkg.monthlyPrice;
+      
+      // DÜZELTİLMİŞ HESAPLAMALAR:
+      const savings = formData.billingCycle === 'yearly' 
+        ? (selectedPkg.monthlyPrice * 12) - selectedPkg.yearlyPrice 
+        : 0;
+      
+      // 10'un katlarına yukarı yuvarla ve kuruşları kaldır
+      const roundedSavings = Math.ceil(savings / 10) * 10;
+      
+      const discountPercentage = formData.billingCycle === 'yearly' 
+        ? Math.round(((selectedPkg.monthlyPrice * 12 - selectedPkg.yearlyPrice) / (selectedPkg.monthlyPrice * 12)) * 100)
+        : 0;
+      
+      return (
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-blue-900">{selectedPkg.name}</span>
+            <div className="text-right">
+              <div className="text-xl font-bold text-blue-600">
+                {currentPrice.toFixed(0)}₺
+              </div>
+              <div className="text-sm text-blue-700">
+                {formData.billingCycle === 'yearly' ? '/yıl' : '/ay'}
+              </div>
+              {formData.billingCycle === 'yearly' && (
+                <div className="text-xs text-green-600">
+                  Aylık {monthlyEquivalent.toFixed(0)}₺'ye denk geliyor
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {savings > 0 && (
+            <div className="bg-green-100 p-2 rounded text-center">
+              <div className="text-green-800 font-semibold">
+                🎉 {roundedSavings.toFixed(0)}₺ Tasarruf!
+              </div>
+              <div className="text-green-700 text-xs">
+                Aylık ödemeye göre yıllık %{discountPercentage} indirim
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    })()}
+  </div>
+)}
                       
                       <div className="border-t border-blue-200 pt-3">
                         <div className="text-sm text-blue-800 font-medium mb-2">Paket Avantajları:</div>
