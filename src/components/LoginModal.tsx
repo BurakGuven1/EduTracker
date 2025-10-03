@@ -35,21 +35,21 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
       id: 'basic',
       name: 'Temel Paket',
       monthlyPrice: 219.99,
-      yearlyPrice: 2199.99,
+      yearlyPrice: 1999.99,
       features: ['Temel özellikler', 'Sınırlı içerik', 'E-posta desteği']
     },
     {
       id: 'advanced',
       name: 'Gelişmiş Paket',
       monthlyPrice: 319.99,
-      yearlyPrice: 3199.99,
+      yearlyPrice: 2599.99,
       features: ['Gelişmiş özellikler', 'Tam içerik', 'Yapay Zeka Desteği','Öncelikli destek','Analitik raporlar']
     },
     {
       id: 'professional',
       name: 'Profesyonel Paket',
       monthlyPrice: 499.99,
-      yearlyPrice: 4999.99,
+      yearlyPrice: 3999.99,
       features: ['Tüm özellikler', 'Sınırsız içerik','Yapay Zeka Desteği','Öncelikli destek','Çıkmış Soruların Analizi', 'Detaylı analitik raporlar']
     }
   ];
