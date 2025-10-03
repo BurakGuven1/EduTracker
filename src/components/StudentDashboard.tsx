@@ -112,7 +112,7 @@ export default function StudentDashboard() {
   
   const { user: loggedInUser } = useAuth();
   const { 
-    studentData, 
+    studentData: fetchedStudentData,
     homeworks, 
     aiRecommendations, 
     studentClasses, 
@@ -300,7 +300,7 @@ export default function StudentDashboard() {
   const stats = calculateStats(examResults);
 
 
-  const reloadWeeklyStudyHours = async (goal: any) => {
+  const chartData = examResults && examResults.length > 0
   if (!studentData || !goal) return;
 
   try {
