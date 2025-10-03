@@ -110,7 +110,7 @@ export default function StudentDashboard() {
 
   const [weeklyStudyHours, setWeeklyStudyHours] = useState(0);
   
-  const { user } = useAuth();
+  const { user: loggedInUser } = useAuth();
   const { 
     studentData, 
     homeworks, 
@@ -121,7 +121,7 @@ export default function StudentDashboard() {
     classExamResults,
     loading, 
     refetch 
-  } = useStudentData(user?.id);
+  } = useStudentData(loggedInUser?.id);
 
   // Calculate package pricing
   const getPackagePrice = () => {
