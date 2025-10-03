@@ -755,6 +755,8 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                   ? (selectedPkg.monthlyPrice * 12) - selectedPkg.yearlyPrice 
                   : 0;
                 
+                const roundedSavings = Math.ceil(savings / 10) * 10;
+                
                 const discountPercentage = formData.billingCycle === 'yearly' 
                   ? Math.round(((selectedPkg.monthlyPrice * 12 - selectedPkg.yearlyPrice) / (selectedPkg.monthlyPrice * 12)) * 100)
                   : 0;
