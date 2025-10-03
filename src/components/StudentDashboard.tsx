@@ -267,7 +267,7 @@ export default function StudentDashboard() {
   };
 
   // Calculate real statistics from user's data
-  const calculateStats = () => {
+  const calculateStats = (examResults: any[]) => {
     const totalExams = examResults.length;
     const averageScore = examResults.length > 0 
       ? examResults.reduce((sum, exam) => sum + (exam.total_score || 0), 0) / examResults.length 
@@ -295,7 +295,7 @@ export default function StudentDashboard() {
     return { totalExams, averageScore, pendingHomeworks, improvementPercent, weeklyStudyHours };
   };
 
-  const stats = calculateStats();
+  const stats = calculateStats(examResults);
 
 
   const reloadWeeklyStudyHours = async (goal: any) => {
