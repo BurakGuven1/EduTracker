@@ -205,8 +205,8 @@ export default function ExamForm({ isOpen, onClose, studentId, onSuccess, editDa
         100 +
         (turkceNet * 3.30) +
         (matematikNet * 3.30) +
-        (fenNet * 3.45) +
-        (sosyalNet * 3.45);
+        (fenNet * 3.40) +
+        (sosyalNet * 3.40);
 
     return Math.min(500, Math.max(100, hamPuan));
   };
