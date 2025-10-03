@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Plus, TrendingUp, Calendar, Target, Award, Clock, CheckCircle, AlertCircle, LogOut, CreditCard as Edit, Trash2, MoreVertical, Trophy, Star, Users, X } from 'lucide-react';
+import { BookOpen, Plus, TrendingUp, Calendar, Target, Award, Clock, CheckCircle, AlertCircle, LogOut, CreditCard as Edit, Trash2, MoreVertical, Trophy, Star, Users, X, Trophy } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { Scatter, ScatterChart } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
@@ -12,6 +12,8 @@ import { getStudentInviteCode, signOut, deleteExamResult, updateHomework, delete
 import { getStudentClassExams, getStudentExamResults } from '../lib/studentApi';
 
 export default function StudentDashboard() {
+  const [classExams, setClassExams] = useState<any[]>([]);
+  const [examResults, setExamResults] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'overview' | 'exams' | 'homeworks' | 'analysis'>('overview');
   const [showExamForm, setShowExamForm] = useState(false);
   const [showHomeworkForm, setShowHomeworkForm] = useState(false);
