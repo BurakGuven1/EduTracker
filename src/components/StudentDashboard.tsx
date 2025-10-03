@@ -677,32 +677,7 @@ const chartData = filteredExamResults
               </p>
             </div>
           </div>
-        </div>
-
-        {/* Payment Notice */}
-        {showPaymentNotice && (
-          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="text-yellow-800 font-medium">Ödeme Bildirimi</h3>
-                <p className="text-yellow-700 text-sm mt-1">
-                  <strong>{getPackagePrice().name}</strong> seçtiniz. 
-                  Aylık <strong>{getPackagePrice().monthly}₺</strong> veya 
-                  Yıllık <strong>{getPackagePrice().yearly}₺</strong> ödemeniz beklenmektedir.
-                </p>
-                <p className="text-yellow-600 text-xs mt-2">
-                  ⚠️ Ödeme yapılmadığı takdirde hesabınız silinecektir.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowPaymentNotice(false)}
-                className="text-yellow-600 hover:text-yellow-800"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        )}
+        </div>      
 
         <div className="flex space-x-1 mb-8">
           {[
