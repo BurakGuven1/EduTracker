@@ -8,9 +8,11 @@ import ExamForm from './ExamForm';
 import HomeworkForm from './HomeworkForm';
 import ExamTopicsSection from './ExamTopicsSection';
 import AIInsights from './AIInsights';
-import { getStudentInviteCode, signOut, deleteExamResult, updateHomework, deleteHomework, addStudySession, getWeeklyStudyGoal, createWeeklyStudyGoal, updateWeeklyStudyGoal, getWeeklyStudySessions } from '../lib/supabase';
 
 export default function StudentDashboard() {
+  const { user } = useAuth();
+  const { studentData, examResults, homeworks, aiRecommendations, studentClasses, classAssignments, classAnnouncements, classExamResults, loading, refetch } = useStudentData(user?.id);
+  
   const [activeTab, setActiveTab] = useState<'overview' | 'exams' | 'homeworks' | 'analysis'>('overview');
   const [showExamForm, setShowExamForm] = useState(false);
   const [showHomeworkForm, setShowHomeworkForm] = useState(false);
@@ -108,10 +110,9 @@ export default function StudentDashboard() {
 
   const [weeklyStudyHours, setWeeklyStudyHours] = useState(0);
   
-  const { user } = useAuth();
+  const { user: loggedInUser } = useAuth();
   const { 
     studentData, 
-    examResults, 
     homeworks, 
     aiRecommendations, 
     studentClasses, 
@@ -120,7 +121,7 @@ export default function StudentDashboard() {
     classExamResults,
     loading, 
     refetch 
-  } = useStudentData(user?.id);
+  } = useStudentData(loggedInUser?.id);
 
   // Calculate package pricing
   const getPackagePrice = () => {
@@ -268,7 +269,7 @@ export default function StudentDashboard() {
   };
 
   // Calculate real statistics from user's data
-  const calculateStats = () => {
+  const calculateStats = (examResults: any[]) => {
     const totalExams = examResults.length;
     const averageScore = examResults.length > 0 
       ? examResults.reduce((sum, exam) => sum + (exam.total_score || 0), 0) / examResults.length 
@@ -296,7 +297,7 @@ export default function StudentDashboard() {
     return { totalExams, averageScore, pendingHomeworks, improvementPercent, weeklyStudyHours };
   };
 
-  const stats = calculateStats();
+  const stats = calculateStats(examResults);
 
 
   const reloadWeeklyStudyHours = async (goal: any) => {
@@ -668,8 +669,41 @@ const chartData = filteredExamResults
               <LogOut className="h-4 w-4" />
               <span>Çıkış Yap</span>
             </button>
+            <div className="text-right">
+              <p className="text-sm font-medium text-gray-900">
+                {getPackagePrice().name}
+              </p>
+              <p className="text-xs text-gray-600">
+                Aylık {getPackagePrice().monthly}₺ / Yıllık {getPackagePrice().yearly}₺
+              </p>
+            </div>
           </div>
-        </div>      
+        </div>
+
+        {/* Payment Notice */}
+        {showPaymentNotice && (
+          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-yellow-800 font-medium">Ödeme Bildirimi</h3>
+                <p className="text-yellow-700 text-sm mt-1">
+                  <strong>{getPackagePrice().name}</strong> seçtiniz. 
+                  Aylık <strong>{getPackagePrice().monthly}₺</strong> veya 
+                  Yıllık <strong>{getPackagePrice().yearly}₺</strong> ödemeniz beklenmektedir.
+                </p>
+                <p className="text-yellow-600 text-xs mt-2">
+                  ⚠️ Ödeme yapılmadığı takdirde hesabınız silinecektir.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowPaymentNotice(false)}
+                className="text-yellow-600 hover:text-yellow-800"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="flex space-x-1 mb-8">
           {[
