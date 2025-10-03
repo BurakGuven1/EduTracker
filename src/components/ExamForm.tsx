@@ -201,9 +201,13 @@ export default function ExamForm({ isOpen, onClose, studentId, onSuccess, editDa
     const fenNet = calculateNetScore(formData.tyt_fen_dogru, formData.tyt_fen_yanlis);
     const sosyalNet = calculateNetScore(formData.tyt_sosyal_dogru, formData.tyt_sosyal_yanlis);
 
-    const toplamNet = turkceNet + matematikNet + fenNet + sosyalNet;
-    // TYT Ham Puan = (Türkçe × 3.3) + (Matematik × 3.3) + (Fen × 3.4) + (Sosyal × 3.4) + 100
-    const hamPuan = 100 + (toplamNet * (400 / 120));
+    const hamPuan =
+        100 +
+        (turkceNet * 3.3) +
+        (matematikNet * 3.3) +
+        (fenNet * 3.4) +
+        (sosyalNet * 3.4);
+
     return Math.min(500, Math.max(100, hamPuan));
   };
 
