@@ -132,7 +132,7 @@ export default function PricingSection({ onSelectPackage }: PricingSectionProps)
             <span>✓ Güvenli ödeme</span>
             <span>✓ İstediğiniz zaman iptal</span>
             <span>✓ 24/7 destek</span>
-            <span>✓ {billingCycle === 'yearly' ? 'Yıllık %17 indirim' : 'Esnek ödeme'}</span>
+            <span>✓ {billingCycle === 'yearly' ? 'Yıllık %33 indirim' : 'Esnek ödeme'}</span>
           </div>
         </div>
       </div>
