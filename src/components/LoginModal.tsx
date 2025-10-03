@@ -619,7 +619,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                 >
                   <option value="">Ödeme döngüsü seçin</option>
                   <option value="monthly">Aylık Ödeme</option>
-                  <option value="yearly">Yıllık Ödeme (%33 Tasarruf)</option>
+                  <option value="yearly">Yıllık Ödeme (%33 Tasarruf⚡)</option>
                 </select>
               </div>
             )}
