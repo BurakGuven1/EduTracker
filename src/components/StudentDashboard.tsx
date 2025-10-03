@@ -668,14 +668,6 @@ const chartData = filteredExamResults
               <LogOut className="h-4 w-4" />
               <span>Çıkış Yap</span>
             </button>
-            <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">
-                {getPackagePrice().name}
-              </p>
-              <p className="text-xs text-gray-600">
-                Aylık {getPackagePrice().monthly}₺ / Yıllık {getPackagePrice().yearly}₺
-              </p>
-            </div>
           </div>
         </div>      
 
