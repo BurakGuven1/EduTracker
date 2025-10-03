@@ -784,7 +784,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                             🎉 {savings.toLocaleString()}₺ Tasarruf!
                           </div>
                           <div className="text-green-700 text-xs">
-                            Aylık ödemeye göre yıllık %{Math.round((savings / (selectedPkg.monthlyPrice * 12)) * 100)} indirim
+                            Aylık ödemeye göre yıllık %{discountPercentage} indirim
                           </div>
                         </div>
                       )}
