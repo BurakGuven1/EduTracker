@@ -3,14 +3,17 @@ import { BookOpen, Plus, TrendingUp, Calendar, Target, Award, Clock, CheckCircle
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { Scatter, ScatterChart } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../hooks/useAuth';
 import { useStudentData } from '../hooks/useStudentData';
 import ExamForm from './ExamForm';
 import HomeworkForm from './HomeworkForm';
 import ExamTopicsSection from './ExamTopicsSection';
 import AIInsights from './AIInsights';
-import { getStudentInviteCode, signOut, deleteExamResult, updateHomework, deleteHomework, addStudySession, getWeeklyStudyGoal, createWeeklyStudyGoal, updateWeeklyStudyGoal, getWeeklyStudySessions } from '../lib/supabase';
 
 export default function StudentDashboard() {
+  const { user } = useAuth();
+  const { studentData, examResults, homeworks, aiRecommendations, studentClasses, classAssignments, classAnnouncements, classExamResults, loading, refetch } = useStudentData(user?.id);
+  
   const [activeTab, setActiveTab] = useState<'overview' | 'exams' | 'homeworks' | 'analysis'>('overview');
   const [showExamForm, setShowExamForm] = useState(false);
   const [showHomeworkForm, setShowHomeworkForm] = useState(false);
