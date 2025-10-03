@@ -46,7 +46,7 @@ export const packages: Package[] = [
     id: 'professional',
     name: 'Profesyonel Paket',
     monthlyPrice: 499.99,
-    yearlyPrice: 3499.99,
+    yearlyPrice: 3999.99,
     maxParents: 3,
     aiSupport: true,
     features: [
