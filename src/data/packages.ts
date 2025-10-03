@@ -13,7 +13,7 @@ export const packages: Package[] = [
     id: 'basic',
     name: 'Temel Paket',
     monthlyPrice: 219.99,
-    yearlyPrice: 1999.99,
+    yearlyPrice: 2299,
     maxParents: 1,
     aiSupport: false,
     features: [
@@ -29,7 +29,7 @@ export const packages: Package[] = [
     id: 'advanced',
     name: 'Gelişmiş Paket',
     monthlyPrice: 319.99,
-    yearlyPrice: 2599.99,
+    yearlyPrice: 2999,
     maxParents: 2,
     aiSupport: true,
     features: [
@@ -46,7 +46,7 @@ export const packages: Package[] = [
     id: 'professional',
     name: 'Profesyonel Paket',
     monthlyPrice: 499.99,
-    yearlyPrice: 3999.99,
+    yearlyPrice: 3999,
     maxParents: 3,
     aiSupport: true,
     features: [

@@ -35,21 +35,21 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
       id: 'basic',
       name: 'Temel Paket',
       monthlyPrice: 219.99,
-      yearlyPrice: 1999.99,
+      yearlyPrice: 2199.99,
       features: ['Temel özellikler', 'Sınırlı içerik', 'E-posta desteği']
     },
     {
       id: 'advanced',
       name: 'Gelişmiş Paket',
       monthlyPrice: 319.99,
-      yearlyPrice: 2599.99,
+      yearlyPrice: 3199.99,
       features: ['Gelişmiş özellikler', 'Tam içerik', 'Yapay Zeka Desteği','Öncelikli destek','Analitik raporlar']
     },
     {
       id: 'professional',
       name: 'Profesyonel Paket',
       monthlyPrice: 499.99,
-      yearlyPrice: 3999.99,
+      yearlyPrice: 4999.99,
       features: ['Tüm özellikler', 'Sınırsız içerik','Yapay Zeka Desteği','Öncelikli destek','Çıkmış Soruların Analizi', 'Detaylı analitik raporlar']
     }
   ];
@@ -619,7 +619,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                 >
                   <option value="">Ödeme döngüsü seçin</option>
                   <option value="monthly">Aylık Ödeme</option>
-                  <option value="yearly">Yıllık Ödeme (%33 İndirimli✨)</option>
+                  <option value="yearly">Yıllık Ödeme (Tasarruf edin!)</option>
                 </select>
               </div>
             )}
@@ -746,23 +746,12 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h4 className="font-semibold text-blue-800 mb-3">Seçilen Paket Detayları</h4>
                 {(() => {
-      const selectedPkg = packages.find(pkg => pkg.id === formData.packageType);
-      if (!selectedPkg) return null;
-      
-      const currentPrice = formData.billingCycle === 'monthly' ? selectedPkg.monthlyPrice : selectedPkg.yearlyPrice;
-      const monthlyEquivalent = formData.billingCycle === 'yearly' ? selectedPkg.yearlyPrice / 12 : selectedPkg.monthlyPrice;
-      
-      // DÜZELTİLMİŞ HESAPLAMALAR:
-      const savings = formData.billingCycle === 'yearly' 
-        ? (selectedPkg.monthlyPrice * 12) - selectedPkg.yearlyPrice 
-        : 0;
-      
-      // 10'un katlarına yukarı yuvarla ve kuruşları kaldır
-      const roundedSavings = Math.ceil(savings / 10) * 10;
-      
-      const discountPercentage = formData.billingCycle === 'yearly' 
-        ? Math.round(((selectedPkg.monthlyPrice * 12 - selectedPkg.yearlyPrice) / (selectedPkg.monthlyPrice * 12)) * 100)
-        : 0;
+                  const selectedPkg = packages.find(pkg => pkg.id === formData.packageType);
+                  if (!selectedPkg) return null;
+                  
+                  const currentPrice = formData.billingCycle === 'monthly' ? selectedPkg.monthlyPrice : selectedPkg.yearlyPrice;
+                  const monthlyEquivalent = formData.billingCycle === 'yearly' ? selectedPkg.yearlyPrice / 12 : selectedPkg.monthlyPrice;
+                  const savings = formData.billingCycle === 'yearly' ? (selectedPkg.monthlyPrice * 12) - selectedPkg.yearlyPrice : 0;
                   
                   return (
                     <div className="space-y-3">
@@ -770,7 +759,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                         <span className="font-medium text-blue-900">{selectedPkg.name}</span>
                         <div className="text-right">
                           <div className="text-xl font-bold text-blue-600">
-                            {currentPrice.toFixed(0)}₺
+                            {currentPrice.toLocaleString()}₺
                           </div>
                           <div className="text-sm text-blue-700">
                             {formData.billingCycle === 'yearly' ? '/yıl' : '/ay'}
@@ -786,7 +775,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                       {savings > 0 && (
                         <div className="bg-green-100 p-2 rounded text-center">
                           <div className="text-green-800 font-semibold">
-                            🎉 {roundedSavings.toFixed(0)}₺ Tasarruf!
+                            🎉 {savings.toLocaleString()}₺ Tasarruf!
                           </div>
                           <div className="text-green-700 text-xs">
                             Aylık ödemeye göre yıllık %{Math.round((savings / (selectedPkg.monthlyPrice * 12)) * 100)} indirim
