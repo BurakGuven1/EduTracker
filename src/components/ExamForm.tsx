@@ -203,8 +203,8 @@ export default function ExamForm({ isOpen, onClose, studentId, onSuccess, editDa
 
     const hamPuan =
         100 +
-        (turkceNet * 3.30) +
-        (matematikNet * 3.30) +
+        (turkceNet * 3.33) +
+        (matematikNet * 3.33) +
         (fenNet * 3.45) +
         (sosyalNet * 3.45);
 
