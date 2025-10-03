@@ -35,21 +35,21 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
       id: 'basic',
       name: 'Temel Paket',
       monthlyPrice: 219.99,
-      yearlyPrice: 2199.99,
+      yearlyPrice: 1759.99,
       features: ['Temel özellikler', 'Sınırlı içerik', 'E-posta desteği']
     },
     {
       id: 'advanced',
       name: 'Gelişmiş Paket',
       monthlyPrice: 319.99,
-      yearlyPrice: 3199.99,
+      yearlyPrice: 2559.99,
       features: ['Gelişmiş özellikler', 'Tam içerik', 'Yapay Zeka Desteği','Öncelikli destek','Analitik raporlar']
     },
     {
       id: 'professional',
       name: 'Profesyonel Paket',
       monthlyPrice: 499.99,
-      yearlyPrice: 4999.99,
+      yearlyPrice: 3999.99,
       features: ['Tüm özellikler', 'Sınırsız içerik','Yapay Zeka Desteği','Öncelikli destek','Çıkmış Soruların Analizi', 'Detaylı analitik raporlar']
     }
   ];
@@ -751,7 +751,15 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                   
                   const currentPrice = formData.billingCycle === 'monthly' ? selectedPkg.monthlyPrice : selectedPkg.yearlyPrice;
                   const monthlyEquivalent = formData.billingCycle === 'yearly' ? selectedPkg.yearlyPrice / 12 : selectedPkg.monthlyPrice;
-                  const savings = formData.billingCycle === 'yearly' ? (selectedPkg.monthlyPrice * 12) - selectedPkg.yearlyPrice : 0;
+                  const savings = formData.billingCycle === 'yearly' 
+                  ? (selectedPkg.monthlyPrice * 12) - selectedPkg.yearlyPrice 
+                  : 0;
+                
+                const roundedSavings = Math.ceil(savings / 10) * 10;
+                
+                const discountPercentage = formData.billingCycle === 'yearly' 
+                  ? Math.round(((selectedPkg.monthlyPrice * 12 - selectedPkg.yearlyPrice) / (selectedPkg.monthlyPrice * 12)) * 100)
+                  : 0;
                   
                   return (
                     <div className="space-y-3">
@@ -778,7 +786,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                             🎉 {savings.toLocaleString()}₺ Tasarruf!
                           </div>
                           <div className="text-green-700 text-xs">
-                            Aylık ödemeye göre yıllık %{Math.round((savings / (selectedPkg.monthlyPrice * 12)) * 100)} indirim
+                            Aylık ödemeye göre yıllık %{discountPercentage} indirim
                           </div>
                         </div>
                       )}
