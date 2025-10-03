@@ -619,7 +619,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                 >
                   <option value="">Ödeme döngüsü seçin</option>
                   <option value="monthly">Aylık Ödeme</option>
-                  <option value="yearly">Yıllık Ödeme (Tasarruf edin!)</option>
+                  <option value="yearly">Yıllık Ödeme (%33 Tasarruf)</option>
                 </select>
               </div>
             )}
@@ -775,7 +775,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                       {savings > 0 && (
                         <div className="bg-green-100 p-2 rounded text-center">
                           <div className="text-green-800 font-semibold">
-                            🎉 {savings.toLocaleString()}₺ Tasarruf!
+                            🎉 {savings.toLocaleString().toFixed(0)}₺ Tasarruf!
                           </div>
                           <div className="text-green-700 text-xs">
                             Aylık ödemeye göre yıllık %{Math.round((savings / (selectedPkg.monthlyPrice * 12)) * 100)} indirim
