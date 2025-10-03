@@ -263,7 +263,7 @@ export default function ExamForm({ isOpen, onClose, studentId, onSuccess, editDa
                            (inkilapNet * 1) + (ingilizceNet * 1) + (dinNet * 1);
     
     // Ham puan hesaplama (500 üzerinden)
-    const hamPuan = (katsayiliToplam * 500) / 360; // 360 maksimum katsayılı puan
+    const hamPuan = (katsayiliToplam * 500) / 270;
     return Math.min(500, Math.max(0, hamPuan));
   };
 
