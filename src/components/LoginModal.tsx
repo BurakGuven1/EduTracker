@@ -770,7 +770,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                         <span className="font-medium text-blue-900">{selectedPkg.name}</span>
                         <div className="text-right">
                           <div className="text-xl font-bold text-blue-600">
-                            {currentPrice.toLocaleString()}₺
+                            {currentPrice.toFixed(0)}₺
                           </div>
                           <div className="text-sm text-blue-700">
                             {formData.billingCycle === 'yearly' ? '/yıl' : '/ay'}
@@ -786,7 +786,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
                       {savings > 0 && (
                         <div className="bg-green-100 p-2 rounded text-center">
                           <div className="text-green-800 font-semibold">
-                            🎉 {savings.toLocaleString()}₺ Tasarruf!
+                            🎉 {roundedSavings.toFixed(0)}₺ Tasarruf!
                           </div>
                           <div className="text-green-700 text-xs">
                             Aylık ödemeye göre yıllık %{Math.round((savings / (selectedPkg.monthlyPrice * 12)) * 100)} indirim
