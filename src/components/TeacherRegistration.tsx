@@ -515,6 +515,7 @@ export default function TeacherRegistration({ isOpen, onClose, onSuccess }: Teac
     </div>
   );
 }
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Ad Soyad *
@@ -668,6 +669,7 @@ export default function TeacherRegistration({ isOpen, onClose, onSuccess }: Teac
           <p className="text-sm text-gray-600">
             Kayıt olduktan sonra email adresinize doğrulama linki gönderilecektir.
           </p>
+          </>
         </div>
       </div>
     </div>
