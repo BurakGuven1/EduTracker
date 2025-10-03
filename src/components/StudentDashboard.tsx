@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Plus, TrendingUp, TrendingDown, Calendar, Target, Award, Clock, CheckCircle, AlertCircle, LogOut, CreditCard as Edit, Trash2, MoreVertical, Trophy, Star, Users, X } from 'lucide-react';
+import { BookOpen, Plus, TrendingUp, Calendar, Target, Award, Clock, CheckCircle, AlertCircle, LogOut, CreditCard as Edit, Trash2, MoreVertical, Trophy, Star, Users, X } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { Scatter, ScatterChart } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
@@ -435,11 +435,7 @@ const chartData = filteredExamResults
               </p>
               <p className="text-xs text-gray-500">son denemenize göre</p>
             </div>
-            {stats.improvementPercent >= 0 ? (
-              <TrendingUp className="h-8 w-8 text-green-600" />
-            ) : (
-              <TrendingDown className="h-8 w-8 text-red-600" />
-            )}
+            <TrendingUp className="h-8 w-8 text-purple-600" />
           </div>
         </div>
 
