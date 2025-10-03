@@ -3,7 +3,6 @@ import { BookOpen, Plus, TrendingUp, Calendar, Target, Award, Clock, CheckCircle
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { Scatter, ScatterChart } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
-import { useAuth } from '../hooks/useAuth';
 import { useStudentData } from '../hooks/useStudentData';
 import ExamForm from './ExamForm';
 import HomeworkForm from './HomeworkForm';
