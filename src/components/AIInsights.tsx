@@ -44,15 +44,26 @@ export default function AIInsights({ examResults, studentData }: AIInsightsProps
     );
   }
 
-  if (!analysis || examResults.length === 0) {
+  if (!analysis || !analysis.hasEnoughData) {
     return (
       <div className="bg-white rounded-lg p-6 shadow-sm">
         <div className="text-center py-8">
           <Brain className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">AI Analizi</h3>
-          <p className="text-gray-600">
-            AI destekli analiz için en az bir deneme sonucu eklemelisiniz.
+          <p className="text-gray-600 mb-4">
+            AI destekli analiz için en az 2 deneme sonucu gereklidir.
           </p>
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <p className="text-blue-800 text-sm">
+              Şu anda {analysis?.totalExams || 0} deneme sonucunuz var. 
+              {analysis?.totalExams === 1 ? ' 1 deneme daha ekleyin.' : ' En az 2 deneme sonucu ekleyin.'}
+            </p>
+          </div>
+          {analysis?.recommendations && analysis.recommendations.length > 0 && (
+            <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
+              <p className="text-yellow-800 text-sm">{analysis.recommendations[0]}</p>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -69,6 +80,9 @@ export default function AIInsights({ examResults, studentData }: AIInsightsProps
           <div>
             <h3 className="font-semibold text-blue-900 mb-2">Günün Motivasyonu</h3>
             <p className="text-blue-800">{motivationalMessage}</p>
+            <div className="mt-2 text-xs text-blue-600">
+              Analiz edilen deneme sayısı: {analysis.totalExams} | Kullanılan: {Math.min(5, analysis.totalExams)}
+            </div>
           </div>
         </div>
       </div>

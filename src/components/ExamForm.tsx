@@ -200,9 +200,14 @@ export default function ExamForm({ isOpen, onClose, studentId, onSuccess, editDa
     const matematikNet = calculateNetScore(formData.tyt_matematik_dogru, formData.tyt_matematik_yanlis);
     const fenNet = calculateNetScore(formData.tyt_fen_dogru, formData.tyt_fen_yanlis);
     const sosyalNet = calculateNetScore(formData.tyt_sosyal_dogru, formData.tyt_sosyal_yanlis);
-    
-    // TYT Ham Puan = (Türkçe × 3.3) + (Matematik × 3.3) + (Fen × 3.4) + (Sosyal × 3.4) + 100
-    const hamPuan = (turkceNet * 3.3) + (matematikNet * 3.3) + (fenNet * 3.4) + (sosyalNet * 3.4) + 100;
+
+    const hamPuan =
+        100 +
+        (turkceNet * 3.33) +
+        (matematikNet * 3.33) +
+        (fenNet * 3.45) +
+        (sosyalNet * 3.45);
+
     return Math.min(500, Math.max(100, hamPuan));
   };
 
@@ -263,7 +268,7 @@ export default function ExamForm({ isOpen, onClose, studentId, onSuccess, editDa
                            (inkilapNet * 1) + (ingilizceNet * 1) + (dinNet * 1);
     
     // Ham puan hesaplama (500 üzerinden)
-    const hamPuan = (katsayiliToplam * 500) / 360; // 360 maksimum katsayılı puan
+    const hamPuan = (katsayiliToplam * 500) / 270;
     return Math.min(500, Math.max(0, hamPuan));
   };
 
