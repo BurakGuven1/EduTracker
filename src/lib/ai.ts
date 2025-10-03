@@ -1,6 +1,9 @@
 // AI Analysis Service
 // Bu dosya yapay zeka analizleri için gerekli fonksiyonları içerir
 
+// Minimum deneme sayısı kontrolü
+const MIN_EXAMS_FOR_ANALYSIS = 2;
+
 interface ExamAnalysis {
   weaknesses: string[];
   strengths: string[];
@@ -8,6 +11,8 @@ interface ExamAnalysis {
   studyPlan: StudyPlanItem[];
   trends: TrendAnalysis[];
   emptyAnswerWarnings: string[];
+  hasEnoughData: boolean;
+  totalExams: number;
 }
 
 interface StudyPlanItem {
@@ -41,17 +46,34 @@ export const analyzeExamResults = async (examResults: any[]): Promise<ExamAnalys
     recommendations: [],
     studyPlan: [],
     trends: [],
-    emptyAnswerWarnings: []
+    emptyAnswerWarnings: [],
+    hasEnoughData: false,
+    totalExams: examResults.length
   };
 
-  if (examResults.length === 0) {
+  // Minimum deneme sayısı kontrolü
+  if (examResults.length < MIN_EXAMS_FOR_ANALYSIS) {
+    analysis.recommendations.push(
+      `AI analizi için en az ${MIN_EXAMS_FOR_ANALYSIS} deneme sonucu gereklidir. Şu anda ${examResults.length} deneme var.`
+    );
     return analysis;
   }
 
+  analysis.hasEnoughData = true;
+
   // Son 5 denemeyi al ve tarihe göre sırala
   const recentExams = examResults
+    .filter(exam => exam.total_score != null && exam.exam_date) // Geçersiz verileri filtrele
     .sort((a, b) => new Date(b.exam_date).getTime() - new Date(a.exam_date).getTime())
     .slice(0, 5);
+
+  if (recentExams.length < MIN_EXAMS_FOR_ANALYSIS) {
+    analysis.hasEnoughData = false;
+    analysis.recommendations.push(
+      `Geçerli deneme sonucu sayısı yetersiz. En az ${MIN_EXAMS_FOR_ANALYSIS} geçerli deneme gerekli.`
+    );
+    return analysis;
+  }
 
   // Trend analizi yap
   const trends = analyzeTrends(recentExams);
@@ -64,83 +86,141 @@ export const analyzeExamResults = async (examResults: any[]): Promise<ExamAnalys
   // Genel performans analizi
   const subjectAverages = calculateDetailedSubjectAverages(recentExams);
   
-  // Zayıflıkları tespit et (son 3 denemede düşüş veya düşük performans)
+  // Zayıflıkları tespit et - daha tutarlı kriterler
   Object.entries(subjectAverages).forEach(([subject, data]: [string, any]) => {
-    if (data.average < 8) { // 8 netten az
-      analysis.weaknesses.push(`${subject}: Ortalama ${data.average.toFixed(1)} net - Temel konularda eksiklik`);
+    const avgNet = data.average;
+    const examType = recentExams[0]?.exam_type || 'TYT';
+    
+    // Sınav türüne göre zayıflık kriterleri
+    let weaknessThreshold = 8; // TYT için varsayılan
+    if (examType === 'LGS') {
+      weaknessThreshold = 6; // LGS için daha düşük
+    } else if (examType === 'AYT') {
+      weaknessThreshold = 10; // AYT için daha yüksek
+    }
+    
+    if (avgNet < weaknessThreshold) {
+      analysis.weaknesses.push(`${subject}: Ortalama ${avgNet.toFixed(1)} net - Temel konularda eksiklik var`);
       analysis.studyPlan.push({
         subject,
         topic: 'Temel Konular',
         priority: 'high',
-        estimatedHours: 15,
-        description: `${subject} temel konularını güçlendirin. Günlük 2 saat çalışma öneriyoruz.`
+        estimatedHours: Math.max(10, Math.round((weaknessThreshold - avgNet) * 2)),
+        description: `${subject} temel konularını güçlendirin. Hedef: ${weaknessThreshold}+ net`
       });
-    } else if (data.trend === 'decreasing') {
-      analysis.weaknesses.push(`${subject}: Son denemelerinizde düşüş var (${data.change.toFixed(1)} net azalma)`);
-      analysis.recommendations.push(`${subject} konusunda son performansınızda düşüş görülüyor. Bu alana odaklanın.`);
+    } else if (data.trend === 'decreasing' && Math.abs(data.change) > 1.5) {
+      analysis.weaknesses.push(`${subject}: Son denemelerinizde ${Math.abs(data.change).toFixed(1)} net düşüş var`);
+      analysis.recommendations.push(`${subject} konusunda performans düşüşü tespit edildi. Çalışma yöntemini gözden geçirin.`);
+      analysis.studyPlan.push({
+        subject,
+        topic: 'Performans Düzeltme',
+        priority: 'medium',
+        estimatedHours: 8,
+        description: `${subject} konusundaki düşüşü durdurmak için tekrar ve pekiştirme çalışması yapın.`
+      });
     }
   });
 
-  // Güçlü yönleri tespit et
+  // Güçlü yönleri tespit et - daha tutarlı kriterler
   Object.entries(subjectAverages).forEach(([subject, data]: [string, any]) => {
-    if (data.average > 15) { // 15 netten fazla
-      analysis.strengths.push(`${subject}: Güçlü performans (Ortalama ${data.average.toFixed(1)} net)`);
-      if (data.trend === 'increasing') {
-        analysis.recommendations.push(`${subject} konusunda harika bir yükseliş var! Bu motivasyonu koruyun.`);
+    const avgNet = data.average;
+    const examType = recentExams[0]?.exam_type || 'TYT';
+    
+    // Sınav türüne göre güçlü performans kriterleri
+    let strengthThreshold = 15; // TYT için varsayılan
+    if (examType === 'LGS') {
+      strengthThreshold = 12; // LGS için daha düşük
+    } else if (examType === 'AYT') {
+      strengthThreshold = 18; // AYT için daha yüksek
+    }
+    
+    if (avgNet > strengthThreshold) {
+      analysis.strengths.push(`${subject}: Güçlü performans (Ortalama ${avgNet.toFixed(1)} net)`);
+      if (data.trend === 'increasing' && data.change > 1) {
+        analysis.recommendations.push(`${subject} konusunda mükemmel bir yükseliş var (+${data.change.toFixed(1)} net)! Bu tempoyu koruyun.`);
+      } else if (data.trend === 'stable') {
+        analysis.recommendations.push(`${subject} konusunda istikrarlı yüksek performans gösteriyorsunuz. Bu seviyeyi koruyun.`);
       }
     }
   });
 
-  // Genel öneriler
+  // Genel trend analizi ve öneriler
   if (recentExams.length >= 3) {
     const overallTrend = calculateOverallTrend(recentExams);
-    if (overallTrend > 5) {
-      analysis.recommendations.push('Genel performansınız yükselişte! Bu çalışma temposunu koruyun.');
-    } else if (overallTrend < -5) {
-      analysis.recommendations.push('Son denemelerinizde genel bir düşüş var. Çalışma programınızı gözden geçirin.');
+    const avgScore = recentExams.reduce((sum, exam) => sum + (exam.total_score || 0), 0) / recentExams.length;
+    
+    if (overallTrend > 10) {
+      analysis.recommendations.push(`Genel performansınız harika yükselişte! (+${overallTrend.toFixed(1)} puan) Bu çalışma temposunu koruyun.`);
+    } else if (overallTrend < -10) {
+      analysis.recommendations.push(`Son denemelerinizde genel düşüş var (${overallTrend.toFixed(1)} puan). Çalışma programınızı gözden geçirin.`);
       analysis.studyPlan.push({
         subject: 'Genel',
-        topic: 'Çalışma Planı',
+        topic: 'Çalışma Stratejisi',
         priority: 'high',
-        estimatedHours: 20,
-        description: 'Çalışma programınızı yeniden düzenleyin. Zayıf olduğunuz konulara daha fazla zaman ayırın.'
+        estimatedHours: 15,
+        description: 'Çalışma yönteminizi değiştirin. Zayıf konulara odaklanın ve düzenli tekrar yapın.'
       });
+    } else {
+      analysis.recommendations.push(`Performansınız stabil (Ortalama: ${avgScore.toFixed(1)} puan). Hedeflerinize göre çalışma planınızı optimize edebilirsiniz.`);
     }
+  }
+
+  // Boş bırakma uyarıları için öneriler ekle
+  if (analysis.emptyAnswerWarnings.length > 0) {
+    analysis.recommendations.push('Çok fazla soru boş bırakıyorsunuz. Tahmin stratejisi geliştirin ve zaman yönetimini iyileştirin.');
+    analysis.studyPlan.push({
+      subject: 'Genel',
+      topic: 'Sınav Stratejisi',
+      priority: 'medium',
+      estimatedHours: 5,
+      description: 'Sınav tekniği ve zaman yönetimi çalışması yapın. Tahmin stratejileri öğrenin.'
+    });
   }
 
   return analysis;
 };
 
-// Trend analizi - son 5 denemeye bakar
+// Trend analizi - daha tutarlı hesaplama
 const analyzeTrends = (exams: any[]): TrendAnalysis[] => {
-  if (exams.length < 3) return [];
+  if (exams.length < MIN_EXAMS_FOR_ANALYSIS) return [];
 
   const trends: TrendAnalysis[] = [];
-  const subjects = ['Türkçe', 'Matematik', 'Fen', 'Sosyal'];
+  
+  // Sınav türüne göre konuları belirle
+  const examType = exams[0]?.exam_type || 'TYT';
+  let subjects: string[] = [];
+  
+  if (examType === 'LGS') {
+    subjects = ['Türkçe', 'Matematik', 'Fen', 'İnkılap', 'İngilizce', 'Din'];
+  } else {
+    subjects = ['Türkçe', 'Matematik', 'Fen', 'Sosyal'];
+  }
 
   subjects.forEach(subject => {
     const nets = exams.map(exam => getSubjectNet(exam, subject)).filter(net => net !== null);
     
-    if (nets.length >= 3) {
-      const recent = nets.slice(0, 3); // Son 3 deneme
-      const older = nets.slice(3); // Önceki denemeler
+    if (nets.length >= MIN_EXAMS_FOR_ANALYSIS) {
+      const halfPoint = Math.floor(nets.length / 2);
+      const recent = nets.slice(0, halfPoint); // Son yarısı
+      const older = nets.slice(halfPoint); // İlk yarısı
       
       const recentAvg = recent.reduce((sum, net) => sum + net, 0) / recent.length;
-      const olderAvg = older.length > 0 ? older.reduce((sum, net) => sum + net, 0) / older.length : recentAvg;
+      const olderAvg = older.reduce((sum, net) => sum + net, 0) / older.length;
       
       const change = recentAvg - olderAvg;
       
       let trend: 'increasing' | 'decreasing' | 'stable' = 'stable';
       let message = '';
       
-      if (change > 1) {
+      // Daha hassas trend belirleme
+      if (change > 1.5) {
         trend = 'increasing';
         message = `${subject} konusunda son denemelerinizde ${change.toFixed(1)} net artış var! 📈`;
-      } else if (change < -1) {
+      } else if (change < -1.5) {
         trend = 'decreasing';
-        message = `${subject} konusunda son denemelerinizde ${Math.abs(change).toFixed(1)} net düşüş var. ⚠️`;
+        message = `${subject} konusunda son denemelerinizde ${Math.abs(change).toFixed(1)} net düşüş var ⚠️`;
       } else {
-        message = `${subject} konusunda performansınız stabil.`;
+        message = `${subject} konusunda performansınız stabil (${recentAvg.toFixed(1)} net ortalama)`;
       }
       
       trends.push({
@@ -158,27 +238,51 @@ const analyzeTrends = (exams: any[]): TrendAnalysis[] => {
 // Boş bırakma analizi
 const analyzeEmptyAnswers = (exams: any[]): string[] => {
   const warnings: string[] = [];
+  const emptyStats: Record<string, { total: number, empty: number }> = {};
   
   exams.forEach(exam => {
     if (exam.exam_details) {
       const details = JSON.parse(exam.exam_details);
-      const subjects = ['Türkçe', 'Matematik', 'Fen', 'Sosyal'];
+      
+      // Sınav türüne göre konuları belirle
+      const examType = exam.exam_type || 'TYT';
+      let subjects: string[] = [];
+      
+      if (examType === 'LGS') {
+        subjects = ['Türkçe', 'Matematik', 'Fen', 'İnkılap', 'İngilizce', 'Din'];
+      } else {
+        subjects = ['Türkçe', 'Matematik', 'Fen', 'Sosyal'];
+      }
       
       subjects.forEach(subject => {
-        const { correct, wrong, total } = getSubjectStats(details, subject, exam.exam_type);
+        const { correct, wrong, total } = getSubjectStats(details, subject, examType);
         const empty = total - correct - wrong;
         
-        if (empty > total * 0.3) { // %30'dan fazla boş
-          warnings.push(`${subject}: ${empty} soru boş bırakılmış (${((empty/total)*100).toFixed(0)}%). Bu konularda eksikleriniz olabilir.`);
+        // İstatistik topla
+        if (!emptyStats[subject]) {
+          emptyStats[subject] = { total: 0, empty: 0 };
         }
+        emptyStats[subject].total += total;
+        emptyStats[subject].empty += empty;
       });
     }
   });
 
-  return [...new Set(warnings)]; // Tekrarları kaldır
+  // Genel boş bırakma analizi
+  Object.entries(emptyStats).forEach(([subject, stats]) => {
+    const emptyPercentage = (stats.empty / stats.total) * 100;
+    
+    if (emptyPercentage > 25) { // %25'ten fazla boş
+      warnings.push(`${subject}: Ortalama %${emptyPercentage.toFixed(0)} soru boş bırakıyorsunuz. Bu konularda eksikleriniz var.`);
+    } else if (emptyPercentage > 15) { // %15-25 arası
+      warnings.push(`${subject}: %${emptyPercentage.toFixed(0)} soru boş bırakıyorsunuz. Zaman yönetimini iyileştirin.`);
+    }
+  });
+
+  return warnings;
 };
 
-// Detaylı konu analizi
+// Detaylı konu analizi - LGS desteği eklendi
 const getSubjectStats = (details: any, subject: string, examType: string) => {
   let correct = 0, wrong = 0, total = 0;
   
@@ -240,6 +344,21 @@ const getSubjectStats = (details: any, subject: string, examType: string) => {
         wrong = parseInt(details.lgs_fen_yanlis || 0);
         total = 20;
         break;
+      case 'İnkılap':
+        correct = parseInt(details.lgs_inkılap_dogru || 0);
+        wrong = parseInt(details.lgs_inkılap_yanlis || 0);
+        total = 10;
+        break;
+      case 'İngilizce':
+        correct = parseInt(details.lgs_ingilizce_dogru || 0);
+        wrong = parseInt(details.lgs_ingilizce_yanlis || 0);
+        total = 10;
+        break;
+      case 'Din':
+        correct = parseInt(details.lgs_din_dogru || 0);
+        wrong = parseInt(details.lgs_din_yanlis || 0);
+        total = 10;
+        break;
     }
   }
   
@@ -275,10 +394,9 @@ export const generateMotivationalMessage = (studentData: any): string => {
 
 // Helper functions
 const calculateDetailedSubjectAverages = (examResults: any[]): Record<string, any> => {
-  // Dinamik konu listesi - sınav türüne göre
+  // Sınav türüne göre konuları belirle
   let subjects: string[] = [];
   
-  // İlk sınavın türüne göre konuları belirle
   if (examResults.length > 0) {
     const firstExamType = examResults[0].exam_type;
     if (firstExamType === 'LGS') {
@@ -296,17 +414,23 @@ const calculateDetailedSubjectAverages = (examResults: any[]): Record<string, an
     if (nets.length > 0) {
       const average = nets.reduce((sum, net) => sum + net, 0) / nets.length;
       
-      // Trend hesaplama
+      // Daha tutarlı trend hesaplama
       let trend = 'stable';
       let change = 0;
       
-      if (nets.length >= 3) {
-        const recent = nets.slice(0, 2).reduce((sum, net) => sum + net, 0) / 2;
-        const older = nets.slice(2).reduce((sum, net) => sum + net, 0) / (nets.length - 2);
+      if (nets.length >= MIN_EXAMS_FOR_ANALYSIS) {
+        const halfPoint = Math.floor(nets.length / 2);
+        const recent = nets.slice(0, halfPoint);
+        const older = nets.slice(halfPoint);
+        
+        const recentAvg = recent.reduce((sum, net) => sum + net, 0) / recent.length;
+        const olderAvg = older.reduce((sum, net) => sum + net, 0) / older.length;
+        
+        change = recentAvg - olderAvg;
         change = recent - older;
         
-        if (change > 0.5) trend = 'increasing';
-        else if (change < -0.5) trend = 'decreasing';
+        if (change > 1) trend = 'increasing';
+        else if (change < -1) trend = 'decreasing';
       }
       
       averages[subject] = { average, trend, change };
@@ -317,13 +441,18 @@ const calculateDetailedSubjectAverages = (examResults: any[]): Record<string, an
 };
 
 const calculateOverallTrend = (examResults: any[]): number => {
-  if (examResults.length < 2) return 0;
+  if (examResults.length < MIN_EXAMS_FOR_ANALYSIS) return 0;
   
   const scores = examResults.map(exam => exam.total_score || 0);
-  const recent = scores.slice(0, 2).reduce((sum, score) => sum + score, 0) / 2;
-  const older = scores.slice(2).reduce((sum, score) => sum + score, 0) / (scores.length - 2);
   
-  return recent - older;
+  const halfPoint = Math.floor(scores.length / 2);
+  const recent = scores.slice(0, halfPoint);
+  const older = scores.slice(halfPoint);
+  
+  const recentAvg = recent.reduce((sum, score) => sum + score, 0) / recent.length;
+  const olderAvg = older.reduce((sum, score) => sum + score, 0) / older.length;
+  
+  return recentAvg - olderAvg;
 };
 
 export const detectTopicWeaknesses = (topicScores: TopicPerformance[]): string[] => {
